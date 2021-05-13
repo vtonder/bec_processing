@@ -1,43 +1,86 @@
 import h5py
 import numpy as np
-import numba 
+from numba import cuda 
 import time
 from constants import *
 from matplotlib import pyplot as plt
 
-vela_x = h5py.File('/home/vereese/pulsar_data/1604641064_wide_tied_array_channelised_voltage_0x.h5', 'r')
-vela_y = h5py.File('/home/vereese/pulsar_data/1604641064_wide_tied_array_channelised_voltage_0y.h5', 'r')
+# TODO: find out how to read a chunk and operate on entire chunks at a time
 
-summed_profile = np.zeros([1024, int(np.floor(vela_samples_T))])
+PLOT = True 
+SAVE_DATA = False 
+PROCESS_DATA = False
+LOAD_PROCESSED_DATA = True
 
-#@numba.jit(nopython=True)
-def square(data):
-    return data*data
+#@cuda.jit#nopython=True)
+#def square(data, y):
+#    y = data*data
 
-#@numba.jit(nopython=True)
-def add(re, im):
-    return square(re) + square(im) 
+@cuda.jit#(device=True)#nopython=True)
+def add(re, im, x):
+    x = re*re + im*im 
+    #return x 
+
 
 #@numba.jit(nopython=True)
 #def accumulate(summed_data, data, ch):
 #    summed_data[ch][:] += data
 #    return summed_data
 
-t1 = 0
-t2 = 0
-diff = 0
-for ch in np.arange(1024):
-    t1=time.time()
-    for i in np.arange(138):
-        summed_profile[ch,:] += add(vela_x['Data']['bf_raw'][ch,i*74670:(i+1)*74670,0], vela_x['Data']['bf_raw'][ch,i*74670:(i+1)*74670,1])
-    t2=time.time()
-    diff = t2-t1
-    print('at ch: ', ch, 'took ',  diff, 's')
 
-#summed_profile = sum_data(vela_x['Data']['bf_raw'][:,:,0], vela_x['Data']['bf_raw'][:,:,1])
+if PROCESS_DATA:
+    vela_x = h5py.File('/home/vereese/pulsar_data/1604641234_wide_tied_array_channelised_voltage_0x.h5', 'r')
+    
+    num_data_points = vela_x['Data']['timestamps'].shape[0]
+    num_pulses = int(np.floor(num_data_points/vela_samples_T)) #number of vela pulses per observation
+    vela_samples_T = int(np.floor(vela_samples_T))
+    fp = 2 #number of vela periods to fold over
+    
+    print("read in data")
+    
+    summed_profile = np.zeros([1024, 2*vela_samples_T])
+    temp = np.zeros([1024, num_pulses])
+    
+    t=time.time()
+    print("reading all: ", t)
+    all_data = vela_x['Data']['bf_raw'][()] #.value[:,:,0]
+    
+    t=time.time()
+    print("getting re ", t)
+    re = all_data[:,:,0].astype('int32')
+    
+    t=time.time()
+    print("getting im ", t)
+    im = all_data[:,:,1].astype('int32')#vela_x['Data']['bf_raw'].value[:,:,1]
+    
+    for i in np.arange(int(num_pulses/fp)):
+        t1=time.time()
+        print(t1)
+    
+        #add(vela_x['Data']['bf_raw'][ch,i*74670:(i+1)*74670,0], vela_x['Data']['bf_raw'][ch,i*74670:(i+1)*74670,1], temp)
+        summed_profile += re[:,i*(fp*vela_samples_T):(i+1)*(fp*vela_samples_T)]**2 + im[:,i*(fp*vela_samples_T):(i+1)*(fp*vela_samples_T)]**2
+    
+        t2=time.time()
+        diff = t2-t1
+        print('at addition: ', i, 'took ',  diff, 's')
+    
+    # take the mean and subtract from each channel to rid the RFI
+    # TODO: look into using max power, then sigma, then mean statistics to get rid of RFI
+    # invert the channels because we are working with filterbank data
+    # In filterbank data the ch0 corresponds to higher frequency components and the higher channels correspond to lower frequencies
+    for i in np.arange(no_channels):
+        mean = np.mean(summed_profile[i,:])
+        #summed_profile[i,:] = summed_profile[i,:]-mean
+        summed_profile[(no_channels-1)-i,:] = summed_profile[i,:]-mean
 
-np.save('summed_profile', summed_profile)      
-print('now going to plot')
-plt.figure()
-plt.imshow(accumulate(summed_profile))
-plt.show()
+if SAVE_DATA:
+    np.save('summed_profile2', summed_profile)      
+
+if PLOT: 
+    summed_profile = np.load('summed_profile2.npy')
+    plt.figure()
+    plt.autoscale(True)
+    plt.imshow(np.roll(summed_profile, 40000, axis=1), aspect='auto') #interpolation='nearest'
+    #plt.plot(summed_profile[100,:])
+    plt.show()
+
