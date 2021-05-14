@@ -38,8 +38,10 @@ if PROCESS_DATA:
     
     print("read in data")
     
-    summed_profile = np.zeros([1024, 2*vela_samples_T])
-    temp = np.zeros([1024, num_pulses])
+    summed_profile = np.zeros([no_channels, fp*vela_samples_T])
+    inverted_summed_profile = np.zeros([no_channels, fp*vela_samples_T])
+
+    #temp = np.zeros([no_channels, fp*vela_samples_T])
     
     t=time.time()
     print("reading all: ", t)
@@ -47,11 +49,11 @@ if PROCESS_DATA:
     
     t=time.time()
     print("getting re ", t)
-    re = all_data[:,:,0].astype('int32')
+    re = all_data[:,:,0].astype('int16')
     
     t=time.time()
     print("getting im ", t)
-    im = all_data[:,:,1].astype('int32')#vela_x['Data']['bf_raw'].value[:,:,1]
+    im = all_data[:,:,1].astype('int16')#vela_x['Data']['bf_raw'].value[:,:,1]
     
     for i in np.arange(int(num_pulses/fp)):
         t1=time.time()
@@ -71,16 +73,20 @@ if PROCESS_DATA:
     for i in np.arange(no_channels):
         mean = np.mean(summed_profile[i,:])
         #summed_profile[i,:] = summed_profile[i,:]-mean
-        summed_profile[(no_channels-1)-i,:] = summed_profile[i,:]-mean
+        inverted_summed_profile[(no_channels-1)-i,:] = summed_profile[i,:]-mean
 
-if SAVE_DATA:
-    np.save('summed_profile2', summed_profile)      
+    if SAVE_DATA:
+        np.save('summed_profile2', inverted_summed_profile)      
 
 if PLOT: 
     summed_profile = np.load('summed_profile2.npy')
     plt.figure()
     plt.autoscale(True)
-    plt.imshow(np.roll(summed_profile, 40000, axis=1), aspect='auto') #interpolation='nearest'
+    #plt.imshow(summed_profile, aspect='auto', extent=[0,2,856,1712])#, origin='lower')
+    #plt.imshow(summed_profile, aspect='auto')
+    plt.ylabel('frequency [MHz]')
+    plt.xlabel('pulsar phase')
+    plt.imshow(np.roll(summed_profile, 40000, axis=1), aspect='auto', extent=[0,2,856,1712]) #interpolation='nearest'
     #plt.plot(summed_profile[100,:])
     plt.show()
 
