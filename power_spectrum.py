@@ -44,12 +44,12 @@ if PROCESS_DATA:
 
     num_data_points = vela_x['Data/timestamps'].shape[0]
     print("Number of data points", num_data_points)
-    num_pulses = int(np.floor(num_data_points/vela_samples_T)) #number of vela pulses per observation
-    vela_samples_T = int(np.floor(vela_samples_T))
+    num_pulses = int(np.floor(num_data_points / vela_samples_T)) #number of vela pulses per observation
+    vela_int_samples_T = int(np.floor(vela_samples_T))
     fp = 1 #number of vela periods to fold over
     
-    summed_profile = np.zeros([no_channels, fp*vela_samples_T])
-    inverted_summed_profile = np.zeros([no_channels, fp*vela_samples_T])
+    summed_profile = np.zeros([no_channels, fp * vela_int_samples_T])
+    inverted_summed_profile = np.zeros([no_channels, fp * vela_int_samples_T])
 
     t=time.time()
     print("read in data t:", t)
@@ -74,15 +74,15 @@ if PROCESS_DATA:
     if COMPUTE_TIME_SERIES:
         # randomly chose to integrate 22 vela pulses per sub-integration
         num_sub_ints = int(200) # number of sub-integrations
-        step = int(vela_samples_T * num_sub_ints)
+        step = int(vela_int_samples_T * num_sub_ints)
         num_int = int(np.floor(num_data_points/step)) # total number of integrations
-        vela_sub_int = np.zeros([num_int,vela_samples_T])
+        vela_sub_int = np.zeros([num_int, vela_int_samples_T])
         fc = 512 
         for i in np.arange(num_int):
             print("at integration ", i, " of ", num_int)
             for j in np.arange(num_sub_ints):
-                start = (i*step)+(j*vela_samples_T)
-                stop = (i*step)+((j+1)*vela_samples_T)
+                start = (i*step)+(j * vela_int_samples_T)
+                stop = (i*step)+((j+1) * vela_int_samples_T)
                 re = data[fc, start:stop, 0].astype(np.float)
                 im = data[fc, start:stop, 1].astype(np.float)
                 vela_sub_int[i,:] += re**2 + im**2
@@ -109,13 +109,18 @@ if PROCESS_DATA:
             #summed_profile += re[:,i*(fp*vela_samples_T):(i+1)*(fp*vela_samples_T)]**2 + im[:,i*(fp*vela_samples_T):(i+1)*(fp*vela_samples_T)]**2
             #vela_x['Data/bf_raw'].read_direct(data, source_sel=np.s_[:,i*(fp*vela_samples_T):(i+1)*(fp*vela_samples_T),:])
             #vela_x['Data']['bf_raw'].read_direct(im, source_sel=np.s_[:,i*(fp*vela_samples_T):(i+1)*(fp*vela_samples_T),1])
-            rem += 
-            re = data[:,i*(fp*vela_samples_T):(i+1)*(fp*vela_samples_T),0].astype(np.float)
-            im = data[:,i*(fp*vela_samples_T):(i+1)*(fp*vela_samples_T),1].astype(np.float)
+
+            start = int(i*(fp * vela_samples_T))
+            end = int((i + 1) * (fp * vela_samples_T))
+
+            if end >= num_data_points:
+                break
+
+            re = data[:,start:end, 0].astype(np.float)
+            im = data[:,start:end, 1].astype(np.float)
 
             summed_profile += re**2 + im**2
 
-        
             t2=time.time()
             diff = t2-t1
             print('at addition: ', i, 'of', tot_int ,'took ',  diff, 's')
