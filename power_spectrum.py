@@ -111,7 +111,7 @@ if PROCESS_DATA:
             #vela_x['Data']['bf_raw'].read_direct(im, source_sel=np.s_[:,i*(fp*vela_samples_T):(i+1)*(fp*vela_samples_T),1])
 
             start = int(i*(fp * vela_samples_T))
-            end = int((i + 1) * (fp * vela_samples_T))
+            end = start + (fp*vela_int_samples_T) # int(np.floor((i + 1) * (fp * vela_samples_T)))
 
             if end >= num_data_points:
                 break
