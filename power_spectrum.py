@@ -8,12 +8,12 @@ from matplotlib import pyplot as plt
 # TODO: find out how to read a chunk and operate on entire chunks at a time
 # https://stackoverflow.com/questions/21766145/h5py-correct-way-to-slice-array-datasets
 
-PLOT = True 
+PLOT = False 
 SAVE_DATA = True 
 PROCESS_DATA = True 
-COMPUTE_POWER_SPECTA = True 
-COMPUTE_TIME_SERIES = True 
-DEDISPERSE = True 
+COMPUTE_POWER_SPECTA = True #False 
+COMPUTE_TIME_SERIES = True #False 
+DEDISPERSE = True # False 
 
 #@cuda.jit#nopython=True)
 #def square(data, y):
@@ -40,7 +40,7 @@ plt.rc('font', **font)
 if PROCESS_DATA:
     vela_x = h5py.File('/home/vereese/pulsar_data/1604641569_wide_tied_array_channelised_voltage_0x.h5', 'r') #driver core makes it really slow here
     #vela_x = h5py.File('/home/vereese/pulsar_data/1604641064_wide_tied_array_channelised_voltage_0y.h5', 'r')
-    #vela_x = h5py.File('/home/vereese/pulsar_data/1604641234_wide_tied_array_channelised_voltage_0x.h5', 'r', driver="core")
+    #vela_x = h5py.File('/home/vereese/pulsar_data/1604641234_wide_tied_array_channelised_voltage_0x.h5', 'r')
 
     num_data_points = vela_x['Data/timestamps'].shape[0]
     print("Number of data points", num_data_points)
@@ -53,9 +53,8 @@ if PROCESS_DATA:
 
     t=time.time()
     print("read in data t:", t)
-    data = vela_x['Data/bf_raw'][...]
-    t=time.time()
-    print("done reading in data: ", t)
+    data = vela_x['Data/bf_raw'][...] #[()]
+    print("done reading in data: ", time.time()-t)
 
     #all_data = vela_x['Data']['bf_raw'][()] #.value[:,:,0]
     #re = all_data[:,:,0].astype('int16')
@@ -64,12 +63,17 @@ if PROCESS_DATA:
     frequencies = np.arange(856+(freq_resolution/1e6)/2,1712+(freq_resolution/1e6)/2,freq_resolution/1e6)
     f2 = 1712+((freq_resolution/1e6)/2)
     if DEDISPERSE:
+        t = time.time()
+        print("dedisperse data t:", t)
+
         for i, freq in enumerate(frequencies):
             delay = c*vela_dm*(1/(f2**2) - 1/(freq**2))
             num_2_roll = int(np.round(delay/(time_resolution*1000)))
-            print(freq, delay, num_2_roll)
+            #print(freq, delay, num_2_roll)
             data[i,:,0] = np.roll(data[i,:,0], num_2_roll) # re[i,:] = np.roll(re[i,:], num_2_roll)
             data[i,:,1] = np.roll(data[i,:,1], num_2_roll)
+        print("done dedispersing data: ", time.time()-t)
+
 
     if COMPUTE_TIME_SERIES:
         # randomly chose to integrate 22 vela pulses per sub-integration
@@ -101,9 +105,10 @@ if PROCESS_DATA:
     if COMPUTE_POWER_SPECTA:
         tot_int = int(num_pulses/fp)
         rem = 0
+        t1=time.time()
+        print("fold data", t1)
+
         for i in np.arange(tot_int):
-            t1=time.time()
-            print(t1)
         
             #add(vela_x['Data']['bf_raw'][ch,i*74670:(i+1)*74670,0], vela_x['Data']['bf_raw'][ch,i*74670:(i+1)*74670,1], temp)
             #summed_profile += re[:,i*(fp*vela_samples_T):(i+1)*(fp*vela_samples_T)]**2 + im[:,i*(fp*vela_samples_T):(i+1)*(fp*vela_samples_T)]**2
@@ -121,9 +126,11 @@ if PROCESS_DATA:
 
             summed_profile += re**2 + im**2
 
-            t2=time.time()
-            diff = t2-t1
-            print('at addition: ', i, 'of', tot_int ,'took ',  diff, 's')
+            #t2=time.time()
+            #diff = t2-t1
+            #print('at addition: ', i, 'of', tot_int ,'took ',  diff, 's')
+        print("done fold data", time.time()-t1)
+
         
         # take the mean and subtract from each channel to rid the RFI
         # TODO: look into using max power, then sigma, then mean statistics to get rid of RFI
