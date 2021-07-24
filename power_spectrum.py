@@ -11,9 +11,10 @@ from matplotlib import pyplot as plt
 PLOT = False 
 SAVE_DATA = True 
 PROCESS_DATA = True 
-COMPUTE_POWER_SPECTA = True #False 
-COMPUTE_TIME_SERIES = True #False 
-DEDISPERSE = True # False 
+COMPUTE_POWER_SPECTA = True 
+COMPUTE_TIME_SERIES = True 
+DEDISPERSE = True 
+CODEDISPERSE = True
 
 #@cuda.jit#nopython=True)
 #def square(data, y):
@@ -74,6 +75,12 @@ if PROCESS_DATA:
             data[i,:,1] = np.roll(data[i,:,1], num_2_roll)
         print("done dedispersing data: ", time.time()-t)
 
+
+    if CODEDISPERSE:
+        k = -2*np.pi*freq_resolution**2*vela_dm/(2.41*10**-4)
+        for i, freq in enumerate(frequencies):
+            ism = np.exp(k/(freq**2*(freq_resolution+freq)))
+            data[i,:,:] = data[i,:,:] * ism
 
     if COMPUTE_TIME_SERIES:
         # randomly chose to integrate 22 vela pulses per sub-integration

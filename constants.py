@@ -4,6 +4,14 @@ bw = 856e6
 no_channels = 1024
 freq_resolution = bw / no_channels
 time_resolution = 2 * no_channels / adc_sample_rate
+
+# Chunking
+# looks like for dedispersion would need to share 14 chunks for reading from different locations
+# and for folding we would need ~ 5 chunks. a vela period spans ~ 5 chunks
+# the data is chunked freq X time X re_im in the following sizes:
+freq_chunk_size = 1024
+time_chunk_size = 16384
+re_im_chunk_size = 2
 #(1284e6-856e6)/freq_resolution - to get frequency bin
 c = 4.148808e6 # constant for calculating dispersion delay
 
