@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 
 SAVE_DATA = True
 COMPUTE_POWER_SPECTA = True 
-COMPUTE_TIME_SERIES = True 
+COMPUTE_TIME_SERIES = False 
 DEDISPERSE = True 
 CODEDISPERSE = True
 
@@ -36,9 +36,9 @@ font = {'family' : 'STIXGeneral',
 plt.rc('font', **font)
 
 
-vela_x = h5py.File('/home/vereese/pulsar_data/1604641569_wide_tied_array_channelised_voltage_0x.h5', 'r')
+#vela_x = h5py.File('/home/vereese/pulsar_data/1604641569_wide_tied_array_channelised_voltage_0x.h5', 'r')
 #vela_x = h5py.File('/home/vereese/pulsar_data/1604641064_wide_tied_array_channelised_voltage_0y.h5', 'r')
-#vela_x = h5py.File('/home/vereese/pulsar_data/1604641234_wide_tied_array_channelised_voltage_0x.h5', 'r')
+vela_x = h5py.File('/home/vereese/pulsar_data/1604641234_wide_tied_array_channelised_voltage_0x.h5', 'r')
 
 num_data_points = vela_x['Data/timestamps'].shape[0]
 print("Number of data points", num_data_points)
@@ -50,8 +50,9 @@ data = vela_x['Data/bf_raw'][...] #[()]
 data = data[:,11620864:,:] # throw away a lot of 0s to speed up processing. the number was obtained using: np.nonzero(data[123,:,0])
 print("done reading in data: ", time.time()-t)
 
-num_data_points = data.shape(1)
+num_data_points = data.shape[1]
 num_pulses = int(np.floor(num_data_points / vela_samples_T)) #number of vela pulses per observation
+print("number of pulses", num_pulses)
 vela_int_samples_T = int(np.floor(vela_samples_T))
 fp = 1 #number of vela periods to fold over
 summed_profile = np.zeros([no_channels, fp * vela_int_samples_T])
@@ -62,6 +63,7 @@ inverted_summed_profile = np.zeros([no_channels, fp * vela_int_samples_T])
 #im = all_data[:,:,1].astype('int16')#vela_x['Data']['bf_raw'].value[:,:,1]
 
 frequencies = np.arange(856+(freq_resolution/1e6)/2,1712+(freq_resolution/1e6)/2,freq_resolution/1e6)
+
 reversed_frequencies = list(reversed(frequencies))
 f2 = 1712+((freq_resolution/1e6)/2)
 
@@ -77,25 +79,31 @@ if DEDISPERSE:
         data[i,:,1] = np.roll(data[i,:,1], num_2_roll)
     print("done dedispersing data: ", time.time()-t)
 
-smearing_band = [8.3*10e6 * vela_dm * ((freq_resolution/1e6)/freq**3) for freq in reversed_frequencies] # ms
+#smearing_band = [8.3*10e6 * vela_dm * ((freq_resolution/1e6)/freq**3) for freq in reversed_frequencies] # ms
+b_2 = freq_resolution/1e6/2 # half frequency resolution
+smearing_band = [c*vela_dm*(1/((freq-b_2)**2) - 1/((freq+b_2)**2)) for freq in reversed_frequencies] # ms
 smearing_samples = [int(np.round(smear_time/(time_resolution*1000))) for smear_time in smearing_band]
+
 #smearing_samples.reverse() # because the channels are reversed ie highest frequency is ch0
 
 if CODEDISPERSE:
     k = -2*np.pi*vela_dm/(2.41*10**-4) # negative because we're interested in the inverse transfer function
-    fir_len = 64
-    r = adc_sample_rate / no_channels / fir_len
+    t = time.time()
+    print("co-dedisperse data t:", t)
 
+    # start with higher frequencies first
     for i, freq in enumerate(reversed_frequencies):
-        print(time.time(), i)
-        number_segments = int(num_data_points/smearing_samples[i])
-        fft_size = 2**np.ceil(np.log(smearing_samples[i]+fir_len)/np.log(2))
+        fir_len = smearing_samples[i]
+        number_segments = int(num_data_points/(smearing_samples[i]))
+        fft_size = int(2**np.ceil(np.log((smearing_samples[i])+fir_len)/np.log(2)))
         padded_re = np.zeros([number_segments, fft_size])
         padded_im = np.zeros([number_segments, fft_size])
         idx1 = int(fir_len/2)
-        idx2 = int(fir_len + smearing_samples[i])
+        idx2 = int(fir_len/2 + smearing_samples[i])
         padded_re[:, idx1:idx2] = data[i,0:number_segments*smearing_samples[i],0].reshape([number_segments, smearing_samples[i]])
         padded_im[:, idx1:idx2] = data[i,0:number_segments*smearing_samples[i],1].reshape([number_segments, smearing_samples[i]])
+
+        padded_complex = padded_re + 1j*padded_im
 
         # Transfer function of ISM. Note, everything should be in MHz
         ism = np.zeros(fft_size)
@@ -103,14 +111,13 @@ if CODEDISPERSE:
         for j, offset in enumerate(intra_frequencies):
             ism[j] = np.exp((k * offset ** 2) / (freq ** 2 * (offset + freq)))
 
-        RE = np.fft.fft(padded_re, fft_size) * ism
-        IM = np.fft.fft(padded_im, fft_size) * ism
+        codep_f = np.fft.fft(padded_complex, fft_size) * ism
 
-        re = np.fft.ifft(RE, fft_size)
-        im = np.fft.ifft(IM, fft_size)
+        codep_t = np.fft.ifft(codep_f, fft_size)
 
-        data[i,0:number_segments*smearing_samples[i],0] = re[:,idx1:idx2].reshape(number_segments*smearing_samples[i])
-        data[i,0:number_segments*smearing_samples[i],1] = im[:,idx1:idx2].reshape(number_segments*smearing_samples[i])
+        data[i,0:number_segments*smearing_samples[i],0] = codep_t[:,idx1:idx2].reshape(number_segments*smearing_samples[i]).real
+        data[i,0:number_segments*smearing_samples[i],1] = codep_t[:,idx1:idx2].reshape(number_segments*smearing_samples[i]).imag
+    print("done co-dedispersing data: ", time.time()-t)
 
 if COMPUTE_TIME_SERIES:
     # randomly chose to integrate 22 vela pulses per sub-integration
@@ -168,10 +175,10 @@ if COMPUTE_POWER_SPECTA:
     # invert the channels because we are working with filterbank data
     # In filterbank data the ch0 corresponds to higher frequency components and the higher channels correspond to lower frequencies
     for i in np.arange(no_channels):
-        #mean = np.mean(summed_profile[i,:])
+        mean = np.mean(summed_profile[i,:])
         #summed_profile[i,:] = summed_profile[i,:]-mean
-        inverted_summed_profile[(no_channels-1)-i,:] = summed_profile[i,:]#-mean
+        inverted_summed_profile[(no_channels-1)-i,:] = summed_profile[i,:]-mean
 
 
     if SAVE_DATA:
-        np.save('summed_profile_1569', inverted_summed_profile)
+        np.save('summed_profile_1234', inverted_summed_profile)
