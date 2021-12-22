@@ -62,10 +62,10 @@ inverted_summed_profile = np.zeros([no_channels, fp * vela_int_samples_T])
 #re = all_data[:,:,0].astype('int16')
 #im = all_data[:,:,1].astype('int16')#vela_x['Data']['bf_raw'].value[:,:,1]
 
-frequencies = np.arange(856+(freq_resolution/1e6)/2,1712+(freq_resolution/1e6)/2,freq_resolution/1e6)
-
+#frequencies = np.arange(856+(freq_resolution/1e6)/2,1712+(freq_resolution/1e6)/2,freq_resolution/1e6)
+frequencies = np.arange(856,1712,freq_resolution/1e6)
 reversed_frequencies = list(reversed(frequencies))
-f2 = 1712+((freq_resolution/1e6)/2)
+f2 = 1712 -((freq_resolution/1e6)/2)
 
 if DEDISPERSE:
     t = time.time()
@@ -87,7 +87,7 @@ smearing_samples = [int(np.round(smear_time/(time_resolution*1000))) for smear_t
 #smearing_samples.reverse() # because the channels are reversed ie highest frequency is ch0
 
 if CODEDISPERSE:
-    k = -2*np.pi*vela_dm/(2.41*10**-4) # negative because we're interested in the inverse transfer function
+    k = -2*1j*np.pi*vela_dm/(2.41*10**-4) #negative because we're interested in the inverse transfer function
     t = time.time()
     print("co-dedisperse data t:", t)
 
@@ -106,10 +106,12 @@ if CODEDISPERSE:
         padded_complex = padded_re + 1j*padded_im
 
         # Transfer function of ISM. Note, everything should be in MHz
-        ism = np.zeros(fft_size)
-        intra_frequencies = np.arange(-(freq_resolution / 1e6) / 2, (freq_resolution / 1e6) / 2, (freq_resolution / 1e6) / fft_size)
+        ism = np.zeros(fft_size)+1j*np.zeros(fft_size)
+        intra_frequencies = np.arange(-(freq_resolution / 1e6) / 2, (freq_resolution / 1e6) / 2, (freq_resolution / 1e6) / fft_size)+freq
         for j, offset in enumerate(intra_frequencies):
             ism[j] = np.exp((k * offset ** 2) / (freq ** 2 * (offset + freq)))
+
+        #print(ism)
 
         codep_f = np.fft.fft(padded_complex, fft_size) * ism
 
@@ -118,6 +120,81 @@ if CODEDISPERSE:
         data[i,0:number_segments*smearing_samples[i],0] = codep_t[:,idx1:idx2].reshape(number_segments*smearing_samples[i]).real
         data[i,0:number_segments*smearing_samples[i],1] = codep_t[:,idx1:idx2].reshape(number_segments*smearing_samples[i]).imag
     print("done co-dedispersing data: ", time.time()-t)
+
+if MEAS_RESIDUAL_DISP:
+    t1 = time.time()
+    print("measuring residual dispersion", t1)
+
+    fine_fft_len = int(64)
+    highest_chan = int(1010) 
+    num_chans = int(3)
+    meas_chs = np.arange(highest_chan,highest_chan-num_chans,-1)
+
+    new_freq_res = freq_resolution/fine_fft_len
+    new_time_res = time_resolution*fine_fft_len
+    print("new time res", new_time_res)
+    new_vela_samples_T = vela_T / new_time_res
+    new_vela_int_samples_T = int(new_vela_samples_T)
+
+    dp = len(data[meas_chs[0],:,0])
+    seg = int(dp/fine_fft_len)
+    new_num_pulses = int(np.floor(seg / new_vela_samples_T))
+    print("segments", seg)
+    print("new number of pulses (should be same)" , new_num_pulses)
+
+    redisp_summed_profile = np.zeros([int(num_chans*fine_fft_len/2), new_vela_int_samples_T])
+
+    for i, meas_ch in enumerate(meas_chs):
+        print("populate frequency channels: ", int(i*fine_fft_len/2), int((i+1)*fine_fft_len/2))
+        print("processing frequency: ", meas_ch)
+        re = data[meas_ch,:,0].reshape(seg, fine_fft_len)
+        im = data[meas_ch,:,1].reshape(seg, fine_fft_len)
+
+        fine_pfb = np.fft.fft(re + 1j*im, fine_fft_len)
+        fine_pfb = fine_pfb.transpose()
+
+        print("Fine PFB shape: ", fine_pfb.shape)
+
+        #fine_pfb_re = fine_pfb.reshape(fine_fft_len*seg).real
+        #fine_pfb_im = fine_pfb.reshape(fine_fft_len*seg).real
+
+        #fine_pfb_im = np.fft.fft(im, fine_fft_len)
+
+        for j in np.arange(new_num_pulses):
+
+            start = int(j*new_vela_samples_T)
+            end = start + new_vela_int_samples_T
+
+            if end >= seg:
+                break
+            # only take 1 half of the spectrum
+            #re1 = data[meas_ch,start:end,0].astype(np.float)
+            #im1 = data[meas_ch,start:end,1].astype(np.float)
+            magnitude = np.abs(fine_pfb[0:int(fine_fft_len/2), start:end]*np.conj(fine_pfb[0:int(fine_fft_len/2), start:end]))
+            redisp_summed_profile[int(i*fine_fft_len/2):int((i+1)*fine_fft_len/2), :] += magnitude.real #re**2 + im**2
+            #redisp_summed_profile[:,i] += re1**2 + im1**2
+
+        if i == 0:
+            num_2_roll = 0
+        else:
+            freq = reversed_frequencies[highest_chan]
+            print("reference frequency for roll: ", freq)
+            f2 = reversed_frequencies[highest_chan-i]
+            print("f2: ", f2)
+
+            delay = c*vela_dm*(1/(freq**2) - 1/(f2**2)) # ms
+            num_2_roll = int(np.round(delay/(new_time_res*2*1000)))
+        print(num_2_roll)        
+        #print(redisp_summed_profile[int(i*fine_fft_len/2):int(i*fine_fft_len/2)+5, 0:5])
+        redisp_summed_profile[int(i*fine_fft_len/2):int((i+1)*fine_fft_len/2), :] = np.roll(redisp_summed_profile[int(i*fine_fft_len/2):int((i+1)*fine_fft_len/2), :], -num_2_roll)
+        #print(redisp_summed_profile[int(i*fine_fft_len/2):int(i*fine_fft_len/2)+5, 0:5])
+
+
+    print("done measuring residula dispersion: ", time.time()-t1)
+    if SAVE_DATA:
+        np.save('co_residual_summed_profile_test2', redisp_summed_profile)
+
+
 
 if COMPUTE_TIME_SERIES:
     # randomly chose to integrate 22 vela pulses per sub-integration
