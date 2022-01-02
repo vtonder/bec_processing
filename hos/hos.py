@@ -3,29 +3,7 @@ import time
 from matplotlib import pyplot as plt
 
 
-DIRECT_METHOD = True
-INDIRECT_METHOD = False
 
-# parameters
-f1 = 100  # Hz
-f2 = 250  # Hz
-f3 = f1+f2  # Hz
-fs = 1000 # Hz
-bw = fs/2
-num_sec = 10
-t = np.arange(0, num_sec, 1/fs)
-N = len(t)      # number of time samples
-W = N           # number of frequency samples
-K = int(10)     # number of records
-M = int(N / K)  # number of samples in a record
-M_2 = int(M / 2)
-f_res = fs/M
-t_res = 1/f_res
-freq = np.arange(0, fs, f_res)
-
-s = np.cos(2*np.pi*f1*t) + np.cos(2*np.pi*f2*t) + np.cos(2*np.pi*f3*t)
-noise = np.random.normal(0, 0.1, W) + s
-noise = noise.reshape(K, M)
 
 class bispectrum():
     """
@@ -36,6 +14,7 @@ class bispectrum():
     References:
 
     [1] A.P. Petropulu, Higher-Order Spectral Analysis, Drexel University
+    [2] http://www1.maths.leeds.ac.uk/applied/news.dir/issue2/hos_intro.html#intro
     """
     def __init__(self, signal, max_lag, method='direct'):
         """
@@ -48,13 +27,8 @@ class bispectrum():
         self.max_lag = max_lag # ito samples not s
         self.K = int(signal.shape[0])
         self.M = int(signal.shape[1])
-
-        # follow steps as per [1]
-        #self.mean_compensation()
-        if method == 'direct':
-            self.bispectrum = self.direct_bispectrum()
-        else:
-            self.bispectrum = self.indirect_bispectrum()
+        self.bispectrum = np.zeros([self.max_lag, self.max_lag])
+        self.method = method
 
     def mean_compensation(self):
         # calculate and subtract row mean ie mean of each record
@@ -75,13 +49,13 @@ class bispectrum():
 
         # convert to frequency domain
         S = self.discrete_FT()
-        #S = np.fft.fft(self.signal)
+        S = np.fft.fft(self.signal)
 
         # calculate bispectrum on frequency data
         cum = np.zeros([self.K, self.max_lag, self.max_lag], dtype='complex_')
         for k1 in np.arange(self.max_lag):
             for k2 in np.arange(self.max_lag):
-                cum[:, k1, k2] = (1.0/self.M) * S[:, k1] * S[:, k2] * np.conj(S[:,k1+k2])
+                cum[:, k1, k2] = (1.0/self.M) * S[:, k1] * np.conj(S[:, k2]) * np.conj(S[:,k1+k2])
 
         # return the average
         return 1.0/self.K * cum.sum(axis=0)
@@ -102,6 +76,14 @@ class bispectrum():
         # calculate the fft of the cumulant which is the bispectrum
         return np.fft.fft2(avr_cum)
 
+    def calc_bispectrum(self):
+        # follow steps as per [1]
+        #self.mean_compensation()
+        if self.method == 'direct':
+            self.bispectrum = self.direct_bispectrum()
+        else:
+            self.bispectrum = self.indirect_bispectrum()
+
     def plot(self):
         plt.figure(0)
         #plt.plot(freq[0:500],bispectrum[:,])
@@ -109,9 +91,30 @@ class bispectrum():
         #plt.xticks(freq[0:500])
         plt.show()
 
+if __name__=='__main__':
+    # parameters
+    f1 = 100  # Hz
+    f2 = 250  # Hz
+    f3 = f1 + f2  # Hz
+    fs = 1000  # Hz
+    bw = fs / 2
+    num_sec = 10
+    t = np.arange(0, num_sec, 1 / fs)
+    N = len(t)  # number of time samples
+    W = N  # number of frequency samples
+    K = int(10)  # number of records
+    M = int(N / K)  # number of samples in a record
+    M_2 = int(M / 2)
+    f_res = fs / M
+    t_res = 1 / f_res
+    freq = np.arange(0, fs, f_res)
 
-b = bispectrum(noise, M_2, method='direct')
-b.plot()
+    s = np.cos(2 * np.pi * f1 * t) + np.cos(2 * np.pi * f2 * t) + np.cos(2 * np.pi * f3 * t)
+    noise = np.random.normal(0, 0.1, W) + s
+    noise = noise.reshape(K, M)
+    b = bispectrum(noise, M_2, method='direct')
+    b.calc_bispectrum()
+    b.plot()
 
 """plt.figure(0)
 #plt.plot(freq[0:500],cum2[:,])
