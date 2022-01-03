@@ -27,6 +27,7 @@ class bispectrum():
         self.max_lag = max_lag # ito samples not s
         self.K = int(signal.shape[0])
         self.M = int(signal.shape[1])
+        self.power_spectrum = np.zeros([self.max_lag])
         self.bispectrum = np.zeros([self.max_lag, self.max_lag])
         self.method = method
 
@@ -44,6 +45,15 @@ class bispectrum():
         f_coef = np.exp((-1j*2*np.pi/self.M)*F)
 
         return np.dot(self.signal, f_coef)
+
+    def calc_power_spectrum(self):
+
+        S = self.discrete_FT()
+        S = np.fft.fft(self.signal)
+        P = np.abs(S)**2
+        self.power_spectrum = 1.0/self.K * P.sum(axis=0)
+
+        return self.power_spectrum
 
     def direct_bispectrum(self):
 
@@ -78,17 +88,26 @@ class bispectrum():
 
     def calc_bispectrum(self):
         # follow steps as per [1]
-        #self.mean_compensation()
+        self.mean_compensation()
         if self.method == 'direct':
             self.bispectrum = self.direct_bispectrum()
         else:
             self.bispectrum = self.indirect_bispectrum()
 
-    def plot(self):
+    def plot_power_spectrum(self, name=None):
+        plt.figure(0)
+        plt.plot(self.power_spectrum)
+        #plt.plot(freq[0:500],bispectrum[:,])
+        #plt.xticks(freq[0:500])
+        plt.title(name)
+        plt.show()
+
+    def plot_bispectrum(self, name=None):
         plt.figure(0)
         #plt.plot(freq[0:500],bispectrum[:,])
         plt.imshow(np.abs(self.bispectrum), aspect='auto', origin='lower')
         #plt.xticks(freq[0:500])
+        plt.title(name)
         plt.show()
 
 if __name__=='__main__':
@@ -110,11 +129,12 @@ if __name__=='__main__':
     freq = np.arange(0, fs, f_res)
 
     s = np.cos(2 * np.pi * f1 * t) + np.cos(2 * np.pi * f2 * t) + np.cos(2 * np.pi * f3 * t)
-    noise = np.random.normal(0, 0.1, W) + s
+    noise = np.random.normal(0, 0.1, W) #+ s
     noise = noise.reshape(K, M)
     b = bispectrum(noise, M_2, method='direct')
     b.calc_bispectrum()
-    b.plot()
+    b.calc_power_spectrum()
+    b.plot_bispectrum()
 
 """plt.figure(0)
 #plt.plot(freq[0:500],cum2[:,])
