@@ -2,8 +2,20 @@ import numpy as np
 import time
 from matplotlib import pyplot as plt
 
+#TODO: calculate full bispectrum from symmetry
+
+def sample(bi, w1, w2):
+    offset = bi.shape[0]/2
+    in1 = int(w1 + offset)
+    in2 = int(w2 + offset)
+    return bi[in1, in2]
 
 
+def write_b(bi, w1, w2, val):
+    offset = bi.shape[0]/2
+    row = int(w1 + offset)
+    col = int(w2 + offset)
+    bi[row, col] = val
 
 class bispectrum():
     """
@@ -59,7 +71,7 @@ class bispectrum():
 
         # convert to frequency domain
         S = self.discrete_FT()
-        S = np.fft.fft(self.signal)
+        S = np.fft.fft2(self.signal)#, self.M)
 
         # calculate bispectrum on frequency data
         cum = np.zeros([self.K, self.max_lag, self.max_lag], dtype='complex_')
@@ -102,10 +114,43 @@ class bispectrum():
         plt.title(name)
         plt.show()
 
-    def plot_bispectrum(self, name=None):
+    def plot_bispectrum(self, freq=None, name=None):
+        """k = np.arange(500)
+        w = np.pi*2*k/self.M
+        f = k/self.M
+        print(w)"""
+        M_2 = int(self.M/2)
+        offset = M_2 - 1
+        full_bispec = np.zeros([self.M, self.M], dtype='complex_')
+
+        #self.bispectrum = np.zeros([M_2, M_2], dtype='complex_')
+        #self.bispectrum[100, 100:200] = 100000000
+        #self.bispectrum[100:150, 200] = 100000000
+        #self.bispectrum[100:200, 100] = 100000000
+        #self.bispectrum[200, 100:150] = 100000000
+
+
+        # this taked care of block I
+        full_bispec[M_2:self.M,M_2:self.M] = self.bispectrum
+        full_bispec[M_2:0:-1,M_2:0:-1] = self.bispectrum
+
+        for w1 in np.arange(0, M_2):
+            for w2 in np.arange(0, -M_2, -1):
+                if w1 > -w2:
+                    write_b(full_bispec, w1, w2, sample(full_bispec, -w1 - w2, w2))
+                else:
+                    write_b(full_bispec, w1, w2, sample(full_bispec, w1, -w1 - w2))
+
+        full_bispec[M_2:0:-1, M_2:self.M] = full_bispec[M_2:self.M, M_2:0:-1]
+
+
         plt.figure(0)
         #plt.plot(freq[0:500],bispectrum[:,])
-        plt.imshow(np.abs(self.bispectrum), aspect='auto', origin='lower')
+        #if freq != None:
+        #    plt.imshow(np.abs(self.bispectrum), aspect='auto', origin='lower', extent=([freq[0],freq[-1],freq[0],freq[-1]]))
+        #else:
+        #print(np.where(full_bispec==100))
+        plt.imshow(np.abs(full_bispec), aspect='auto', origin='lower')
         #plt.xticks(freq[0:500])
         plt.title(name)
         plt.show()
@@ -129,7 +174,7 @@ if __name__=='__main__':
     freq = np.arange(0, fs, f_res)
 
     s = np.cos(2 * np.pi * f1 * t) + np.cos(2 * np.pi * f2 * t) + np.cos(2 * np.pi * f3 * t)
-    noise = np.random.normal(0, 0.1, W) #+ s
+    noise = np.random.normal(0, 0.1, W) + s
     noise = noise.reshape(K, M)
     b = bispectrum(noise, M_2, method='direct')
     b.calc_bispectrum()
