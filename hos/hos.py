@@ -77,7 +77,7 @@ class bispectrum():
 
     def mean_compensation(self):
         # calculate and subtract row mean ie mean of each record
-        return self.signal - np.atleast_2d(np.mean(self.signal, axis=1)).transpose()
+        self.signal = self.signal - np.atleast_2d(np.mean(self.signal, axis=1)).transpose()
 
     def discrete_FT(self):
 
@@ -137,11 +137,13 @@ class bispectrum():
         # calculate bispectrum which is the 2D fft of the cumulant
         return np.fft.fft2(avr_cum)
 
-    def calc_bispectrum(self):
+    def calc_full_bispectrum(self):
         # follow steps as per [1] and implement symmetry as per [3]
 
         M_2 = int(self.M/2)
+        print("before mean compensation", np.mean(self.signal))
         self.mean_compensation()
+        print("after mean compensation", np.mean(self.signal))
         if self.method == 'direct':
             self.bispectrum_I = self.direct_bispectrum()
         else:
@@ -208,7 +210,7 @@ if __name__ == '__main__':
     noise = np.random.normal(0, 0.1, W) + s
     noise = noise.reshape(K, M)
     b = bispectrum(noise, fft_size=M, method='direct', fs=1000)
-    b.calc_bispectrum()
+    b.calc_full_bispectrum()
     b.calc_power_spectrum()
     #b.bicoherence()
     b.plot_bispectrum()
