@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from hos import bispectrum
+from hos import Bispectrum
 import sys
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
@@ -52,15 +52,16 @@ for i, fn in enumerate(gps_file_names):
     cum = np.zeros([records, M_2, M_2], dtype='complex_')
     data = np.asarray(data[0:int(fft_len * records)]).reshape(records, fft_len)
 
-    b = bispectrum(data, method='direct')
-    b.calc_bispectrum()
-    #np.save(DIRECTORY+fn[:-4]+'_bispec',b.full_bispec)
-    b.calc_power_spectrum()
-    b.plot_bispectrum(name=fn)
+    b = Bispectrum(data, method='direct')
+    b.calc_full_bispectrum()
+    # -4 to get rid of .csv
+    np.save(DIRECTORY+fn[:-4]+'_bispec_m',b.full_bispec)
+    #b.calc_power_spectrum()
+    #b.plot_bispectrum(name=fn)
     #bispectra.update({fn:b})
-    b.plot_power_spectrum(i,fn)
+    #b.plot_power_spectrum(i,fn)
     #print(np.shape(b.full_bispec))
-    plt.show()
+    #plt.show()
 
 # tested if 2 codes are the same
 # tested if gps simulator consistently gives out same pattern for same config and it does

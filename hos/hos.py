@@ -17,7 +17,7 @@ def write_b(bi, w1, w2, val):
     bi[row, col] = val
 
 
-class bispectrum():
+class Bispectrum():
     """
     TODO:
     - verification of frequency axis with matlab / other scripts
@@ -209,7 +209,7 @@ if __name__ == '__main__':
     s = np.cos(2 * np.pi * f1 * t) + np.cos(2 * np.pi * f2 * t) + np.cos(2 * np.pi * f3 *t)
     noise = np.random.normal(0, 0.1, W) + s
     noise = noise.reshape(K, M)
-    b = bispectrum(noise, fft_size=M, method='direct', fs=1000)
+    b = Bispectrum(noise, fft_size=M, method='direct', fs=1000)
     b.calc_full_bispectrum()
     b.calc_power_spectrum()
     #b.bicoherence()
