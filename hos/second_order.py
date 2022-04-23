@@ -13,7 +13,6 @@ freq_res = fs/M
 freq = np.arange(0,fs,freq_res)
 
 s = np.cos(2*np.pi*f1*t) + np.cos(2*np.pi*f2*t)
-#s = np.cos(2*np.pi*f1*t) #+ np.cos(2*np.pi*f2*t)
 N = len(s)
 
 F = np.zeros([N, N], dtype='complex_')
@@ -24,7 +23,7 @@ f_coef = np.exp((-1j * 2 * np.pi / N) * F)
 
 Self = np.dot(s, f_coef)
 
-S = np.fft.fft(s)
+S = np.fft.fft(s,M)
 
 plt.figure(0)
 plt.plot(freq, Self, label='dft')

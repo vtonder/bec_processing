@@ -17,33 +17,48 @@ def write_b(bi, w1, w2, val):
     bi[row, col] = val
 
 
-class bispectrum():
+class Bispectrum():
     """
     TODO:
     - verification of frequency axis with matlab / other scripts
     - figure out scaling difference between indirect and direct methods
     - No window is currently applied
+    - bichorency function
+    - investigate quadratic phase coupling
 
     References:
 
-    [1] A.P. Petropulu, Higher-Order Spectral Analysis, Drexel University
+    [1] A.P. Petropulu, "Higher-Order Spectral Analysis", Drexel University
     [2] http://www1.maths.leeds.ac.uk/applied/news.dir/issue2/hos_intro.html#intro
     [3] Appendix A.1 "The bispectrum and its relationship to phase-amplitude coupling"
+    [4] CL Nikias and MR Raghuveer, "Bispectrum Estimation: A Digital Signal Processing Framework"
     """
 
-    def __init__(self, signal, method='direct', fs=1):
+    def __init__(self, signal, fft_size=1024, reshape=False, method='direct', fs=1):
         """
-        :param signal: A stationary discrete time process. dimensions: K (records) x M (samples per record) numpy matrix
+        :param signal: A stationary discrete time process.
+        If reshape is False, then signal is a numpy matrix with dimensions: K (records) x M (samples per record)
+        If reshape is True, then signal is assumed to be 1d.
+        :param fft_size: Size of the FFT == the number of columns == M (samples per record)
         :param method: Either direct, which is the default or it can be set to indirect as defined in [1]
+        :param reshape: the number of columns will be fft_size and the number of rows will be calculated accordingly
         :return:
         """
-        self.signal = signal  #
+        self.signal = signal
+        self.fft_size = fft_size
+        self.M = int(fft_size)
+        if reshape:
+            data_len = len(list(signal))
+            records = data_len/self.M
+            self.signal = np.asarray(self.signal[0:int(self.M * records)]).reshape(records, self.M)
+
         self.K = int(signal.shape[0])
-        self.M = int(signal.shape[1]) # number of samples == FFT size
         self.max_lag = int(self.M / 2)  # ito samples not s
         self.power_spectrum = np.zeros([self.M])
         self.bispectrum_I = np.zeros([self.max_lag, self.max_lag])  # First (I) quadrant bispectrum
         self.full_bispec = np.zeros([self.M, self.M], dtype='complex_')
+        #TODO: self.bico_I = np.zeros([self.max_lag, self.max_lag], dtype='complex_')  # First (I) quadrant bicoherency
+        #TODO: self.full_bico = np.zeros([self.M, self.M], dtype='complex_')
         self.method = method
 
         # frequencies
@@ -62,7 +77,7 @@ class bispectrum():
 
     def mean_compensation(self):
         # calculate and subtract row mean ie mean of each record
-        return self.signal - np.atleast_2d(np.mean(self.signal, axis=1)).transpose()
+        self.signal = self.signal - np.atleast_2d(np.mean(self.signal, axis=1)).transpose()
 
     def discrete_FT(self):
 
@@ -97,6 +112,15 @@ class bispectrum():
         # return the average
         return 1.0 / self.K * cum.sum(axis=0)
 
+    """
+    TODO:
+    def bicoherence(self):
+        # TODO add a test to check if power spectrum and bispectrum has been calculated
+
+        for k1 in np.arange(self.max_lag):
+            for k2 in np.arange(self.max_lag):
+                self.bico_I[k1,k2] = self.bispectrum_I[k1,k2]/np.sqrt(np.abs(self.power_spectrum[k1]*self.power_spectrum[k2]*self.power_spectrum[k1+k2]))"""
+
     def indirect_bispectrum(self):
 
         # calculate bispectrum on time data
@@ -113,11 +137,13 @@ class bispectrum():
         # calculate bispectrum which is the 2D fft of the cumulant
         return np.fft.fft2(avr_cum)
 
-    def calc_bispectrum(self):
+    def calc_full_bispectrum(self):
         # follow steps as per [1] and implement symmetry as per [3]
 
         M_2 = int(self.M/2)
+        print("before mean compensation", np.mean(self.signal))
         self.mean_compensation()
+        print("after mean compensation", np.mean(self.signal))
         if self.method == 'direct':
             self.bispectrum_I = self.direct_bispectrum()
         else:
@@ -143,12 +169,12 @@ class bispectrum():
         # quadrant IV
         self.full_bispec[M_2:0:-1, M_2:self.M] = self.full_bispec[M_2:self.M, M_2:0:-1]
 
-    def plot_power_spectrum(self, name=None):
-        plt.figure(0)
+    def plot_power_spectrum(self, i, name=None):
+        plt.figure(i)
         plt.plot(self.freq, self.power_spectrum)
         plt.title(name)
         plt.grid()
-        plt.show()
+        #plt.show()
 
     def plot_bispectrum(self, name=None):
 
@@ -164,6 +190,9 @@ if __name__ == '__main__':
     f1 = 100  # Hz
     f2 = 250  # Hz
     f3 = f1 + f2  # Hz
+    #phi1 = np.pi/3
+    #phi2 = np.pi/4
+    #phi3 = phi2+phi1
     fs = 1000  # Hz
     bw = fs / 2
     num_sec = 10
@@ -177,17 +206,17 @@ if __name__ == '__main__':
     t_res = 1 / f_res
     freq = np.arange(0, fs, f_res)
 
-    s = np.cos(2 * np.pi * f1 * t) + np.cos(2 * np.pi * f2 * t) + np.cos(2 * np.pi * f3 * t)
+    s = np.cos(2 * np.pi * f1 * t) + np.cos(2 * np.pi * f2 * t) + np.cos(2 * np.pi * f3 *t)
     noise = np.random.normal(0, 0.1, W) + s
     noise = noise.reshape(K, M)
-    b = bispectrum(noise, method='direct', fs=1000)
-    b.calc_bispectrum()
+    b = Bispectrum(noise, fft_size=M, method='direct', fs=1000)
+    b.calc_full_bispectrum()
     b.calc_power_spectrum()
+    #b.bicoherence()
     b.plot_bispectrum()
-    b.plot_power_spectrum()
+    #b.plot_power_spectrum()
 
-    plt.figure(0)
-    plt.plot(freq, b.power_spectrum)
-    plt.title('name')
-    plt.grid()
-    plt.show()
+    #plt.figure(0)
+    #plt.imshow(np.abs(b.bispectrum_I),aspect='auto', origin='lower')
+    #plt.title('name')
+    #plt.show()

@@ -26,6 +26,7 @@ vela_freq = 11.185084597305504  #11.185053620637202  #11.185031494489326 #11.185
 # vela_true_period = vela_T*(1+delaT/tot_obs)
 
 vela_dm = 67.99 # to be applied to ms and parsec/cm^3
+# vela_dm = 68.0247344970703 <-> where is this from?
 vela_T = 1.0 / vela_freq  # vela period
 
 vela_samples_T = vela_T / time_resolution  # samples per vela period

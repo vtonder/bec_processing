@@ -1,0 +1,77 @@
+- seems to be faster to slice from hdf5 and operate directly on them
+
+*******************************************
+2) On data reading in data
+*******************************************
+2.1) File: 1604641234 (51G) x pol
+- Using data = vela_x['Data/bf_raw'][()]
+Number of data points 26214400
+read in data t: 1627025748.837136
+done reading in data:  72.8339593410492
+fold data 1627025821.6711824
+done fold data 369.6821482181549
+
+- Using data = vela_x['Data/bf_raw'][...]
+Number of data points 26214400
+read in data t: 1627027057.005228
+done reading in data:  29.75274634361267
+fold data 1627027086.7581153
+done fold data 364.635977268219
+
+- Using data = vela_x['Data/bf_raw'][...] + , driver="core") enabled when creating hdf5
+Number of data points 26214400
+read in data t: 1627027666.5861235
+done reading in data:  27.73506474494934
+fold data 1627027694.321418
+done fold data 377.5340988636017
+
+2.2) File: 1604641569 (485G) x pol
+Number of data points 252755968
+read in data t: 1627030151.102644
+done reading in data:  2310.688520669937
+
+Number of data points 252755968
+read in data t: 1627047244.962056
+done reading in data:  4997.647198915482
+dedisperse data t: 1627052242.702763
+done dedispersing data:  35969.85751581192
+fold data 1627088234.8089302
+done fold data 17575.614918231964
+
+Number of data points 252755968
+read in data t: 1627115858.0413966
+done reading in data:  2618.5901551246643
+dedisperse data t: 1627118476.805828
+done dedispersing data:  1102.8677883148193
+fold data 1627119582.6673527
+done fold data 3984.2967970371246
+
+***************************************
+1) On dummy data sets using tut_dask
+***************************************
+using numpy:
+    create array
+    took  0.001337289810180664
+    fold
+    took  0.0074498653411865234
+    dedisperse
+    took  0.00017786026000976562
+
+dask array:
+    create array
+    took  0.008998632431030273
+    fold
+    took  5.9367358684539795
+    dedisperse
+    took  1.4565298557281494
+    calling compute
+    took  28.615339756011963
+
+ def acc_vela():
+   ...:     global val, num_data_points, vela_samples_T
+   ...:     for i in 3381:
+   ...:         start = int(i*vela_samples_T)
+   ...:         end = start + vela_samples_T
+   ...:         if end >= num_data_points:
+   ...:             break;
+   ...:         val += f[:,start:end,:].astype(np.float)
