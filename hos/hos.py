@@ -49,7 +49,7 @@ class Bispectrum():
         self.M = int(fft_size)
         if reshape:
             data_len = len(list(signal))
-            records = data_len/self.M
+            records = int(data_len/self.M)
             self.signal = np.asarray(self.signal[0:int(self.M * records)]).reshape(records, self.M)
 
         self.K = int(signal.shape[0])
@@ -176,7 +176,15 @@ class Bispectrum():
         plt.grid()
         #plt.show()
 
-    def plot_bispectrum(self, name=None):
+    def plot_bispectrum_I(self, name=None):
+
+        plt.figure(0)
+        plt.imshow(np.abs(self.bispectrum_I), aspect='auto', origin='lower')
+        # plt.xticks(freq[0:500])
+        plt.title(name)
+        plt.show()
+
+    def plot_full_bispectrum(self, name=None):
 
         plt.figure(0)
         plt.imshow(np.abs(self.full_bispec), aspect='auto', origin='lower', extent=([self.w[0],self.w[-1],self.w[0],self.w[-1]]))
@@ -213,7 +221,7 @@ if __name__ == '__main__':
     b.calc_full_bispectrum()
     b.calc_power_spectrum()
     #b.bicoherence()
-    b.plot_bispectrum()
+    b.plot_full_bispectrum()
     #b.plot_power_spectrum()
 
     #plt.figure(0)
