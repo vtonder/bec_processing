@@ -52,13 +52,13 @@ class Bispectrum():
             records = int(data_len/self.M)
             self.signal = np.asarray(self.signal[0:int(self.M * records)]).reshape(records, self.M)
 
-        self.K = int(signal.shape[0])
+        self.K = int(self.signal.shape[0])  # number of records
         self.max_lag = int(self.M / 2)  # ito samples not s
         self.power_spectrum = np.zeros([self.M])
         self.bispectrum_I = np.zeros([self.max_lag, self.max_lag])  # First (I) quadrant bispectrum
-        self.full_bispec = np.zeros([self.M, self.M], dtype='complex_')
-        #TODO: self.bico_I = np.zeros([self.max_lag, self.max_lag], dtype='complex_')  # First (I) quadrant bicoherency
-        #TODO: self.full_bico = np.zeros([self.M, self.M], dtype='complex_')
+        self.full_bispec = np.zeros([self.M, self.M], dtype=np.csingle)
+        self.bico_I = np.zeros([self.max_lag, self.max_lag], dtype=np.csingle)  # First (I) quadrant bicoherency
+        #TODO: self.full_bico = np.zeros([self.M, self.M], dtype=np.csingle)
         self.method = method
 
         # frequencies
@@ -79,9 +79,11 @@ class Bispectrum():
         # calculate and subtract row mean ie mean of each record
         self.signal = self.signal - np.atleast_2d(np.mean(self.signal, axis=1)).transpose()
 
+        return self.signal
+
     def discrete_FT(self):
 
-        F = np.zeros([self.M, self.M], dtype='complex_')
+        F = np.zeros([self.M, self.M], dtype=np.csingle)
         for k in np.arange(self.M):
             for n in np.arange(self.M):
                 F[k, n] = k * n
@@ -104,27 +106,28 @@ class Bispectrum():
         S = np.fft.fft(self.signal)
 
         # calculate bispectrum on frequency data
-        cum = np.zeros([self.K, self.max_lag, self.max_lag], dtype='complex_')
+        cum = np.zeros([self.K, self.max_lag, self.max_lag], dtype=np.csingle)
         for k1 in np.arange(self.max_lag):
             for k2 in np.arange(self.max_lag):
                 cum[:, k1, k2] = (1.0 / self.M) * S[:, k1] * S[:, k2] * np.conj(S[:, k1 + k2])
 
-        # return the average
-        return 1.0 / self.K * cum.sum(axis=0)
+        # average
+        self.bispectrum_I = 1.0 / self.K * cum.sum(axis=0)
 
-    """
-    TODO:
+        return self.bispectrum_I
+
+
     def bicoherence(self):
         # TODO add a test to check if power spectrum and bispectrum has been calculated
 
         for k1 in np.arange(self.max_lag):
             for k2 in np.arange(self.max_lag):
-                self.bico_I[k1,k2] = self.bispectrum_I[k1,k2]/np.sqrt(np.abs(self.power_spectrum[k1]*self.power_spectrum[k2]*self.power_spectrum[k1+k2]))"""
+                self.bico_I[k1,k2] = self.bispectrum_I[k1,k2]/np.sqrt(np.abs(self.power_spectrum[k1]*self.power_spectrum[k2]*self.power_spectrum[k1+k2]))
 
     def indirect_bispectrum(self):
 
         # calculate bispectrum on time data
-        cum = np.zeros([K, self.max_lag, self.max_lag], dtype='complex_')
+        cum = np.zeros([K, self.max_lag, self.max_lag], dtype=np.csingle)
         for t1 in np.arange(self.max_lag):
             for t2 in np.arange(self.max_lag):
                 for l in np.arange(self.max_lag):
@@ -149,7 +152,7 @@ class Bispectrum():
         else:
             self.bispectrum_I = self.indirect_bispectrum()
 
-        # self.bispectrum_I = np.zeros([self.max_lag, self.max_lag], dtype='complex_')
+        # self.bispectrum_I = np.zeros([self.max_lag, self.max_lag], dtype=np.csingle)
         # self.bispectrum_I[100, 100:200] = 100000000
         # self.bispectrum_I[100:150, 200] = 100000000
         # self.bispectrum_I[100:200, 100] = 100000000
@@ -192,6 +195,12 @@ class Bispectrum():
         plt.title(name)
         plt.show()
 
+    def plot_bicoherence(self, name=None):
+
+        plt.figure(0)
+        plt.imshow(np.abs(self.bico_I), aspect='auto', origin='lower')
+        plt.title(name)
+        plt.show()
 
 if __name__ == '__main__':
     # parameters
