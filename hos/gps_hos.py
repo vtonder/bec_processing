@@ -5,7 +5,7 @@ import sys
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
 
-DIRECTORY = '/home/vereese/git/phd_data/'
+DIRECTORY = '/home/vereese/phd_data/'
 class SIM_GPS:
     def __init__(self, files):
         self.gps_data = {}
