@@ -52,6 +52,8 @@ class Bispectrum():
             records = int(data_len/self.M)
             self.signal = np.asarray(self.signal[0:int(self.M * records)]).reshape(records, self.M)
 
+        print("shape of signal", np.shape(self.signal))
+
         self.K = int(self.signal.shape[0])  # number of records
         self.max_lag = int(self.M / 2)  # ito samples not s
         self.power_spectrum = np.zeros([self.M])

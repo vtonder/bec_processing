@@ -22,7 +22,7 @@ gal_e6_ch = rounded_frequencies.index(round(gal_e6))
 
 b = Bispectrum(data[gps_l1_ch, :], fft_size=1024, reshape=True, method='direct')
 b.mean_compensation()
-b.power_spectrum()
+b.calc_power_spectrum()
 b.bispectrum_I = b.direct_bispectrum()
 b.plot_bicoherence()
 
