@@ -111,7 +111,9 @@ class Bispectrum():
         cum = np.zeros([self.K, self.max_lag, self.max_lag], dtype=np.csingle)
         for k1 in np.arange(self.max_lag):
             for k2 in np.arange(self.max_lag):
-                cum[:, k1, k2] = (1.0 / self.M) * S[:, k1] * S[:, k2] * np.conj(S[:, k1 + k2])
+                if k1 <= k2:
+                    cum[:, k1, k2] = (1.0 / self.M) * S[:, k1] * S[:, k2] * np.conj(S[:, k1 + k2])
+                    # cum[:, k2, k1] = cum[:, k1, k2] assignment also takes long only do this when want full bispectrum
 
         # average
         self.bispectrum_I = 1.0 / self.K * cum.sum(axis=0)
@@ -140,7 +142,9 @@ class Bispectrum():
         avr_cum = (1.0 / self.K) * cum.sum(axis=0)
 
         # calculate bispectrum which is the 2D fft of the cumulant
-        return np.fft.fft2(avr_cum)
+        self.bispectrum_I = np.fft.fft2(avr_cum)
+
+        return self.bispectrum_I
 
     def calc_full_bispectrum(self):
         # follow steps as per [1] and implement symmetry as per [3]
@@ -161,7 +165,12 @@ class Bispectrum():
         # self.bispectrum_I[200, 100:150] = 100000000
 
         # quadrant I
+        for k1 in np.arange(self.max_lag):
+            for k2 in np.arange(self.max_lag):
+                if k2 > k1:
+                    self.bispectrum_I[k2, k1] = self.bispectrum_I[k1, k2]
         self.full_bispec[M_2:self.M, M_2:self.M] = self.bispectrum_I
+
         # quadrant III
         self.full_bispec[M_2:0:-1, M_2:0:-1] = self.bispectrum_I
         # quadrant II
@@ -228,14 +237,15 @@ if __name__ == '__main__':
     s = np.cos(2 * np.pi * f1 * t) + np.cos(2 * np.pi * f2 * t) + np.cos(2 * np.pi * f3 *t)
     noise = np.random.normal(0, 0.1, W) + s
     noise = noise.reshape(K, M)
-    b = Bispectrum(noise, fft_size=M, method='direct', fs=1000)
-    b.calc_full_bispectrum()
+    b = Bispectrum(noise, fft_size=M, method='indirect', fs=1000)
+    #b.calc_full_bispectrum()
     b.calc_power_spectrum()
-    #b.bicoherence()
-    b.plot_full_bispectrum()
+    b.indirect_bispectrum()
+    b.bicoherence()
+    b.plot_bicoherence()
     #b.plot_power_spectrum()
 
-    #plt.figure(0)
-    #plt.imshow(np.abs(b.bispectrum_I),aspect='auto', origin='lower')
-    #plt.title('name')
-    #plt.show()
+    plt.figure(0)
+    plt.imshow(np.abs(b.bispectrum_I),aspect='auto', origin='lower')
+    plt.title('name')
+    plt.show()
