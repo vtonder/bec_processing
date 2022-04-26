@@ -1,13 +1,14 @@
 import h5py
 import numpy as np
 from hos import Bispectrum
+import time
 import sys
 sys.path.append('..')
 from constants import *
 
 vela_y = h5py.File('/home/vereese/pulsar_data/1604641064_wide_tied_array_channelised_voltage_0y.h5', 'r')
 data = vela_y['Data/bf_raw'][...]
-data = np.transpose(data[:,11620864:11620964,0])
+data = np.transpose(data[:,11620864:11631104,0])
 
 frequencies = np.arange(856+(freq_resolution/1e6)/2,1712+(freq_resolution/1e6)/2,freq_resolution/1e6)
 reversed_frequencies = list(reversed(frequencies))
@@ -23,6 +24,10 @@ gal_e6_ch = rounded_frequencies.index(round(gal_e6))
 b = Bispectrum(data, fft_size=1024, method='direct')
 #b.mean_compensation()
 #b.calc_power_spectrum()
+t1 = time.time()
 b.bispectrum_I = b.direct_bispectrum(compute_fft=False)
-b.plot_bispectrum_I()
+t2 = time.time()
+print("calculating bispectrum took: ", t2-t1, " s")
+np.save('vela_bispec', b.bispectrum_I)
+
 
