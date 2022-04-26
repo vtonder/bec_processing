@@ -21,8 +21,8 @@ gal_e6 = 1278.75
 gal_e6_ch = rounded_frequencies.index(round(gal_e6))
 
 b = Bispectrum(data, fft_size=1024, method='direct')
-b.mean_compensation()
-b.calc_power_spectrum()
-b.bispectrum_I = b.direct_bispectrum()
-b.plot_bicoherence()
+#b.mean_compensation()
+#b.calc_power_spectrum()
+b.bispectrum_I = b.direct_bispectrum(compute_fft=False)
+b.plot_bispectrum_I()
 
