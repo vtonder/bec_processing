@@ -1,8 +1,19 @@
-- seems to be faster to slice from hdf5 and operate directly on them
+**************************
+3) Bispectrum computation
+**************************
+Processing 39 records of 1024 samples each from gps_l2 frequency channel of vela y pol data (smallest dataset)
+- Direct computation of bispectrum
+Calculating entire I quadrant from equation: 2.157341957092285
+Calculating only k1 <= k2 in I quadrant: 1.1635143756866455
+Calculating entire I quadrant using symmetry: 1.4344885349273682
+
+- only calculate triangle region in direct bispectrum because it's the most efficient  
 
 *******************************************
 2) On data reading in data
 *******************************************
+- seems to be faster to slice from hdf5 and operate directly on them
+
 2.1) File: 1604641234 (51G) x pol
 - Using data = vela_x['Data/bf_raw'][()]
 Number of data points 26214400
