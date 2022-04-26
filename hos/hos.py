@@ -102,10 +102,14 @@ class Bispectrum():
 
         return self.power_spectrum
 
-    def direct_bispectrum(self):
+    def direct_bispectrum(self, compute_fft=True):
 
-        # convert to frequency domain
-        S = np.fft.fft(self.signal)
+        if compute_fft:
+            # convert to frequency domain
+            S = np.fft.fft(self.signal)
+        else:
+            # signal is already a frequency signal
+            S = self.signal
 
         # calculate bispectrum on frequency data
         cum = np.zeros([self.K, self.max_lag, self.max_lag], dtype=np.csingle)
