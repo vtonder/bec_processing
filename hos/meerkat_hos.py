@@ -1,6 +1,7 @@
 import h5py
 import numpy as np
 from hos import Bispectrum
+import time
 import sys
 sys.path.append('..')
 from constants import *
@@ -23,7 +24,10 @@ gal_e6_ch = rounded_frequencies.index(round(gal_e6))
 b = Bispectrum(data, fft_size=1024, method='direct')
 #b.mean_compensation()
 #b.calc_power_spectrum()
+t1 = time.time()
 b.bispectrum_I = b.direct_bispectrum(compute_fft=False)
+t2 = time.time()
+print("calculating bispectrum took: ", t2-t1, " s")
 np.save('vela_bispec', b.bispectrum_I)
 
 
