@@ -2,6 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from hos import Bispectrum
 import sys
+import time
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
 
@@ -21,13 +22,15 @@ class SIM_GPS:
     }
 
     def __init__(self, files, bits):
-        self.gps_data = {}
+        self.gps_data = {} # baseband data
+        self.gps_data_up = {} # upconverted data
         self.bits = bits
         self.obs_time = self.bits * SIM_GPS.spb # observation time in seconds
 
         for file in files:
             self.gps_data.update({file:[]})
-            self.iq = file[0] # This depends on file names starting with either I or Q branch
+            self.gps_data_up.update({file:[]})
+
 
     def populate(self, direc):
         for file_name, data  in self.gps_data.items():
@@ -42,9 +45,9 @@ class SIM_GPS:
             t = np.arange(self.obs_time, step=self.obs_time / data_len)
 
             if file_name[0] == 'I':
-                self.gps_data[file_name] = data*np.cos(SIM_GPS.f_l2 * t)
+                self.gps_data_up[file_name] = data*np.cos(SIM_GPS.f_l2 * t)
             else:
-                self.gps_data[file_name] = data*np.sin(SIM_GPS.f_l2 * t)
+                self.gps_data_up[file_name] = data*np.sin(SIM_GPS.f_l2 * t)
 
 
 
@@ -75,6 +78,7 @@ freq_ca = np.arange(0,fs_ca,freq_res_ca)
 bispectra = {}
 for i, fn in enumerate(gps_file_names):
     data = gps.gps_data[fn]
+    data_up = gps.gps_data_up[fn]
     data_len = len(data)
 
     print(fn, data_len)
@@ -83,11 +87,16 @@ for i, fn in enumerate(gps_file_names):
     M_2 = int(fft_len / 2)
     cum = np.zeros([records, M_2, M_2], dtype='complex_')
     data = np.asarray(data[0:int(fft_len * records)]).reshape(records, fft_len)
+    data_up = np.asarray(data_up[0:int(fft_len * records)]).reshape(records, fft_len)
 
     b = Bispectrum(data, method='direct')
+    b_up = Bispectrum(data_up, method='direct')
     b.direct_bispectrum()
+    b_up.direct_bispectrum()
+    print(b.bispectrum_I-b_up.bispectrum_I)
     # -4 to get rid of .csv
-    np.save(DIRECTORY+fn[:-4]+'_I_bispec',b.bispectrum_I)
+    np.save(DIRECTORY+fn[:-4]+'_I_bispec_base',b.bispectrum_I)
+    np.save(DIRECTORY+fn[:-4]+'_I_bispec_up',b_up.bispectrum_I)
     #b.calc_power_spectrum()
     #b.plot_bispectrum(name=fn)
     #bispectra.update({fn:b})
