@@ -7,8 +7,8 @@ sys.path.append('..')
 from constants import *
 from matplotlib import pyplot as plt
 
-ANALYSE = True
-PLOT = False
+ANALYSE = False
+PLOT = True
 
 if ANALYSE:
     vela_y = h5py.File('/home/vereese/pulsar_data/1604641064_wide_tied_array_channelised_voltage_0y.h5', 'r')
@@ -37,9 +37,13 @@ if ANALYSE:
     np.save('vela_bispec', b.bispectrum_I)
 
 if PLOT:
-    data = np.load('vela_bispec_im.npy')
-    print(data)
-    plt.figure(0)
-    plt.imshow(np.abs(data), aspect='auto', origin='lower')
+    data = {'gps_l1.npy':[], 'gps_l2.npy': [], 'gal_e6.npy': [], 'h1.npy':[], 'vela_bispec.npy':[]}
+
+    for i,fn in enumerate(data.keys()):
+        data[fn] = np.load(fn)
+        plt.figure(i)
+        plt.imshow(np.abs(data[fn]), aspect='auto', origin='lower')
+        plt.title(fn)
+
     plt.show()
 
