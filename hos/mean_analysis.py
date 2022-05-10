@@ -37,10 +37,10 @@ for i in np.arange(1024):
     std_im = np.sqrt(var_im/data_len)
 
     # normality test boundaries for real and imaginary components
-    up_re = mean_re + 3*(std_re/data_len)
-    up_im = mean_im + 3*(std_im/data_len)
-    lo_re = mean_re - 3*(std_re/data_len)
-    lo_im = mean_im - 3*(std_im/data_len)
+    up_re = mean_re + 3*(std_re)
+    up_im = mean_im + 3*(std_im)
+    lo_re = mean_re - 3*(std_re)
+    lo_im = mean_im - 3*(std_im)
 
     re_outliers_i = []
     im_outliers_i = []
