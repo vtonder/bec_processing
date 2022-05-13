@@ -1,4 +1,8 @@
 # MeerKAT bec mode observational information
+# When look at the h5py data h5_file_obj['Data/timestamps'] data is 2048 apart. this represents samples
+# it takes 2048 adc samples to produce 1 1024 ch spectra and therefore the bec mode data steps in 2048 sample sizes
+# if no channelisation took place the time res would be 1/adc_sample_rate but we're reducing it by a factor of 2048
+
 adc_sample_rate = 1712e6
 bw = 856e6
 no_channels = 1024
