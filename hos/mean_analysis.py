@@ -27,16 +27,18 @@ data_im = data[856,2204928:,1]
 data_len = len(data_re) # Re & Im freq channels will have the same length
 N = 10000 # number of samples in a set
 S = int(data_len/N) # number of sets
-means_re, meanis_im = [], []
-
+means_re, means_im = [], []
+print("number of sets:", S)
 for i in np.arange(S):
+    means_re.append(np.mean(data_re[i*N:(i+1)*N]))
+    means_im.append(np.mean(data_im[i*N:(i+1)*N]))
 
-
+print("mean of means re", np.mean(means_re))
+print("mean of means im", np.mean(means_im))
+print("var of means re", np.var(means_re))
+print("var of means im", np.var(means_im))
 
 if OUTLIER_TEST:
-    re_outliers = []
-    im_outliers = []
-    
     mean_re = np.mean(data_re)
     mean_im = np.mean(data_im)
     var_re = np.var(data_re)
@@ -64,25 +66,24 @@ if OUTLIER_TEST:
     print("len outliers ", len(re_outliers_i))
     re_outliers = (sum(re_outliers_i)/data_len)*100
     im_outliers = (sum(im_outliers_i)/data_len)*100
-    
-    print("freq ch: ",i)
+
     print("% real outliers: ", re_outliers)
     print("% imag outliers: ", im_outliers)
 
+    if SAVE_DATA:
+        np.save(DIRECTORY+'real_outliers', re_outliers)
+        np.save(DIRECTORY+'imag_outliers', im_outliers)
+
 if PLOT_DATA:
     plt.figure(0)
-    plt.plot(data_re) #_outliers)
-    plt.title("real data")
-    plt.xlabel('samples')
+    plt.hist(means_re)
+    plt.title("means real data")
     plt.grid()
 
     plt.figure(1)
-    plt.plot(data_im)
-    plt.title("imag data")
-    plt.xlabel('samples')
+    plt.hist(means_im)
+    plt.title("means imag data")
     plt.grid()
     plt.show()
 
-if SAVE_DATA:
-    np.save(DIRECTORY+'real_outliers', re_outliers)
-    np.save(DIRECTORY+'imag_outliers', im_outliers)
+
