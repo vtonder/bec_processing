@@ -37,6 +37,8 @@ print("mean of means re", np.mean(means_re))
 print("mean of means im", np.mean(means_im))
 print("var of means re", np.var(means_re))
 print("var of means im", np.var(means_im))
+print("std error of means re", np.sqrt(np.var(means_re)/N))
+print("std error of means im", np.sqrt(np.var(means_im)/N))
 
 if OUTLIER_TEST:
     mean_re = np.mean(data_re)
