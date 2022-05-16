@@ -10,9 +10,11 @@ from matplotlib import pyplot as plt
 # Assume the distribution of the majority of data to be 0 mean Gaussian.
 # This script uses the 3 sigma normality test in order to detect outliers
 # Answers: what % of outliers are in the data set
-# TODO:
-# Create a histogram of means 
+# Creates a histogram of means  
 # Calculate the mean of means and standards deviation of means. ie get mean of 10000 samples , then next 
+# Ref: https://www.middleprofessor.com/files/applied-biostatistics_bookdown/_book/variability-and-uncertainty-standard-deviations-standard-errors-confidence-intervals.html
+# Script to show that the std deviation of set of means is the std error as calculated using std / sqrt(N)
+# where std is the sample standard deviation and N is the number of samples in that set
 
 DIRECTORY = '/home/vereese/phd_data/'
 OUTLIER_TEST = False
@@ -22,10 +24,10 @@ SAVE_DATA = False
 #vela_y = h5py.File('/home/vereese/pulsar_data/1604641064_wide_tied_array_channelised_voltage_0y.h5', 'r')
 vela_y = h5py.File('/home/vereese/pulsar_data/1604641234_wide_tied_array_channelised_voltage_0x.h5', 'r')
 data = vela_y['Data/bf_raw'][...]
-data_re = data[856,2204928:,0]
-data_im = data[856,2204928:,1]
+data_re = data[856,13634560:,0]
+data_im = data[856,13634560:,1]
 data_len = len(data_re) # Re & Im freq channels will have the same length
-N = 10000 # number of samples in a set
+N = 2048 #10000 # number of samples in a set
 S = int(data_len/N) # number of sets
 means_re, means_im = [], []
 print("number of sets:", S)
@@ -37,8 +39,13 @@ print("mean of means re", np.mean(means_re))
 print("mean of means im", np.mean(means_im))
 print("var of means re", np.var(means_re))
 print("var of means im", np.var(means_im))
-print("std error of means re", np.sqrt(np.var(means_re)/N))
-print("std error of means im", np.sqrt(np.var(means_im)/N))
+print("std dev of means re", np.sqrt(np.var(means_re)))
+print("std dev of means im", np.sqrt(np.var(means_im)))
+
+print("std error of means re", np.sqrt(np.var(data_re[0:N])/N))
+print("std error of means im", np.sqrt(np.var(data_im[0:N])/N))
+print("std error of means re", np.sqrt(np.var(data_re[N:2*N])/N))
+print("std error of means im", np.sqrt(np.var(data_im[N:2*N])/N))
 
 if OUTLIER_TEST:
     mean_re = np.mean(data_re)
