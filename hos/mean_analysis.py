@@ -7,6 +7,10 @@ sys.path.append('..')
 from constants import *
 from matplotlib import pyplot as plt
 
+# TODO: Parameterise CAPITAL and N, freq ch values
+# TODO: Finish up plot on time vs mean and std err of mean as error bar (this will be for only 1 channel)
+# TODO: Create a plot of freq ch vs mean of means and std err of mean as error bar
+
 # Assume the distribution of the majority of data to be 0 mean Gaussian.
 # This script uses the 3 sigma normality test in order to detect outliers
 # Answers: what % of outliers are in the data set
@@ -20,6 +24,27 @@ DIRECTORY = '/home/vereese/phd_data/'
 OUTLIER_TEST = False
 PLOT_DATA = True 
 SAVE_DATA = False 
+
+"""for i, arg in enumerate(sys.argv, start = 1):
+    if arg == '-h':
+        print("Argument 1: Frequency channel, default set to 856")
+        print("Argument 2: Number of samples in a set")
+
+try:
+  opts, args = getopt.getopt(argv,"hi:o:",["ifile=","ofile="])
+except getopt.GetoptError:
+  print 'test.py -i <inputfile> -o <outputfile>'
+  sys.exit(2)
+for opt, arg in opts:
+  if opt == '-h':
+     print 'test.py -i <inputfile> -o <outputfile>'
+     sys.exit()
+  elif opt in ("-i", "--ifile"):
+     inputfile = arg
+  elif opt in ("-o", "--ofile"):
+     outputfile = arg
+print 'Input file is "', inputfile
+print 'Output file is "', outputfile"""
 
 #vela_y = h5py.File('/home/vereese/pulsar_data/1604641064_wide_tied_array_channelised_voltage_0y.h5', 'r')
 vela_y = h5py.File('/home/vereese/pulsar_data/1604641234_wide_tied_array_channelised_voltage_0x.h5', 'r')
