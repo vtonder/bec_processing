@@ -24,16 +24,24 @@ SAVE_DATA = False
 #vela_y = h5py.File('/home/vereese/pulsar_data/1604641064_wide_tied_array_channelised_voltage_0y.h5', 'r')
 vela_y = h5py.File('/home/vereese/pulsar_data/1604641234_wide_tied_array_channelised_voltage_0x.h5', 'r')
 data = vela_y['Data/bf_raw'][...]
-data_re = data[856,13634560:,0]
-data_im = data[856,13634560:,1]
+data_re = data[515,13634560:,0]
+data_im = data[515,13634560:,1]
 data_len = len(data_re) # Re & Im freq channels will have the same length
-N = 2048 #10000 # number of samples in a set
+N = 10000 # number of samples in a set
 S = int(data_len/N) # number of sets
 means_re, means_im = [], []
+std_err_re, std_err_im = [], []
+
 print("number of sets:", S)
 for i in np.arange(S):
     means_re.append(np.mean(data_re[i*N:(i+1)*N]))
     means_im.append(np.mean(data_im[i*N:(i+1)*N]))
+    std_err_re.append(np.sqrt(np.var(data_re[i*N:(i+1)*N])/N))
+    std_err_im.append(np.sqrt(np.var(data_im[i*N:(i+1)*N])/N))
+
+print("var of sample", np.var(data_re[N:2*N]))
+print("std of sample", np.sqrt(np.var(data_re[N:2*N])))
+print("")
 
 print("mean of means re", np.mean(means_re))
 print("mean of means im", np.mean(means_im))
@@ -41,11 +49,14 @@ print("var of means re", np.var(means_re))
 print("var of means im", np.var(means_im))
 print("std dev of means re", np.sqrt(np.var(means_re)))
 print("std dev of means im", np.sqrt(np.var(means_im)))
+print("")
 
 print("std error of means re", np.sqrt(np.var(data_re[0:N])/N))
 print("std error of means im", np.sqrt(np.var(data_im[0:N])/N))
 print("std error of means re", np.sqrt(np.var(data_re[N:2*N])/N))
 print("std error of means im", np.sqrt(np.var(data_im[N:2*N])/N))
+print("")
+
 
 if OUTLIER_TEST:
     mean_re = np.mean(data_re)
@@ -86,13 +97,28 @@ if OUTLIER_TEST:
 if PLOT_DATA:
     plt.figure(0)
     plt.hist(means_re)
-    plt.title("means real data")
+    plt.title("Histogram means real data")
     plt.grid()
 
     plt.figure(1)
     plt.hist(means_im)
-    plt.title("means imag data")
+    plt.title("Histogram means imag data")
+    plt.grid()
+
+    plt.figure(2)
+    plt.plot(means_re, label='mean')
+    plt.plot(std_err_re,'o', label='std err')
+    plt.plot(-1*std_err_re,'o', label='std err')
+    plt.title("means + std re data")
+    plt.legend()
+    plt.grid()
+
+    plt.figure(3)
+    plt.plot(means_im, label='mean')
+    plt.plot(std_err_im, 'o',label='std err')
+    plt.plot(-1*std_err_im, 'o',label='std err')
+    plt.title("means + std imag data")
+    plt.legend()
     plt.grid()
     plt.show()
-
 
