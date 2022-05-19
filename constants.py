@@ -19,6 +19,12 @@ re_im_chunk_size = 2
 #(1284e6-856e6)/freq_resolution - to get frequency bin
 c = 4.148808e6 # constant for calculating dispersion delay
 
+# Popular frequencies in MHz
+h1 = 1420.4
+gps_l1 = 1575.42
+gps_l2 = 1227.60
+gal_e6 = 1278.75
+
 # Pulsar information
 # Vela
 vela_freq = 11.185084597305504  #11.185053620637202  #11.185031494489326 #11.18500936838522
