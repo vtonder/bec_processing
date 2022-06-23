@@ -6,7 +6,11 @@ import time
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
 
-DIRECTORY = '/home/vereese/phd_data/'
+# TODO: sampling time is not sufficient
+# should not upconvert, should calculate what's the offset when the upconverted signal was downconverted using meerkat's pfb and bandpass sampling
+# there should be a pfb lib in python
+
+DIRECTORY = '/home/vereese/git/phd_data/'
 class SIM_GPS:
     f_l1 = 1575.42 * 10 ** 6  # Hz
     f_l2 = 1227.6 * 10 ** 6  # Hz
@@ -22,7 +26,7 @@ class SIM_GPS:
     }
 
     def __init__(self, files, bits):
-        self.gps_data = {} # baseband data
+        self.gps_data = {}    # baseband data
         self.gps_data_up = {} # upconverted data
         self.bits = bits
         self.obs_time = self.bits * SIM_GPS.spb # observation time in seconds
@@ -61,11 +65,26 @@ if len(sys.argv) > 1:
     for i in np.arange(1, len(sys.argv)):
         gps_file_names.append(str(sys.argv[i]))
 else:
-    gps_file_names = ['I_PY_1bit.csv', 'I_PY_D_1bit.csv', 'I_CA_D_1bit.csv','Q_CA_D_1bit.csv', 'Q_CA_1bit.csv','Q_L2CM_Dc_1bit.csv']
+    #gps_file_names = ['I_Up1_CA_D_1bit.csv', 'I_Up1_PY_1bit.csv', 'I_Up1_PY_D_1bit.csv', 'Q_Up_CA_D_1bit.csv', 'Q_Up_CA_1bit.csv', 'Q_Up_L2CM_Dc_1bit.csv']#,'I_CA_D_1bit.csv', 'I_PY_1bit.csv', 'I_PY_D_1bit.csv', 'Q_CA_D_1bit.csv', 'Q_CA_1bit.csv', 'Q_L2CM_Dc_1bit.csv']
+    #gps_file_names = ['I_Up1_CA_D_1bit.csv', 'I_Up1_PY_1bit.csv', 'I_Up1_PY_D_1bit.csv', 'Q_Up10_CA_D_1bit.csv', 'Q_Up10_CA_1bit.csv', 'Q_Up10_L2CM_Dc_1bit.csv','I_CA_D_1bit.csv', 'I_PY_1bit.csv', 'I_PY_D_1bit.csv', 'Q_CA_D_1bit.csv', 'Q_CA_1bit.csv', 'Q_L2CM_Dc_1bit.csv']
+    gps_file_names = ['I_CA_D_1bit.csv', 'I_PY_1bit.csv', 'I_PY_D_1bit.csv', 'Q_CA_D_1bit.csv', 'Q_CA_1bit.csv', 'Q_L2CM_Dc_1bit.csv']
 
 gps = SIM_GPS(gps_file_names, 1)
 gps.populate(DIRECTORY)
-gps.up_convert()
+#gps.up_convert()
+
+
+fig, ax = plt.subplots(3,2)
+k = 0
+for i in np.arange(2):
+    for j in np.arange(3):
+        ax[j,i].plot(gps.gps_data[gps_file_names[k]][0:200])
+        ax[j,i].set_ylabel(gps_file_names[k])
+        ax[j,i].grid()
+        ax[j,i].set_xlabel("time samples n")
+        ax[j,i].set_xlim([0,200])
+        k += 1
+plt.show()
 
 M = 1024
 fs_p = 21.518 # MHz sampling rate for P and P(Y) code
@@ -78,31 +97,35 @@ freq_ca = np.arange(0,fs_ca,freq_res_ca)
 bispectra = {}
 for i, fn in enumerate(gps_file_names):
     data = gps.gps_data[fn]
-    data_up = gps.gps_data_up[fn]
+    #data_up = gps.gps_data_up[fn]
     data_len = len(data)
+    print(fn, "has length", data_len)
+    # Bispectra analysis
 
-    print(fn, data_len)
     fft_len = int(M)
     records = int(np.floor(data_len / fft_len))
     M_2 = int(fft_len / 2)
     cum = np.zeros([records, M_2, M_2], dtype='complex_')
     data = np.asarray(data[0:int(fft_len * records)]).reshape(records, fft_len)
-    data_up = np.asarray(data_up[0:int(fft_len * records)]).reshape(records, fft_len)
+    #data_up = np.asarray(data_up[0:int(fft_len * records)]).reshape(records, fft_len)
 
     b = Bispectrum(data, method='direct')
-    b_up = Bispectrum(data_up, method='direct')
+    #b_up = Bispectrum(data_up, method='direct')
     b.direct_bispectrum()
-    b_up.direct_bispectrum()
-    print(b.bispectrum_I-b_up.bispectrum_I)
+    #b.calc_full_bispectrum()
+    #b_up.direct_bispectrum()
+    #print(b.bispectrum_I-b_up.bispectrum_I)
     # -4 to get rid of .csv
-    np.save(DIRECTORY+fn[:-4]+'_I_bispec_base',b.bispectrum_I)
-    np.save(DIRECTORY+fn[:-4]+'_I_bispec_up',b_up.bispectrum_I)
+    #np.save(DIRECTORY+fn[:-4]+'_I_bispec_base',b.bispectrum_I)
+    #np.save(DIRECTORY+fn[:-4]+'_I_bispec_up',b_up.bispectrum_I)
     #b.calc_power_spectrum()
-    #b.plot_bispectrum(name=fn)
+    #b.plot_full_bispectrum(i, name=fn)
+    b.plot_bispectrum_I(i, name=fn)
     #bispectra.update({fn:b})
     #b.plot_power_spectrum(i,fn)
     #print(np.shape(b.full_bispec))
-    #plt.show()
+
+plt.show()
 
 # tested if 2 codes are the same
 # tested if gps simulator consistently gives out same pattern for same config and it does
@@ -111,4 +134,17 @@ for i, fn in enumerate(gps_file_names):
 #c = list(np.sum(a - b, axis=0))
 #if not any(c): print("They're identical")
 
-
+# TODO PFB coefficients
+# import numpy as np
+NCHANS = 1024
+NTAPS = 8
+NFFT = 2 * NCHANS
+# # Effective window length incorporating PFB taps
+M = NTAPS * NFFT
+# # The PFB coefficients are from a windowed sinc function
+pfb_window = np.hamming(M) * np.sinc((np.arange(M) - M / 2.) / NFFT)
+print("len PFB window", len(pfb_window))
+plt.figure()
+plt.plot(pfb_window)
+plt.grid()
+plt.show()
