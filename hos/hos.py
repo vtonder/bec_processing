@@ -96,9 +96,9 @@ class Bispectrum():
     def calc_power_spectrum(self):
 
         S = self.discrete_FT()
-        S = np.fft.fft(self.signal)
+        S = np.fft.fft(self.signal, self.M)
         P = np.abs(S) ** 2
-        self.power_spectrum = 1.0 / self.K * P.sum(axis=0)
+        self.power_spectrum = S.sum(axis=0) #1.0 / self.K * P.sum(axis=0)
 
         return self.power_spectrum
 
@@ -187,45 +187,54 @@ class Bispectrum():
         # quadrant IV
         self.full_bispec[M_2:0:-1, M_2:self.M] = self.full_bispec[M_2:self.M, M_2:0:-1]
 
-    def plot_power_spectrum(self, i, name=None):
+    def plot_power_spectrum(self, i=0, name=None, show = False):
+
+        shifted_ps = np.zeros(self.M)
+        shifted_ps[0:int(self.M/2)] = self.power_spectrum[int(self.M/2):self.M]
+        shifted_ps[int(self.M/2):self.M] = self.power_spectrum[0:int(self.M/2)]
         plt.figure(i)
-        plt.plot(self.freq, self.power_spectrum)
+        plt.plot(self.freq, shifted_ps)
+        plt.xlabel("frequency ")
         plt.title(name)
         plt.grid()
-        #plt.show()
+        if show:
+            plt.show()
 
-    def plot_bispectrum_I(self, name=None):
+    def plot_bispectrum_I(self, i=0, name=None, show = False):
 
-        plt.figure(0)
+        plt.figure(i)
         plt.imshow(np.abs(self.bispectrum_I), aspect='auto', origin='lower')
-        # plt.xticks(freq[0:500])
+        plt.xticks(freq[0:500])
         plt.title(name)
-        plt.show()
+        if show:
+            plt.show()
 
-    def plot_full_bispectrum(self, name=None):
+    def plot_full_bispectrum(self, i=0, name=None, show = False):
 
-        plt.figure(0)
+        plt.figure(i)
         plt.imshow(np.abs(self.full_bispec), aspect='auto', origin='lower', extent=([self.w[0],self.w[-1],self.w[0],self.w[-1]]))
-        # plt.xticks(freq[0:500])
+        #plt.xticks(freq[0:500])
         plt.title(name)
-        plt.show()
+        if show:
+            plt.show()
 
-    def plot_bicoherence(self, name=None):
+    def plot_bicoherence(self, name=None, show = False):
 
         plt.figure(0)
         plt.imshow(np.abs(self.bico_I), aspect='auto', origin='lower')
         plt.title(name)
-        plt.show()
+        if show:
+            plt.show()
 
 if __name__ == '__main__':
     # parameters
-    f1 = 100  # Hz
+    f1 = 200  # Hz
     f2 = 250  # Hz
     f3 = f1 + f2  # Hz
     #phi1 = np.pi/3
     #phi2 = np.pi/4
     #phi3 = phi2+phi1
-    fs = 1000  # Hz
+    fs = 1200  # Hz
     bw = fs / 2
     num_sec = 10
     t = np.arange(0, num_sec, 1 / fs)
@@ -238,18 +247,42 @@ if __name__ == '__main__':
     t_res = 1 / f_res
     freq = np.arange(0, fs, f_res)
 
+    # Cosine signals with added Gaussian noise
     s = np.cos(2 * np.pi * f1 * t) + np.cos(2 * np.pi * f2 * t) + np.cos(2 * np.pi * f3 *t)
     noise = np.random.normal(0, 0.1, W) + s
     noise = noise.reshape(K, M)
-    b = Bispectrum(noise, fft_size=M, method='indirect', fs=1000)
-    #b.calc_full_bispectrum()
-    b.calc_power_spectrum()
-    b.indirect_bispectrum()
-    b.bicoherence()
-    b.plot_bicoherence()
-    #b.plot_power_spectrum()
+    #b = Bispectrum(noise, fft_size=fs, method='direct', fs=fs)
 
-    plt.figure(0)
+    fft_size = 2048
+    N = 100*fft_size
+    #up_sample_factor = 5 need to make this generic
+
+    pulse_train = np.round(np.random.random(N))*2 - 1 # array*2 - 1 is to get alternating -1 1
+    pulse_train_up = pulse_train.reshape(N,1)
+    pulse_train_up = np.concatenate((pulse_train_up, pulse_train_up, pulse_train_up, pulse_train_up, pulse_train_up, pulse_train_up, pulse_train_up), axis=1)
+    b = Bispectrum(list(pulse_train_up.flatten()), reshape=True, fft_size=fft_size, method='direct')
+    #b = Bispectrum(pulse_train, reshape=True, fft_size=1024, method='direct', fs=1000)
+    #b.calc_full_bispectrum()
+
+    b.calc_power_spectrum()
+    b.direct_bispectrum()
+    #b.bicoherence()
+    #b.plot_bicoherence()
+    b.plot_power_spectrum()
+
+    plt.figure(1)
     plt.imshow(np.abs(b.bispectrum_I),aspect='auto', origin='lower')
     plt.title('name')
+
+    '''plt.figure(2)
+    plt.hist(pulse_train)
+    plt.title("Pulse train")
+
+    plt.figure(3)
+    plt.hist(pulse_train_up.flatten())
+    plt.title("Pulse train up")'''
+
+
+
     plt.show()
+
