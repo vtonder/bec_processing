@@ -49,23 +49,32 @@ print 'Output file is "', outputfile"""
 #vela_y = h5py.File('/home/vereese/pulsar_data/1604641064_wide_tied_array_channelised_voltage_0y.h5', 'r')
 vela_y = h5py.File('/home/vereese/pulsar_data/1604641234_wide_tied_array_channelised_voltage_0x.h5', 'r')
 data = vela_y['Data/bf_raw'][...]
-data_re = data[515,13634560:,0]
-data_im = data[515,13634560:,1]
-data_len = len(data_re) # Re & Im freq channels will have the same length
+data_re = data[:,13634560:,0]
+data_im = data[:,13634560:,1]
+data_len = len(data_re[0]) # Re & Im freq channels will have the same length
+num_ch = 1024 # number of frequency channels
 N = 10000 # number of samples in a set
 S = int(data_len/N) # number of sets
-means_re, means_im = [], []
-std_err_re, std_err_im = [], []
+means_re, means_im = np.zeros([num_ch, S]), np.zeros([num_ch, S])
+std_err_re, std_err_im = np.zeros([num_ch, S]), np.zeros([num_ch, S])
 
 print("number of sets:", S)
-for i in np.arange(S):
-    means_re.append(np.mean(data_re[i*N:(i+1)*N]))
-    means_im.append(np.mean(data_im[i*N:(i+1)*N]))
-    std_err_re.append(np.sqrt(np.var(data_re[i*N:(i+1)*N])/N))
-    std_err_im.append(np.sqrt(np.var(data_im[i*N:(i+1)*N])/N))
+for k in np.arange(1024):
+    for i in np.arange(S):
+        means_re[k,S] = np.mean(data_re[k, i*N:(i+1)*N])
+        means_im[k,S] = np.mean(data_im[k, i*N:(i+1)*N])
+        std_err_re[k,S] = np.sqrt(np.var(data_re[k, i*N:(i+1)*N])/N)
+        std_err_im[k,S] = np.sqrt(np.var(data_im[k, i*N:(i+1)*N])/N)
 
-print("var of sample", np.var(data_re[N:2*N]))
-print("std of sample", np.sqrt(np.var(data_re[N:2*N])))
+np.save("means_re", means_re)
+np.save("means_im", means_im)
+np.save("std_err_re", std_err_re)
+np.save("std_err_im", std_err_im)
+
+# These were only for 1 channel
+
+"""print("var of sample", np.var(data_re[:,N:2*N]))
+print("std of sample", np.sqrt(np.var(data_re[:,N:2*N])))
 print("")
 
 print("mean of means re", np.mean(means_re))
@@ -80,8 +89,7 @@ print("std error of means re", np.sqrt(np.var(data_re[0:N])/N))
 print("std error of means im", np.sqrt(np.var(data_im[0:N])/N))
 print("std error of means re", np.sqrt(np.var(data_re[N:2*N])/N))
 print("std error of means im", np.sqrt(np.var(data_im[N:2*N])/N))
-print("")
-
+print("")"""
 
 if OUTLIER_TEST:
     mean_re = np.mean(data_re)
