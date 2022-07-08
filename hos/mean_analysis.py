@@ -22,7 +22,7 @@ from matplotlib import pyplot as plt
 
 DIRECTORY = '/home/vereese/phd_data/'
 OUTLIER_TEST = False
-PLOT_DATA = True 
+PLOT_DATA = False 
 SAVE_DATA = False 
 
 """for i, arg in enumerate(sys.argv, start = 1):
@@ -51,7 +51,7 @@ vela_y = h5py.File('/home/vereese/pulsar_data/1604641234_wide_tied_array_channel
 data = vela_y['Data/bf_raw'][...]
 data_re = data[:,13634560:,0]
 data_im = data[:,13634560:,1]
-data_len = len(data_re[0]) # Re & Im freq channels will have the same length
+data_len = len(data_re[0,:]) # Re & Im freq channels will have the same length
 num_ch = 1024 # number of frequency channels
 N = 10000 # number of samples in a set
 S = int(data_len/N) # number of sets
@@ -59,12 +59,17 @@ means_re, means_im = np.zeros([num_ch, S]), np.zeros([num_ch, S])
 std_err_re, std_err_im = np.zeros([num_ch, S]), np.zeros([num_ch, S])
 
 print("number of sets:", S)
+print("shape re", np.shape(data_re))
+print("shape im", np.shape(data_im))
+
 for k in np.arange(1024):
     for i in np.arange(S):
-        means_re[k,S] = np.mean(data_re[k, i*N:(i+1)*N])
-        means_im[k,S] = np.mean(data_im[k, i*N:(i+1)*N])
-        std_err_re[k,S] = np.sqrt(np.var(data_re[k, i*N:(i+1)*N])/N)
-        std_err_im[k,S] = np.sqrt(np.var(data_im[k, i*N:(i+1)*N])/N)
+        print("ch:",k," set num:",i)
+        print("start:", i*N, " end:",(i+1)*N)
+        means_re[k,i] = np.mean(data_re[k, i*N:(i+1)*N])
+        means_im[k,i] = np.mean(data_im[k, i*N:(i+1)*N])
+        std_err_re[k,i] = np.sqrt(np.var(data_re[k, i*N:(i+1)*N])/N)
+        std_err_im[k,i] = np.sqrt(np.var(data_im[k, i*N:(i+1)*N])/N)
 
 np.save("means_re", means_re)
 np.save("means_im", means_im)
