@@ -22,7 +22,7 @@ import argparse
 # Ref: https://www.middleprofessor.com/files/applied-biostatistics_bookdown/_book/variability-and-uncertainty-standard-deviations-standard-errors-confidence-intervals.html
 
 parser = argparse.ArgumentParser()
-parser.add_argument("file", help="observation file to process. specify entire path to file")
+parser.add_argument("file", help="observation file to process. search path: /home/vereese/pulsar_data/")
 parser.add_argument("N", type=int, help="number of samples in a set")
 parser.add_argument("-s", type=int, help="number of sets. If not given calculate from entire data set.")
 parser.add_argument("-c", "--ch", type=int, dest="ch", help="frequency channel to analyse. "
@@ -40,7 +40,7 @@ args = parser.parse_args()
 
 OUTLIER_TEST = False
 
-data_file = h5py.File(args.file, 'r')
+data_file = h5py.File('/home/vereese/pulsar_data/'+args.file, 'r')
 data = data_file['Data/bf_raw'][...]
 start_index = start_indices[args.file]
 data_re = data[:, start_index:, 0]
