@@ -37,6 +37,11 @@ fold data 1627027694.321418
 done fold data 377.5340988636017
 
 2.2) File: 1604641569 (485G) x pol
+Using elipses [...]
+took : 1008.7704093456268 s 
+Using [()]
+took : 6960.859574556351 s
+
 Number of data points 252755968
 read in data t: 1627030151.102644
 done reading in data:  2310.688520669937
