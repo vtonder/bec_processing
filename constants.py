@@ -5,9 +5,9 @@
 
 adc_sample_rate = 1712e6
 bw = 856e6
-no_channels = 1024
-freq_resolution = bw / no_channels
-time_resolution = 2 * no_channels / adc_sample_rate
+num_ch = 1024
+freq_resolution = bw / num_ch
+time_resolution = 2 * num_ch / adc_sample_rate
 
 # Chunking
 # looks like for dedispersion would need to share 14 chunks for reading from different locations
@@ -24,6 +24,16 @@ h1 = 1420.4
 gps_l1 = 1575.42
 gps_l2 = 1227.60
 gal_e6 = 1278.75
+
+# first non-zero indices for each file. Obtained using the first_nonzero_indices.py script
+# The data files have lots of 0s
+# The script searches for the largest first non 0 element across all 3 dimension in the file
+start_indices = {
+ '1604641234_wide_tied_array_channelised_voltage_0x.h5': 13634560,
+ '1604643883_wide_tied_array_channelised_voltage_0x.h5': 12445441,
+ '1604641569_wide_tied_array_channelised_voltage_0x.h5': 13625088,
+ '1604641064_wide_tied_array_channelised_voltage_0y.h5': 13634560
+}
 
 # Pulsar information
 # Vela
