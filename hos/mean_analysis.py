@@ -49,7 +49,7 @@ data_len = len(data_re[0, :])  # Re & Im freq channels will have the same length
 
 directory = args.directory+args.file[6:10]+'/'
 if not os.path.exists(directory):
-    os.mkdir(directory)
+    os.makedirs(directory, exist_ok=True)
 
 N = args.N  # number of samples in a set
 # number of sets
