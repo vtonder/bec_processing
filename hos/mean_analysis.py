@@ -22,20 +22,16 @@ import os
 #       standard deviation and N is the number of samples in that set
 # Ref: https://www.middleprofessor.com/files/applied-biostatistics_bookdown/_book/variability-and-uncertainty-standard-deviations-standard-errors-confidence-intervals.html
 
-def create_directory(dir_path):
-    if not os.path.exists(dir_path):
-        os.mkdir(dir_path)
-    return dir_path
-
 parser = argparse.ArgumentParser()
 parser.add_argument("file", help="observation file to process. search path: /home/vereese/pulsar_data/")
 parser.add_argument("N", type=int, help="number of samples in a set")
-parser.add_argument("-s", type=int, help="number of sets. If not given calculate from entire data set.")
-parser.add_argument("-c", "--ch", type=int, dest="ch", help="frequency channel to analyse. "
+parser.add_argument("-s", "--set", dest="set", type=int,
+                    help="number of sets. If not given calculate from entire data set.")
+parser.add_argument("-c", "--ch", type=int, dest="ch", help="Frequency channel to analyse. "
                                                             "If given number of channels is set to 1. "
                                                             "If omitted, analyse all channels")
 parser.add_argument("-d", "--directory", dest="directory", help="path of directory to save data products to",
-                    type=create_directory, default="/home/vereese/phd_data/")
+                    default="/home/vereese/phd_data/mean_analysis/")
 parser.add_argument("-e", "--std_error", dest="std_error", action='store_true',
                     help="Compute the standard error of the mean estimate of each"
                          " sample")
@@ -44,8 +40,6 @@ parser.add_argument("-v", "--variance", dest="var", action='store_true', help="C
 parser.add_argument("-o", "--outlier_detection", dest="outlier", action='store_true', help="Conduct 3 sigma outlier test")
 args = parser.parse_args()
 
-OUTLIER_TEST = False
-
 data_file = h5py.File('/home/vereese/pulsar_data/'+args.file, 'r')
 data = data_file['Data/bf_raw'][...]
 start_index = start_indices[args.file]
@@ -53,10 +47,14 @@ data_re = data[:, start_index:, 0]
 data_im = data[:, start_index:, 1]
 data_len = len(data_re[0, :])  # Re & Im freq channels will have the same length
 
+directory = args.directory+args.file[6:10]+'/'
+if not os.path.exists(directory):
+    os.mkdir(directory)
+
 N = args.N  # number of samples in a set
 # number of sets
-if args.s:
-    S = args.s
+if args.set:
+    S = args.set
 else:
     S = int(data_len / N)
 
@@ -69,6 +67,7 @@ median_re, median_im = np.zeros([num_ch, S]), np.zeros([num_ch, S])
 var_re, var_im = np.zeros([num_ch, S]), np.zeros([num_ch, S])
 outlier_re, outlier_im = [[] for _ in np.arange(num_ch)], [[] for _ in np.arange(num_ch)]
 
+print("saving data to               : ", directory)
 print("total data length            : ", data_len)
 print("number of frequency channels : ", num_ch)
 print("number of samples in a set   : ", N)
@@ -114,17 +113,17 @@ if args.outlier:
 
     print("Outlier detection took: ", time.time() - t1, " s")
 
-    np.save(args.directory + args.file[6:10] + '_real_outliers', perc_re_outliers)
-    np.save(args.directory + args.file[6:10] + '_imag_outliers', perc_im_outliers)
+    np.save(directory + 'real_outliers_' + args.file[-5:-3] + '_' + str(num_ch), perc_re_outliers)
+    np.save(directory + 'imag_outliers_' + args.file[-5:-3] + '_' + str(num_ch), perc_im_outliers)
 
-np.save(args.directory + args.file[6:10] + "_means_re_" + str(args.N) + "_" + str(S), means_re)
-np.save(args.directory + args.file[6:10] + "_means_im_" + str(args.N) + "_" + str(S), means_im)
+np.save(directory + 'means_re_' + args.file[-5:-3] + '_' + str(num_ch) + '_' + str(args.N) + '_' + str(S), means_re)
+np.save(directory + 'means_im_' + args.file[-5:-3] + '_' + str(num_ch) + '_' + str(args.N) + '_' + str(S), means_im)
 if args.std_error:
-    np.save(args.directory + args.file[6:10] + "_std_err_re_" + str(args.N) + "_" + str(S), std_err_re)
-    np.save(args.directory + args.file[6:10] + "_std_err_im_" + str(args.N) + "_" + str(S), std_err_im)
+    np.save(directory + "std_err_re_" + args.file[-5:-3] + '_' + str(num_ch) + '_' + str(args.N) + '_' + str(S), std_err_re)
+    np.save(directory + "std_err_im_" + args.file[-5:-3] + '_' + str(num_ch) + '_' + str(args.N) + '_' + str(S), std_err_im)
 if args.median:
-    np.save(args.directory + args.file[6:10] + "_median_re_" + str(args.N) + "_" + str(S), std_err_re)
-    np.save(args.directory + args.file[6:10] + "_median_im_" + str(args.N) + "_" + str(S), std_err_im)
+    np.save(directory + "median_re_" + args.file[-5:-3] + '_' + str(num_ch) + '_' + str(args.N) + '_' + str(S), std_err_re)
+    np.save(directory + "median_im_" + args.file[-5:-3] + '_' + str(num_ch) + '_' + str(args.N) + '_' + str(S), std_err_im)
 
 # TODO: delete this code.
 """print("var of sample", np.var(data_re[:,N:2*N]))
