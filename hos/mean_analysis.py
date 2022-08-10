@@ -6,6 +6,7 @@ sys.path.append('..')
 from hos import Bispectrum
 from constants import start_indices, num_ch
 import argparse
+import os
 
 # Assume the distribution of the majority of RA data to be 0 mean Gaussian.
 
@@ -21,6 +22,11 @@ import argparse
 #       standard deviation and N is the number of samples in that set
 # Ref: https://www.middleprofessor.com/files/applied-biostatistics_bookdown/_book/variability-and-uncertainty-standard-deviations-standard-errors-confidence-intervals.html
 
+def create_directory(dir_path):
+    if not os.path.exists(dir_path):
+        os.mkdir(dir_path)
+    return dir_path
+
 parser = argparse.ArgumentParser()
 parser.add_argument("file", help="observation file to process. search path: /home/vereese/pulsar_data/")
 parser.add_argument("N", type=int, help="number of samples in a set")
@@ -29,7 +35,7 @@ parser.add_argument("-c", "--ch", type=int, dest="ch", help="frequency channel t
                                                             "If given number of channels is set to 1. "
                                                             "If omitted, analyse all channels")
 parser.add_argument("-d", "--directory", dest="directory", help="path of directory to save data products to",
-                    default="/home/vereese/phd_data/")
+                    type=create_directory, default="/home/vereese/phd_data/")
 parser.add_argument("-e", "--std_error", dest="std_error", action='store_true',
                     help="Compute the standard error of the mean estimate of each"
                          " sample")
@@ -112,13 +118,13 @@ if args.outlier:
     np.save(args.directory + args.file[6:10] + '_imag_outliers', perc_im_outliers)
 
 np.save(args.directory + args.file[6:10] + "_means_re_" + str(args.N) + "_" + str(S), means_re)
-np.save(args.directory + args.file[6:10] + "_means_im" + str(args.N) + "_" + str(S), means_im)
+np.save(args.directory + args.file[6:10] + "_means_im_" + str(args.N) + "_" + str(S), means_im)
 if args.std_error:
-    np.save(args.directory + args.file[6:10] + "_std_err_re" + str(args.N) + "_" + str(S), std_err_re)
-    np.save(args.directory + args.file[6:10] + "_std_err_im" + str(args.N) + "_" + str(S), std_err_im)
+    np.save(args.directory + args.file[6:10] + "_std_err_re_" + str(args.N) + "_" + str(S), std_err_re)
+    np.save(args.directory + args.file[6:10] + "_std_err_im_" + str(args.N) + "_" + str(S), std_err_im)
 if args.median:
-    np.save(args.directory + args.file[6:10] + "_median_re" + str(args.N) + "_" + str(S), std_err_re)
-    np.save(args.directory + args.file[6:10] + "_median_im" + str(args.N) + "_" + str(S), std_err_im)
+    np.save(args.directory + args.file[6:10] + "_median_re_" + str(args.N) + "_" + str(S), std_err_re)
+    np.save(args.directory + args.file[6:10] + "_median_im_" + str(args.N) + "_" + str(S), std_err_im)
 
 # TODO: delete this code.
 """print("var of sample", np.var(data_re[:,N:2*N]))
