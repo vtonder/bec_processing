@@ -55,11 +55,14 @@ if num_ch == 1:
     data_re = data[args.ch, start_index:, 0]
     data_im = data[args.ch, start_index:, 1]
     str_ch = '_1ch'+str(args.ch)+'_'
+    data_len = len(data_re) # Re & Im freq channels will have the same length
+    data_re = data_re.reshape(num_ch, data_len)
+    data_im = data_im.reshape(num_ch, data_len)
 else:
     data_re = data[:, start_index:, 0]
     data_im = data[:, start_index:, 1]
     str_ch = '_1024ch_'
-data_len = len(data_re[0, :])  # Re & Im freq channels will have the same length
+    data_len = len(data_re[0, :])  # Re & Im freq channels will have the same length
 
 N = args.N  # number of samples in a set
 # number of sets
