@@ -35,9 +35,11 @@ parser.add_argument("-d", "--directory", dest="directory", help="path of directo
 parser.add_argument("-e", "--std_error", dest="std_error", action='store_true',
                     help="Compute the standard error of the mean estimate of each"
                          " sample")
+parser.add_argument("-a", "--mean", dest="mean", action='store_true', help="Compute the mean of each set")
 parser.add_argument("-m", "--median", dest="median", action='store_true', help="Compute the median of each set")
 parser.add_argument("-v", "--variance", dest="var", action='store_true', help="Compute the variance of each set")
 parser.add_argument("-o", "--outlier_detection", dest="outlier", action='store_true', help="Conduct 3 sigma outlier test")
+parser.add_argument("-b", "--dc_bias_test", dest="dc_bias", action='store_true', help="Conduct DC bias test")
 args = parser.parse_args()
 
 directory = args.directory+args.file[6:10]+'/'
@@ -85,19 +87,21 @@ print("number of frequency channels : ", num_ch)
 print("number of samples in a set   : ", N)
 print("number of sets               : ", S)
 
-t1 = time.time()
-for i in np.arange(S):
-    re_part = data_re[:, i * N:(i + 1) * N]
-    im_part = data_im[:, i * N:(i + 1) * N]
-    means_re[:, i] = np.mean(re_part, axis=1)
-    means_im[:, i] = np.mean(im_part, axis=1)
-    if args.std_error:
-        std_err_re[:, i] = np.sqrt(np.var(re_part, axis=1) / N)
-        std_err_im[:, i] = np.sqrt(np.var(im_part, axis=1) / N)
-    if args.median:
-        median_re[:, i] = np.median(re_part, axis=1)
-        median_im[:, i] = np.median(im_part, axis=1)
-print("Analysis took: ", time.time() - t1, " s")
+if args.mean or args.std_error or args.median:
+    t1 = time.time()
+    for i in np.arange(S):
+        re_part = data_re[:, i * N:(i + 1) * N]
+        im_part = data_im[:, i * N:(i + 1) * N]
+        if args.mean:
+            means_re[:, i] = np.mean(re_part, axis=1)
+            means_im[:, i] = np.mean(im_part, axis=1)
+        if args.std_error:
+            std_err_re[:, i] = np.sqrt(np.var(re_part, axis=1) / N)
+            std_err_im[:, i] = np.sqrt(np.var(im_part, axis=1) / N)
+        if args.median:
+            median_re[:, i] = np.median(re_part, axis=1)
+            median_im[:, i] = np.median(im_part, axis=1)
+    print("Analysis took: ", time.time() - t1, " s")
 
 # TODO: Compute outliers based on MAD rejection
 # https://casper.astro.berkeley.edu/wiki/Impulsive_RFI_Excision:_CASPER_Library_Block
@@ -128,8 +132,24 @@ if args.outlier:
     np.save(directory + 'real_outliers_' + args.file[-5:-3] + str_ch, perc_re_outliers)
     np.save(directory + 'imag_outliers_' + args.file[-5:-3] + str_ch, perc_im_outliers)
 
-np.save(directory + 'means_re_' + args.file[-5:-3] + str_ch + str(args.N) + '_' + str(S), means_re)
-np.save(directory + 'means_im_' + args.file[-5:-3] + str_ch + str(args.N) + '_' + str(S), means_im)
+if args.dc_bias:
+    t1 = time.time()
+    num_digits = int(np.round(np.log(data_len)))
+    mean_bias_re = np.zeros([num_ch, num_digits])
+    mean_bias_im = np.zeros([num_ch, num_digits])
+
+    for i in np.arange(num_digits):
+        data_slice = data_len/(10**(num_digits-1-i))
+        mean_bias_re[:,i] = np.abs(np.mean(data_re[:,0:data_slice], axis=1))
+        mean_bias_im[:,i] = np.abs(np.mean(data_im[:,0:data_slice], axis=1))
+
+    np.save(directory + 'means_bias_re_' + args.file[-5:-3] + str_ch + str(num_digits), mean_bias_re)
+    np.save(directory + 'means_bias_im_' + args.file[-5:-3] + str_ch + str(num_digits), mean_bias_im)
+    print("DC bias test took", time.time()-t1)
+
+if args.mean:
+    np.save(directory + 'means_re_' + args.file[-5:-3] + str_ch + str(args.N) + '_' + str(S), means_re)
+    np.save(directory + 'means_im_' + args.file[-5:-3] + str_ch + str(args.N) + '_' + str(S), means_im)
 if args.std_error:
     np.save(directory + "std_err_re_" + args.file[-5:-3] + str_ch + str(args.N) + '_' + str(S), std_err_re)
     np.save(directory + "std_err_im_" + args.file[-5:-3] + str_ch + str(args.N) + '_' + str(S), std_err_im)
