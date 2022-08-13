@@ -47,6 +47,7 @@ if not os.path.exists(directory):
 if args.ch:
     num_ch = 1
 
+t1 = time.time()
 data_file = h5py.File('/home/vereese/pulsar_data/'+args.file, 'r')
 data = data_file['Data/bf_raw'][...]
 start_index = start_indices[args.file]
@@ -63,6 +64,7 @@ else:
     data_im = data[:, start_index:, 1]
     str_ch = '_1024ch_'
     data_len = len(data_re[0, :])  # Re & Im freq channels will have the same length
+print("Reading in data took: ", time.time() - t1, " s")
 
 N = args.N  # number of samples in a set
 # number of sets
