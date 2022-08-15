@@ -75,6 +75,8 @@ if args.set:
 else:
     S = int(data_len / N)
 
+pol = args.file[-5:-3] # polarisation 0x or 0y
+
 means_re, means_im = np.zeros([num_ch, S]), np.zeros([num_ch, S])
 std_err_re, std_err_im = np.zeros([num_ch, S]), np.zeros([num_ch, S])
 median_re, median_im = np.zeros([num_ch, S]), np.zeros([num_ch, S])
@@ -129,8 +131,8 @@ if args.outlier:
 
     print("Outlier detection took: ", time.time() - t1, " s")
 
-    np.save(directory + 'real_outliers_' + args.file[-5:-3] + str_ch, perc_re_outliers)
-    np.save(directory + 'imag_outliers_' + args.file[-5:-3] + str_ch, perc_im_outliers)
+    np.save(directory + 'real_outliers_' + pol + str_ch, perc_re_outliers)
+    np.save(directory + 'imag_outliers_' + pol + str_ch, perc_im_outliers)
 
 if args.dc_bias:
     t1 = time.time()
@@ -139,23 +141,23 @@ if args.dc_bias:
     mean_bias_im = np.zeros([num_ch, num_digits])
 
     for i in np.arange(num_digits):
-        data_slice = data_len/(10**(num_digits-1-i))
+        data_slice = int(data_len/(10**(num_digits-1-i)))
         mean_bias_re[:,i] = np.abs(np.mean(data_re[:,0:data_slice], axis=1))
         mean_bias_im[:,i] = np.abs(np.mean(data_im[:,0:data_slice], axis=1))
 
-    np.save(directory + 'means_bias_re_' + args.file[-5:-3] + str_ch + str(num_digits), mean_bias_re)
-    np.save(directory + 'means_bias_im_' + args.file[-5:-3] + str_ch + str(num_digits), mean_bias_im)
+    np.save(directory + 'means_bias_re_' + pol + str_ch + str(num_digits), mean_bias_re)
+    np.save(directory + 'means_bias_im_' + pol + str_ch + str(num_digits), mean_bias_im)
     print("DC bias test took", time.time()-t1)
 
 if args.mean:
-    np.save(directory + 'means_re_' + args.file[-5:-3] + str_ch + str(args.N) + '_' + str(S), means_re)
-    np.save(directory + 'means_im_' + args.file[-5:-3] + str_ch + str(args.N) + '_' + str(S), means_im)
+    np.save(directory + 'means_re_' + pol + str_ch + str(args.N) + '_' + str(S), means_re)
+    np.save(directory + 'means_im_' + pol + str_ch + str(args.N) + '_' + str(S), means_im)
 if args.std_error:
-    np.save(directory + "std_err_re_" + args.file[-5:-3] + str_ch + str(args.N) + '_' + str(S), std_err_re)
-    np.save(directory + "std_err_im_" + args.file[-5:-3] + str_ch + str(args.N) + '_' + str(S), std_err_im)
+    np.save(directory + "std_err_re_" + pol + str_ch + str(args.N) + '_' + str(S), std_err_re)
+    np.save(directory + "std_err_im_" + pol + str_ch + str(args.N) + '_' + str(S), std_err_im)
 if args.median:
-    np.save(directory + "median_re_" + args.file[-5:-3] + str_ch + str(args.N) + '_' + str(S), std_err_re)
-    np.save(directory + "median_im_" + args.file[-5:-3] + str_ch + str(args.N) + '_' + str(S), std_err_im)
+    np.save(directory + "median_re_" + pol + str_ch + str(args.N) + '_' + str(S), std_err_re)
+    np.save(directory + "median_im_" + pol + str_ch + str(args.N) + '_' + str(S), std_err_im)
 
 # TODO: delete this code.
 """print("var of sample", np.var(data_re[:,N:2*N]))
