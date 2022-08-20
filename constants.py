@@ -1,10 +1,13 @@
+import numpy as np
+
 # MeerKAT bec mode observational information
 # When look at the h5py data h5_file_obj['Data/timestamps'] data is 2048 apart. this represents samples
-# it takes 2048 adc samples to produce 1 1024 ch spectra and therefore the bec mode data steps in 2048 sample sizes
+# it takes 2048 adc samples to produce one 1024 ch spectra and therefore the bec mode data steps in 2048 sample sizes
 # if no channelisation took place the time res would be 1/adc_sample_rate but we're reducing it by a factor of 2048
 
-adc_sample_rate = 1712e6
-bw = 856e6
+# Frequencies given in MHz
+adc_sample_rate = 1712
+bw = 856
 num_ch = 1024
 freq_resolution = bw / num_ch
 time_resolution = 2 * num_ch / adc_sample_rate
@@ -17,13 +20,21 @@ freq_chunk_size = 1024
 time_chunk_size = 16384
 re_im_chunk_size = 2
 #(1284e6-856e6)/freq_resolution - to get frequency bin
-c = 4.148808e6 # constant for calculating dispersion delay
+dispersion_constant = 4.148808e3 # constant for calculating dispersion delay TODO double check if this is correct?
 
 # Popular frequencies in MHz
 h1 = 1420.4
 gps_l1 = 1575.42
 gps_l2 = 1227.60
 gal_e6 = 1278.75
+
+# center frequencies of each 1024 subbands
+frequencies = np.arange(856 + (freq_resolution / 2), 1712 + (freq_resolution / 2), freq_resolution)
+rounded_frequencies = [np.round(f) for f in frequencies]
+h1_ch = rounded_frequencies.index(round(h1))
+gps_l1_ch = rounded_frequencies.index(round(gps_l1))
+gps_l2_ch = rounded_frequencies.index(round(gps_l2))
+gal_e6_ch = rounded_frequencies.index(round(gal_e6))
 
 # first non-zero indices for each file. Obtained using the first_nonzero_indices.py script
 # The data files have lots of 0s

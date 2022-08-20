@@ -4,40 +4,45 @@ from hos import Bispectrum
 import time
 import sys
 sys.path.append('..')
-from constants import *
+from constants import h1_ch, gps_l1_ch, gps_l2_ch, gal_e6_ch
 from matplotlib import pyplot as plt
 
-ANALYSE = False
-PLOT = True
+ANALYSE = True
+PLOT = False
 
 if ANALYSE:
-    vela_y = h5py.File('/home/vereese/pulsar_data/1604641064_wide_tied_array_channelised_voltage_0y.h5', 'r')
-    data = vela_y['Data/bf_raw'][...]
-    data_re = np.transpose(data[:,11620864:11631104,0])
-    data_im = np.transpose(data[:,11620864:11631104,1])
+    t1 = time.time()
+    vela_y = h5py.File('/net/com08/data6/vereese/1604641569_wide_tied_array_channelised_voltage_0y.h5', 'r')
+    #data = vela_y['Data/bf_raw'][...]
+    data_re_h1 = np.transpose(vela_y['Data/bf_raw'][h1_ch,13625088:,0])
+    data_im_h1 = np.transpose(vela_y['Data/bf_raw'][h1_ch,13625088:,1])
+    data_re_l1 = np.transpose(vela_y['Data/bf_raw'][gps_l1_ch,13625088:,0])
+    data_im_l1 = np.transpose(vela_y['Data/bf_raw'][gps_l1_ch,13625088:,1])
+    data_re_l2 = np.transpose(vela_y['Data/bf_raw'][gps_l2_ch,13625088:,0])
+    data_im_l2 = np.transpose(vela_y['Data/bf_raw'][gps_l2_ch,13625088:,1])
+    data_re_g6 = np.transpose(vela_y['Data/bf_raw'][gal_e6_ch,13625088:,0])
+    data_im_g6 = np.transpose(vela_y['Data/bf_raw'][gal_e6_ch,13625088:,1])
+    print("reading in all channels took: {0} s".format(time.time()-t1))
 
-    frequencies = np.arange(856+(freq_resolution/1e6)/2,1712+(freq_resolution/1e6)/2,freq_resolution/1e6)
-    reversed_frequencies = list(reversed(frequencies))
-    rounded_frequencies = [np.round(f) for f in reversed_frequencies]
-    h1 = 1420.4
-    gps_l1 = 1575.42
-    gps_l1_ch = rounded_frequencies.index(round(gps_l1))
-    gps_l2 = 1227.60
-    gps_l2_ch = rounded_frequencies.index(round(gps_l2))
-    gal_e6 = 1278.75
-    gal_e6_ch = rounded_frequencies.index(round(gal_e6))
-
-    b = Bispectrum(data_re+1j*data_im, fft_size=1024, method='direct')
+    b_h1 = Bispectrum(data_re_h1+1j*data_im_h1, reshape=True, fft_size=1024, method='direct')
+    b_gps_l1 = Bispectrum(data_re_l1+1j*data_im_l1, reshape=True, fft_size=1024, method='direct')
+    b_gps_l2 = Bispectrum(data_re_l2+1j*data_im_l2, reshape=True, fft_size=1024, method='direct')
+    b_gal_e6 = Bispectrum(data_re_g6+1j*data_im_g6, reshape=True, fft_size=1024, method='direct')
     #b.mean_compensation()
     #b.calc_power_spectrum()
     t1 = time.time()
-    b.bispectrum_I = b.direct_bispectrum(compute_fft=False)
-    t2 = time.time()
-    print("calculating bispectrum took: ", t2-t1, " s")
-    np.save('vela_bispec', b.bispectrum_I)
+    b_h1.bispectrum_I = b_h1.direct_bispectrum()
+    b_gps_l1.bispectrum_I = b_gps_l1.direct_bispectrum()
+    b_gps_l2.bispectrum_I = b_gps_l2.direct_bispectrum()
+    b_gal_e6.bispectrum_I = b_gal_e6.direct_bispectrum()
+    print("calculating bispectra took: ", time.time()-t1, " s")
+    np.save('h1_bispec', b_h1.bispectrum_I)
+    np.save('gps_l1_bispec', b_gps_l1.bispectrum_I)
+    np.save('gps_l2_bispec', b_gps_l2.bispectrum_I)
+    np.save('gal_e6_bispec', b_gal_e6.bispectrum_I)
 
 if PLOT:
-    data = {'gps_l1.npy':[], 'gps_l2.npy': [], 'gal_e6.npy': [], 'h1.npy':[], 'vela_bispec.npy':[]}
+    data = {'gps_l1_bispec.npy':[], 'gps_l2_bispec.npy': [], 'gal_e6_bispec.npy': [], 'h1_bispec.npy':[], 'vela_bispec.npy':[]}
 
     for i,fn in enumerate(data.keys()):
         data[fn] = np.load(fn)
