@@ -36,9 +36,10 @@ class Bispectrum():
 
     def __init__(self, signal, fft_size=1024, reshape=False, method='direct', fs=1):
         """
-        :param signal: A stationary discrete time process.
         If reshape is False, then signal is a numpy matrix with dimensions: K (records) x M (samples per record)
         If reshape is True, then signal is assumed to be 1d.
+
+        :param signal: A stationary discrete time process.
         :param fft_size: Size of the FFT == the number of columns == M (samples per record)
         :param method: Either direct, which is the default or it can be set to indirect as defined in [1]
         :param reshape: the number of columns will be fft_size and the number of rows will be calculated accordingly
