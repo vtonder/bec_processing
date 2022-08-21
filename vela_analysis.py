@@ -1,17 +1,15 @@
-from constants import *
 import numpy as np
+from constants import frequencies, freq_resolution, vela_dm, dispersion_constant, vela_T
 
-# center frequencies of each 1024 subbands
-frequencies = np.arange(856+(freq_resolution/1e6)/2,1712-(freq_resolution/1e6)/2,freq_resolution/1e6)
 smearing_band = [] # ms
 for freq in frequencies:
-    smearing_band.append(8.3*10e6 * vela_dm * ((freq_resolution/1e6)/freq**3))
+    smearing_band.append(8.3*10e6 * vela_dm * (freq_resolution/freq**3))
 
 print("smearing")
 print(smearing_band)
 
-worst_delay = (c*vela_dm*(1/(frequencies[0]**2) - 1/(frequencies[-1]**2)))
-num_vela_delay = worst_delay/(vela_T*1000)
+worst_delay = (dispersion_constant*vela_dm*(1/(frequencies[0]**2) - 1/(frequencies[-1]**2)))
+num_vela_delay = worst_delay/vela_T
 
 print(worst_delay, num_vela_delay)
 
