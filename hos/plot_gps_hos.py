@@ -1,9 +1,9 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-DIRECTORY = '/home/vereese/git/phd_data/'
+DIRECTORY = '/home/vereese/git/phd_data/gps_hos/output_data/'
 URSI_DIR = '/home/vereese/Documents/PhD/URSI2022/'
-NUM_BITS1 = str(300)
+NUM_BITS1 = str(1)
 NUM_BITS2 = str(300)
 
 font = {'family': 'STIXGeneral',
@@ -18,7 +18,7 @@ ca_res = 2 * ca / fft_len
 py_freq = np.arange(-py, py, py_res)
 ca_freq = np.arange(-ca, ca, ca_res)
 def get_freq(code):
-    if code.find('PY') != -1:
+    if code.find('I_') != -1:
         w0 = py_freq[0]
         w1 = py_freq[-1]
     else:
@@ -34,11 +34,10 @@ gps_data2 = {'I_PY':[], 'Q_CA':[],
            'I_PY_D':[], 'Q_CA_D':[],
            'I_CA_D':[], 'Q_L2CM_Dc':[]}
 
-
 names = list(gps_data2.keys())
 for code in gps_data2.keys():
     gps_data1[code] = np.load(DIRECTORY + code + '_' + NUM_BITS1 + 'bit_bispec.npy')
-    gps_data2[code] = np.load(DIRECTORY + code + '_' + NUM_BITS2 + 'bit_2048_bispec.npy')
+    gps_data2[code] = np.load(DIRECTORY + code + '_' + NUM_BITS2 + 'bit_bispec.npy')
 
 #a = list(np.sum(np.abs(gps_data2['I_PY'] - gps_data2['I_PY_D']), axis=0))
 #if not any(a): print("they the same")
@@ -50,13 +49,13 @@ for i in np.arange(6):
     plt.imshow(np.abs(gps_data1[code]), origin='lower', extent=[w0, w1, w0, w1])
     plt.xlabel("$f_1$ [MHz]")
     plt.ylabel("$f_2$ [MHz]")
-    #plt.title(code+NUM_BITS1+' bit 1024 ch')
-    #plt.savefig(URSI_DIR+code+'_300bit_1024', bbox_inches='tight')
+    #plt.title(code+NUM_BITS1)
+    plt.savefig(URSI_DIR+code+'_1bit', bbox_inches='tight')
     plt.figure(i, figsize=[10,10])
     plt.imshow(np.abs(gps_data2[code]), origin='lower', extent=[w0, w1, w0, w1])
     plt.xlabel("$f_1$ [MHz]")
     plt.ylabel("$f_2$ [MHz]")
-    #plt.title(code+NUM_BITS2+' bit 2048 ch')
-    plt.savefig(URSI_DIR+code+'_300bit_2048', bbox_inches='tight')
+    #plt.title(code+NUM_BITS2)
+    plt.savefig(URSI_DIR+code+'_300bit', bbox_inches='tight')
 
 plt.show()
