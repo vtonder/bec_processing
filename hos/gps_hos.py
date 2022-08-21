@@ -10,7 +10,9 @@ from matplotlib.ticker import LinearLocator
 # should not upconvert, should calculate what's the offset when the upconverted signal was downconverted using meerkat's pfb and bandpass sampling
 # there should be a pfb lib in python
 
-DIRECTORY = '/home/vereese/git/phd_data/'
+DIRECTORY = '/home/vereese/git/phd_data/gps_hos/input_data/'
+PLOT_TIME = False
+
 class SIM_GPS:
     f_l1 = 1575.42 * 10 ** 6  # Hz
     f_l2 = 1227.6 * 10 ** 6  # Hz
@@ -73,18 +75,18 @@ gps = SIM_GPS(gps_file_names, 1)
 gps.populate(DIRECTORY)
 #gps.up_convert()
 
-
-fig, ax = plt.subplots(3,2)
-k = 0
-for i in np.arange(2):
-    for j in np.arange(3):
-        ax[j,i].plot(gps.gps_data[gps_file_names[k]][0:200])
-        ax[j,i].set_ylabel(gps_file_names[k])
-        ax[j,i].grid()
-        ax[j,i].set_xlabel("time samples n")
-        ax[j,i].set_xlim([0,200])
-        k += 1
-plt.show()
+if PLOT_TIME:
+    fig, ax = plt.subplots(3,2)
+    k = 0
+    for i in np.arange(2):
+        for j in np.arange(3):
+            ax[j,i].plot(gps.gps_data[gps_file_names[k]][0:200])
+            ax[j,i].set_ylabel(gps_file_names[k])
+            ax[j,i].grid()
+            ax[j,i].set_xlabel("time samples n")
+            ax[j,i].set_xlim([0,200])
+            k += 1
+    plt.show()
 
 M = 1024
 fs_p = 21.518 # MHz sampling rate for P and P(Y) code
