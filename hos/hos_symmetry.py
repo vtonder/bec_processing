@@ -41,7 +41,7 @@ bispectrum[100:150, 200] = 100000000
 bispectrum[100:200, 100] = 100000000
 bispectrum[200, 100:150] = 100000000
 b2 = bispectrum * 0.5
-# this taked care of block I
+# this takes care of block I
 full_bispec[M_2:M, M_2:M] = bispectrum
 full_bispec[M_2:0:-1, M_2:0:-1] = bispectrum
 
@@ -79,5 +79,5 @@ plt.text(350, -300, '11', fontdict=font2)
 plt.text(350, -100, '12', fontdict=font2)
 plt.xlabel("$f_1$ [Hz]")
 plt.ylabel("$f_2$ [Hz]")
-plt.savefig('/home/vereese/Documents/PhD/URSI/sym.png', bbox_inches='tight')
+#plt.savefig('/home/vereese/Documents/PhD/URSI/sym.png', bbox_inches='tight')
 plt.show()
