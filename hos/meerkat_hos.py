@@ -7,8 +7,8 @@ sys.path.append('..')
 from constants import h1_ch, gps_l1_ch, gps_l2_ch, gal_e6_ch
 from matplotlib import pyplot as plt
 
-ANALYSE = True
-PLOT = False
+ANALYSE = False
+PLOT = True
 
 if ANALYSE:
     t1 = time.time()
@@ -42,10 +42,11 @@ if ANALYSE:
     np.save('gal_e6_bispec', b_gal_e6.bispectrum_I)
 
 if PLOT:
+    DIR='/home/vereese/git/phd_data/meerkat_hos/'
     data = {'gps_l1_bispec.npy':[], 'gps_l2_bispec.npy': [], 'gal_e6_bispec.npy': [], 'h1_bispec.npy':[], 'vela_bispec.npy':[]}
 
     for i,fn in enumerate(data.keys()):
-        data[fn] = np.load(fn)
+        data[fn] = np.load(DIR+fn)
         plt.figure(i)
         plt.imshow(np.abs(data[fn]), aspect='auto', origin='lower')
         plt.title(fn)
