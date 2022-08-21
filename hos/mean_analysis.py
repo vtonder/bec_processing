@@ -136,7 +136,7 @@ if args.outlier:
 
 if args.dc_bias:
     t1 = time.time()
-    num_digits = int(np.round(np.log(data_len)))
+    num_digits = len(str(data_len))
     mean_bias_re = np.zeros([num_ch, num_digits])
     mean_bias_im = np.zeros([num_ch, num_digits])
 
