@@ -2,15 +2,15 @@ import h5py
 import numpy as np
 import time
 import sys
+
 sys.path.append('..')
-from hos import Bispectrum
 from constants import start_indices, num_ch
 import argparse
 import os
 
 # Assume the distribution of the majority of RA data to be 0 mean Gaussian.
 
-# Calculate the mean of a set ie get mean of N samples , then mean of next N samples
+# Optionally calculate the mean of a set ie get mean of N samples , then mean of next N samples
 # Optionally calculate the standard error of the mean of N samples
 # Optionally calculate the median of N samples
 # Optionally calculate the variance of N samples
@@ -23,8 +23,8 @@ import os
 # Ref: https://www.middleprofessor.com/files/applied-biostatistics_bookdown/_book/variability-and-uncertainty-standard-deviations-standard-errors-confidence-intervals.html
 
 parser = argparse.ArgumentParser()
-parser.add_argument("file", help="observation file to process. search path: /home/vereese/pulsar_data/")
-parser.add_argument("N", type=int, help="number of samples in a set")
+parser.add_argument("file", help="observation file to process. search path: /net/com08/data6/vereese/")
+parser.add_argument("-n", "--num_samples", dest="num_samples", type=int, help="number of samples in a set")
 parser.add_argument("-s", "--set", dest="set", type=int,
                     help="number of sets. If not given calculate from entire data set.")
 parser.add_argument("-c", "--ch", type=int, dest="ch", help="Frequency channel to analyse. "
@@ -38,11 +38,16 @@ parser.add_argument("-e", "--std_error", dest="std_error", action='store_true',
 parser.add_argument("-a", "--mean", dest="mean", action='store_true', help="Compute the mean of each set")
 parser.add_argument("-m", "--median", dest="median", action='store_true', help="Compute the median of each set")
 parser.add_argument("-v", "--variance", dest="var", action='store_true', help="Compute the variance of each set")
-parser.add_argument("-o", "--outlier_detection", dest="outlier", action='store_true', help="Conduct 3 sigma outlier test")
+parser.add_argument("-o", "--outlier_detection", dest="outlier", action='store_true',
+                    help="Conduct 3 sigma outlier test")
 parser.add_argument("-b", "--dc_bias_test", dest="dc_bias", action='store_true', help="Conduct DC bias test")
 args = parser.parse_args()
 
-directory = args.directory+args.file[6:10]+'/'
+# strip off last 4 digits of observation code and add it onto the directory path unless the path already contains it
+if args.file[6:10] not in args.directory:
+    directory = args.directory + args.file[6:10] + '/'
+else:
+    directory = args.directory
 if not os.path.exists(directory):
     os.makedirs(directory, exist_ok=True)
 
@@ -50,15 +55,15 @@ if args.ch:
     num_ch = 1
 
 t1 = time.time()
-data_file = h5py.File('/home/vereese/pulsar_data/'+args.file, 'r')
+data_file = h5py.File('/home/vereese/pulsar_data/' + args.file, 'r')
 data = data_file['Data/bf_raw'][...]
 start_index = start_indices[args.file]
 
 if num_ch == 1:
     data_re = data[args.ch, start_index:, 0]
     data_im = data[args.ch, start_index:, 1]
-    str_ch = '_1ch'+str(args.ch)+'_'
-    data_len = len(data_re) # Re & Im freq channels will have the same length
+    str_ch = '_1ch' + str(args.ch) + '_'
+    data_len = len(data_re)  # Re & Im freq channels will have the same length
     data_re = data_re.reshape(num_ch, data_len)
     data_im = data_im.reshape(num_ch, data_len)
 else:
@@ -68,14 +73,19 @@ else:
     data_len = len(data_re[0, :])  # Re & Im freq channels will have the same length
 print("Reading in data took: ", time.time() - t1, " s")
 
-N = args.N  # number of samples in a set
+# number of samples in a set
+if args.num_samples:
+    N = args.num_samples
+else:
+    N = data_len
+
 # number of sets
 if args.set:
     S = args.set
 else:
     S = int(data_len / N)
 
-pol = args.file[-5:-3] # polarisation 0x or 0y
+pol = args.file[-5:-3]  # polarisation 0x or 0y
 
 means_re, means_im = np.zeros([num_ch, S]), np.zeros([num_ch, S])
 std_err_re, std_err_im = np.zeros([num_ch, S]), np.zeros([num_ch, S])
@@ -141,13 +151,13 @@ if args.dc_bias:
     mean_bias_im = np.zeros([num_ch, num_digits])
 
     for i in np.arange(num_digits):
-        data_slice = int(data_len/(10**(num_digits-1-i)))
-        mean_bias_re[:,i] = np.abs(np.mean(data_re[:,0:data_slice], axis=1))
-        mean_bias_im[:,i] = np.abs(np.mean(data_im[:,0:data_slice], axis=1))
+        data_slice = int(data_len / (10 ** (num_digits - 1 - i)))
+        mean_bias_re[:, i] = np.abs(np.mean(data_re[:, 0:data_slice], axis=1))
+        mean_bias_im[:, i] = np.abs(np.mean(data_im[:, 0:data_slice], axis=1))
 
     np.save(directory + 'means_bias_re_' + pol + str_ch + str(num_digits), mean_bias_re)
     np.save(directory + 'means_bias_im_' + pol + str_ch + str(num_digits), mean_bias_im)
-    print("DC bias test took", time.time()-t1)
+    print("DC bias test took", time.time() - t1)
 
 if args.mean:
     np.save(directory + 'means_re_' + pol + str_ch + str(args.N) + '_' + str(S), means_re)
