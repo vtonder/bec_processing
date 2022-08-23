@@ -56,7 +56,7 @@ if args.ch:
 
 t1 = time.time()
 data_file = h5py.File('/home/vereese/pulsar_data/' + args.file, 'r')
-data = data_file['Data/bf_raw'][...]
+data = data_file['Data/bf_raw']
 start_index = start_indices[args.file]
 
 if num_ch == 1:
@@ -151,7 +151,7 @@ if args.dc_bias:
     mean_bias_im = np.zeros([num_ch, num_digits])
 
     for i in np.arange(num_digits):
-        data_slice = int(data_len / (10 ** (num_digits - i)))
+        data_slice = 10**(i+1)
         mean_bias_re[:, i] = np.abs(np.mean(data_re[:, 0:data_slice], axis=1))
         mean_bias_im[:, i] = np.abs(np.mean(data_im[:, 0:data_slice], axis=1))
 
