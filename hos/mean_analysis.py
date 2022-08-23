@@ -151,7 +151,7 @@ if args.dc_bias:
     mean_bias_im = np.zeros([num_ch, num_digits])
 
     for i in np.arange(num_digits):
-        data_slice = int(data_len / (10 ** (num_digits - 1 - i)))
+        data_slice = int(data_len / (10 ** (num_digits - i)))
         mean_bias_re[:, i] = np.abs(np.mean(data_re[:, 0:data_slice], axis=1))
         mean_bias_im[:, i] = np.abs(np.mean(data_im[:, 0:data_slice], axis=1))
 
