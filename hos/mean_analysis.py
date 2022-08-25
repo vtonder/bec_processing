@@ -54,24 +54,21 @@ if not os.path.exists(directory):
 if args.ch:
     num_ch = 1
 
-t1 = time.time()
+#t1 = time.time()
 data_file = h5py.File('/home/vereese/pulsar_data/' + args.file, 'r')
-data = data_file['Data/bf_raw'][...]
+data = data_file['Data/bf_raw']
 start_index = start_indices[args.file]
-
+data_len = int(data.shape[1] - start_index)
 if num_ch == 1:
-    data_re = data[args.ch, start_index:, 0]
-    data_im = data[args.ch, start_index:, 1]
+    data = data[args.ch, start_index:, :]
+    #data_im = data[args.ch, start_index:, 1]
     str_ch = '_1ch' + str(args.ch) + '_'
-    data_len = len(data_re)  # Re & Im freq channels will have the same length
-    data_re = data_re.reshape(num_ch, data_len)
-    data_im = data_im.reshape(num_ch, data_len)
+    data = data.reshape(num_ch, data_len, 2)
+    #data_im = data_im.reshape(num_ch, data_len)
 else:
-    data_re = data[:, start_index:, 0]
-    data_im = data[:, start_index:, 1]
     str_ch = '_1024ch_'
-    data_len = len(data_re[0, :])  # Re & Im freq channels will have the same length
-print("Reading in data took: ", time.time() - t1, " s")
+
+#print("Reading in data took: ", time.time() - t1, " s")
 
 # number of samples in a set
 if args.num_samples:
@@ -87,11 +84,11 @@ else:
 
 pol = args.file[-5:-3]  # polarisation 0x or 0y
 
-means_re, means_im = np.zeros([num_ch, S]), np.zeros([num_ch, S])
-std_err_re, std_err_im = np.zeros([num_ch, S]), np.zeros([num_ch, S])
-median_re, median_im = np.zeros([num_ch, S]), np.zeros([num_ch, S])
-var_re, var_im = np.zeros([num_ch, S]), np.zeros([num_ch, S])
-outlier_re, outlier_im = [[] for _ in np.arange(num_ch)], [[] for _ in np.arange(num_ch)]
+means = np.zeros([num_ch, S, 2])
+std_errs = np.zeros([num_ch, S, 2])
+medians = np.zeros([num_ch, S, 2])
+#var_re, var_im = np.zeros([num_ch, S]), np.zeros([num_ch, S])
+#outlier_re, outlier_im = [[] for _ in np.arange(num_ch)], [[] for _ in np.arange(num_ch)]
 
 print("saving data to               : ", directory)
 print("total data length            : ", data_len)
@@ -102,22 +99,24 @@ print("number of sets               : ", S)
 if args.mean or args.std_error or args.median:
     t1 = time.time()
     for i in np.arange(S):
-        re_part = data_re[:, i * N:(i + 1) * N]
-        im_part = data_im[:, i * N:(i + 1) * N]
+        #re_part = data_re[:, i * N:(i + 1) * N]
+        #im_part = data_im[:, i * N:(i + 1) * N]
+        start = (i * N) + start_index
+        end = start + N
         if args.mean:
-            means_re[:, i] = np.mean(re_part, axis=1)
-            means_im[:, i] = np.mean(im_part, axis=1)
+            means[:, i, :] = np.mean(data[:, start:end, :], axis=1)
+            #means_im[:, i] = np.mean(data[], axis=1)
         if args.std_error:
-            std_err_re[:, i] = np.sqrt(np.var(re_part, axis=1) / N)
-            std_err_im[:, i] = np.sqrt(np.var(im_part, axis=1) / N)
+            std_errs[:, i, :] = np.sqrt(np.var(data[:, start:end, :], axis=1) / N)
+            #std_err_im[:, i] = np.sqrt(np.var(im_part, axis=1) / N)
         if args.median:
-            median_re[:, i] = np.median(re_part, axis=1)
-            median_im[:, i] = np.median(im_part, axis=1)
+            medians[:, i, :] = np.median(data[:, start:end, :], axis=1)
+            #median_im[:, i] = np.median(im_part, axis=1)
     print("Analysis took: ", time.time() - t1, " s")
 
 # TODO: Compute outliers based on MAD rejection
 # https://casper.astro.berkeley.edu/wiki/Impulsive_RFI_Excision:_CASPER_Library_Block
-if args.outlier:
+"""if args.outlier:
     t1 = time.time()
     mean_re = np.mean(data_re, axis=1)
     mean_im = np.mean(data_im, axis=1)
@@ -142,32 +141,32 @@ if args.outlier:
     print("Outlier detection took: ", time.time() - t1, " s")
 
     np.save(directory + 'real_outliers_' + pol + str_ch, perc_re_outliers)
-    np.save(directory + 'imag_outliers_' + pol + str_ch, perc_im_outliers)
+    np.save(directory + 'imag_outliers_' + pol + str_ch, perc_im_outliers)"""
 
 if args.dc_bias:
     t1 = time.time()
     num_digits = len(str(data_len))
-    mean_bias_re = np.zeros([num_ch, num_digits])
-    mean_bias_im = np.zeros([num_ch, num_digits])
+    mean_bias = np.zeros([num_ch, num_digits, 2])
+    #mean_bias_im = np.zeros([num_ch, num_digits])
 
     for i in np.arange(num_digits):
         data_slice = 10**(i+1)
-        mean_bias_re[:, i] = np.abs(np.mean(data_re[:, 0:data_slice], axis=1))
-        mean_bias_im[:, i] = np.abs(np.mean(data_im[:, 0:data_slice], axis=1))
+        mean_bias[:, i] = np.abs(np.mean(data[:, start_index:data_slice], axis=1))
+        #mean_bias_im[:, i] = np.abs(np.mean(data_im[:, 0:data_slice], axis=1))
 
-    np.save(directory + 'means_bias_re_' + pol + str_ch + str(num_digits), mean_bias_re)
-    np.save(directory + 'means_bias_im_' + pol + str_ch + str(num_digits), mean_bias_im)
+    np.save(directory + 'means_bias' + pol + str_ch + str(num_digits), mean_bias)
+    #np.save(directory + 'means_bias_im_' + pol + str_ch + str(num_digits), mean_bias_im)
     print("DC bias test took", time.time() - t1)
 
 if args.mean:
-    np.save(directory + 'means_re_' + pol + str_ch + str(N) + '_' + str(S), means_re)
-    np.save(directory + 'means_im_' + pol + str_ch + str(N) + '_' + str(S), means_im)
+    np.save(directory + 'means_' + pol + str_ch + str(N) + '_' + str(S), means)
+    #np.save(directory + 'means_im_' + pol + str_ch + str(N) + '_' + str(S), means_im)
 if args.std_error:
-    np.save(directory + "std_err_re_" + pol + str_ch + str(N) + '_' + str(S), std_err_re)
-    np.save(directory + "std_err_im_" + pol + str_ch + str(N) + '_' + str(S), std_err_im)
+    np.save(directory + "std_errs_" + pol + str_ch + str(N) + '_' + str(S), std_errs)
+    #np.save(directory + "std_err_im_" + pol + str_ch + str(N) + '_' + str(S), std_err_im)
 if args.median:
-    np.save(directory + "median_re_" + pol + str_ch + str(N) + '_' + str(S), std_err_re)
-    np.save(directory + "median_im_" + pol + str_ch + str(N) + '_' + str(S), std_err_im)
+    np.save(directory + "medians_" + pol + str_ch + str(N) + '_' + str(S), std_errs)
+    #np.save(directory + "median_im_" + pol + str_ch + str(N) + '_' + str(S), std_err_im)
 
 # TODO: delete this code.
 """print("var of sample", np.var(data_re[:,N:2*N]))
