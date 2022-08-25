@@ -56,7 +56,7 @@ if args.ch:
 
 t1 = time.time()
 data_file = h5py.File('/home/vereese/pulsar_data/' + args.file, 'r')
-data = data_file['Data/bf_raw']
+data = data_file['Data/bf_raw'][...]
 start_index = start_indices[args.file]
 
 if num_ch == 1:
@@ -160,14 +160,14 @@ if args.dc_bias:
     print("DC bias test took", time.time() - t1)
 
 if args.mean:
-    np.save(directory + 'means_re_' + pol + str_ch + str(args.N) + '_' + str(S), means_re)
-    np.save(directory + 'means_im_' + pol + str_ch + str(args.N) + '_' + str(S), means_im)
+    np.save(directory + 'means_re_' + pol + str_ch + str(N) + '_' + str(S), means_re)
+    np.save(directory + 'means_im_' + pol + str_ch + str(N) + '_' + str(S), means_im)
 if args.std_error:
-    np.save(directory + "std_err_re_" + pol + str_ch + str(args.N) + '_' + str(S), std_err_re)
-    np.save(directory + "std_err_im_" + pol + str_ch + str(args.N) + '_' + str(S), std_err_im)
+    np.save(directory + "std_err_re_" + pol + str_ch + str(N) + '_' + str(S), std_err_re)
+    np.save(directory + "std_err_im_" + pol + str_ch + str(N) + '_' + str(S), std_err_im)
 if args.median:
-    np.save(directory + "median_re_" + pol + str_ch + str(args.N) + '_' + str(S), std_err_re)
-    np.save(directory + "median_im_" + pol + str_ch + str(args.N) + '_' + str(S), std_err_im)
+    np.save(directory + "median_re_" + pol + str_ch + str(N) + '_' + str(S), std_err_re)
+    np.save(directory + "median_im_" + pol + str_ch + str(N) + '_' + str(S), std_err_im)
 
 # TODO: delete this code.
 """print("var of sample", np.var(data_re[:,N:2*N]))
