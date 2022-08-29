@@ -34,7 +34,10 @@ frequencies = np.arange(856 + (freq_resolution / 2), 1712 + (freq_resolution / 2
 h1_ch = np.abs(frequencies-h1).argmin()
 gps_l1_ch = np.abs(frequencies-gps_l1).argmin()
 gps_l2_ch = np.abs(frequencies-gps_l2).argmin()
+gal_5b_ch = np.abs(frequencies-gal_5b).argmin()
 gal_e6_ch = np.abs(frequencies-gal_e6).argmin()
+dirty_ch = np.abs(frequencies-1210).argmin()
+clean_ch = np.abs(frequencies-1450).argmin()
 
 # first non-zero indices for each file. Obtained using the first_nonzero_indices.py script
 # The data files have lots of 0s
