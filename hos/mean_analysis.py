@@ -55,7 +55,7 @@ if args.ch:
     num_ch = 1
 
 #t1 = time.time()
-data_file = h5py.File('/home/vereese/pulsar_data/' + args.file, 'r')
+data_file = h5py.File('/net/com08/data6/vereese/' + args.file, 'r')
 data = data_file['Data/bf_raw']
 start_index = start_indices[args.file]
 data_len = int(data.shape[1] - start_index)
