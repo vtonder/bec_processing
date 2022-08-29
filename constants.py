@@ -26,15 +26,15 @@ dispersion_constant = 4.148808e3 # constant for calculating dispersion delay as 
 h1 = 1420.4
 gps_l1 = 1575.42
 gps_l2 = 1227.60
+gal_5b = 1207.14
 gal_e6 = 1278.75
 
 # center frequencies of each 1024 subbands
 frequencies = np.arange(856 + (freq_resolution / 2), 1712 + (freq_resolution / 2), freq_resolution)
-rounded_frequencies = [np.round(f) for f in frequencies]
-h1_ch = rounded_frequencies.index(round(h1))
-gps_l1_ch = rounded_frequencies.index(round(gps_l1))
-gps_l2_ch = rounded_frequencies.index(round(gps_l2))
-gal_e6_ch = rounded_frequencies.index(round(gal_e6))
+h1_ch = np.abs(frequencies-h1).argmin()
+gps_l1_ch = np.abs(frequencies-gps_l1).argmin()
+gps_l2_ch = np.abs(frequencies-gps_l2).argmin()
+gal_e6_ch = np.abs(frequencies-gal_e6).argmin()
 
 # first non-zero indices for each file. Obtained using the first_nonzero_indices.py script
 # The data files have lots of 0s
