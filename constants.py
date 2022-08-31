@@ -38,16 +38,23 @@ gal_5b_ch = np.abs(frequencies-gal_5b).argmin()
 gal_e6_ch = np.abs(frequencies-gal_e6).argmin()
 dirty_ch = np.abs(frequencies-1210).argmin()
 clean_ch = np.abs(frequencies-1450).argmin()
+clean_ch2 = 600
+dirty_ch2 = 105
 
 # first non-zero indices for each file. Obtained using the first_nonzero_indices.py script
 # The data files have lots of 0s
 # The script searches for the largest first non 0 element across all 3 dimension in the file
 start_indices = {
+ '1604641064_wide_tied_array_channelised_voltage_0x.h5': 0,
+ '1604641064_wide_tied_array_channelised_voltage_0y.h5': 0,
  '1604641234_wide_tied_array_channelised_voltage_0x.h5': 13634560,
  '1604643883_wide_tied_array_channelised_voltage_0x.h5': 12445441,
  '1604641569_wide_tied_array_channelised_voltage_0x.h5': 13625088,
  '1604641064_wide_tied_array_channelised_voltage_0y.h5': 13634560
 }
+# Make the start index a multiple of the time chunk size
+for key, i in start_indices.items():
+ start_indices[key] = int(round(i/time_chunk_size)*time_chunk_size)
 
 # Pulsar information
 # Vela
