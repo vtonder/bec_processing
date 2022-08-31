@@ -31,11 +31,6 @@ parser.add_argument("file", help="observation file to process. search path: /net
 
 parser.add_argument("-d", "--directory", dest="directory", help="path of directory to save data products to",
                     default="/home/vereese/phd_data/mean_analysis/")
-parser.add_argument("-e", "--std_error", dest="std_error", action='store_true',
-                    help="Compute the standard error of the mean estimate of each"
-                         " sample")
-parser.add_argument("-a", "--mean", dest="mean", action='store_true', help="Compute the mean of each set")
-parser.add_argument("-m", "--median", dest="median", action='store_true', help="Compute the median of each set")
 
 args = parser.parse_args()
 
@@ -47,33 +42,41 @@ start_index = start_indices[args.file]
 # Ensure data_len is a multiple of time_chunk_size
 data_len = int((data.shape[1]/time_chunk_size)*time_chunk_size - start_index)
 chunks_rank = np.floor(data_len / time_chunk_size / size) # number of chunks per rank to process, make it a round number
-start = rank*chunks_rank*time_chunk_size
-end = start + chunks_rank*time_chunk_size
+start = int(rank*chunks_rank*time_chunk_size)
+end = int(start + chunks_rank*time_chunk_size)
 
-means = np.zeros([num_ch, 2])
-#sum_squares = np.zeros([num_ch, 2])
-#medians = np.zeros([num_ch, 2])
+t1 = MPI.Wtime()
+means = np.mean(data[:, start:end, :], axis=1)
+if rank == 0:
+    print("mean analysis took: ", MPI.Wtime() - t1, " s")
 
-if args.mean or args.std_error or args.median:
-    t1 = time.time()
-    if args.mean:
-        means = np.mean(data[:, start:end, :], axis=1)
+t1 = MPI.Wtime()
+sum_squares = np.sum(data[:, start:end, :]**2, axis=1)
+if rank == 0:
+    print("sum squares took: ", MPI.Wtime() - t1, " s")
 
-    """if args.std_error:
-        sum_squares = np.sum(data[:, start:end, :]**2, axis=1)
-
-    if args.median:
-        medians = np.median(data[:, start:end, :], axis=1)"""
-
-    print("Analysis took: ", time.time() - t1, " s")
+#t1 = MPI.Wtime()
+#medians = np.median(data[:, start:end, :], axis=1)
+#if rank == 0:
+#    print("median took: ", MPI.Wtime() - t1, " s")
 
 if rank == 0:
     total_mean = means
+    total_sum_squares = sum_squares
+
     for i in range(1, size):
-        tmp = np.empty((num_ch,2))
-        comm.Recv([tmp, MPI.DOUBLE], source=i, tag=14)
-        total_mean += tmp
-    total_mean = total_mean/size
+        tmp_mean = np.empty((num_ch,2))
+        tmp_ss = np.empty((num_ch, 2))
+
+        comm.Recv([tmp_mean, MPI.DOUBLE], source=i, tag=14)
+        comm.Recv([tmp_ss, MPI.DOUBLE], source=i, tag=15)
+
+        total_mean += tmp_mean
+        total_sum_squares += tmp_ss
+
+    total_mean = total_mean / size
+    var = (total_sum_squares - total_mean)/data_len
+    std_err = np.sqrt(var/data_len)
 
     # strip off last 4 digits of observation code and add it onto the directory path unless the path already contains it
     if args.file[6:10] not in args.directory:
@@ -86,9 +89,13 @@ if rank == 0:
     print("saving data to               : ", directory)
     print("total data length            : ", data_len)
     print("number of frequency channels : ", num_ch)
+    print("number of frequency channels : ", num_ch)
 
-    pol = args.file[-5:-3]  # polarisation 0x or 0y
-    if args.mean:
-        np.save(directory + 'means_' + pol + str(num_ch), total_mean)
+    pol = args.file[-5:-3]+'_'  # polarisation 0x or 0y
+
+    np.save(directory + 'means_' + pol + str(num_ch), total_mean)
+    np.save(directory + 'var_' + pol + str(num_ch), var)
+    np.save(directory + 'std_err_' + pol + str(num_ch), std_err)
 else:
     comm.Send([means, MPI.DOUBLE], dest=0, tag=14)
+    comm.Send([sum_squares, MPI.DOUBLE], dest=0, tag=15)
