@@ -46,13 +46,16 @@ start = int(rank*chunks_rank*time_chunk_size)
 end = int(start + chunks_rank*time_chunk_size)
 
 t1 = MPI.Wtime()
-means = np.mean(data[:, start:end, :], axis=1)
+d1 = data[:, start:end, :].astype(np.float)
+means = np.mean(d1, axis=1)
 if rank == 0:
     print("mean analysis took: ", MPI.Wtime() - t1, " s")
 
 t1 = MPI.Wtime()
-sum_squares = np.sum(data[:, start:end, :]**2, axis=1)
+sum_squares = np.sum(d1**2, axis=1)
 if rank == 0:
+    print("dtype sum square:", sum_squares.dtype)
+    print("chunks_rank: ", chunks_rank)
     print("sum squares took: ", MPI.Wtime() - t1, " s")
 
 #t1 = MPI.Wtime()
@@ -63,10 +66,11 @@ if rank == 0:
 if rank == 0:
     total_mean = means
     total_sum_squares = sum_squares
+    print("dtype total sum square:", total_sum_squares.dtype)
 
     for i in range(1, size):
-        tmp_mean = np.empty((num_ch,2))
-        tmp_ss = np.empty((num_ch, 2))
+        tmp_mean = np.zeros([num_ch, 2], dtype='float64')
+        tmp_ss = np.zeros([num_ch, 2], dtype='float64')
 
         comm.Recv([tmp_mean, MPI.DOUBLE], source=i, tag=14)
         comm.Recv([tmp_ss, MPI.DOUBLE], source=i, tag=15)
