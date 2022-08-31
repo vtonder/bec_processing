@@ -1,0 +1,94 @@
+import h5py
+import numpy as np
+import time
+import sys
+from mpi4py import MPI
+sys.path.append('..')
+from constants import start_indices, num_ch, time_chunk_size
+import argparse
+import os
+# TODO script needs to be accelerated using MPI
+# Assume the distribution of the majority of RA data to be 0 mean Gaussian.
+
+# Optionally calculate the mean of a set ie get mean of N samples , then mean of next N samples
+# Optionally calculate the standard error of the mean of N samples
+# Optionally calculate the median of N samples
+# Optionally calculate the variance of N samples
+# Optionally calculate % outliers using the 3 sigma normality test
+# Do analysis across all frequency channels unless 1 channel is specified using -c
+# The number of sets are calculated from the amount of data in a file unless specified using -s
+
+# Note: The std deviation of a set of means is the std error as calculated using std / sqrt(N), where std is the sample
+#       standard deviation and N is the number of samples in that set
+# Ref: https://www.middleprofessor.com/files/applied-biostatistics_bookdown/_book/variability-and-uncertainty-standard-deviations-standard-errors-confidence-intervals.html
+
+comm = MPI.COMM_WORLD
+size = comm.Get_size()
+rank = comm.Get_rank()
+
+parser = argparse.ArgumentParser()
+parser.add_argument("file", help="observation file to process. search path: /net/com08/data6/vereese/")
+
+parser.add_argument("-d", "--directory", dest="directory", help="path of directory to save data products to",
+                    default="/home/vereese/phd_data/mean_analysis/")
+parser.add_argument("-e", "--std_error", dest="std_error", action='store_true',
+                    help="Compute the standard error of the mean estimate of each"
+                         " sample")
+parser.add_argument("-a", "--mean", dest="mean", action='store_true', help="Compute the mean of each set")
+parser.add_argument("-m", "--median", dest="median", action='store_true', help="Compute the median of each set")
+
+args = parser.parse_args()
+
+
+#t1 = time.time()
+data_file = h5py.File('/net/com08/data6/vereese/' + args.file, 'r', rdcc_nbytes= 0)
+data = data_file['Data/bf_raw']
+start_index = start_indices[args.file]
+# Ensure data_len is a multiple of time_chunk_size
+data_len = int((data.shape[1]/time_chunk_size)*time_chunk_size - start_index)
+chunks_rank = np.floor(data_len / time_chunk_size / size) # number of chunks per rank to process, make it a round number
+start = rank*chunks_rank*time_chunk_size
+end = start + chunks_rank*time_chunk_size
+
+means = np.zeros([num_ch, 2])
+#sum_squares = np.zeros([num_ch, 2])
+#medians = np.zeros([num_ch, 2])
+
+if args.mean or args.std_error or args.median:
+    t1 = time.time()
+    if args.mean:
+        means = np.mean(data[:, start:end, :], axis=1)
+
+    """if args.std_error:
+        sum_squares = np.sum(data[:, start:end, :]**2, axis=1)
+
+    if args.median:
+        medians = np.median(data[:, start:end, :], axis=1)"""
+
+    print("Analysis took: ", time.time() - t1, " s")
+
+if rank == 0:
+    total_mean = means
+    for i in range(1, size):
+        tmp = np.empty((num_ch,2))
+        comm.Recv([tmp, MPI.DOUBLE], source=i, tag=14)
+        total_mean += tmp
+    total_mean = total_mean/size
+
+    # strip off last 4 digits of observation code and add it onto the directory path unless the path already contains it
+    if args.file[6:10] not in args.directory:
+        directory = args.directory + args.file[6:10] + '/'
+    else:
+        directory = args.directory
+    if not os.path.exists(directory):
+        os.makedirs(directory, exist_ok=True)
+
+    print("saving data to               : ", directory)
+    print("total data length            : ", data_len)
+    print("number of frequency channels : ", num_ch)
+
+    pol = args.file[-5:-3]  # polarisation 0x or 0y
+    if args.mean:
+        np.save(directory + 'means_' + pol + str(num_ch), total_mean)
+else:
+    comm.Send([means, MPI.DOUBLE], dest=0, tag=14)
