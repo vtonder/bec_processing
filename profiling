@@ -1,3 +1,12 @@
+****************
+4) mean analysis
+****************
+- code that read in everything into cache using elipses data = file['Data/bf_raw'][...] and reading re and im separately took ~ 2 hours.
+- not reading into cache and conducting IO directly to disk and operating on re and im at the same time, took 5847.446479797363 s
+- adding rdcc_nbytes=1024*128 to the h5py.File() instantiation: 5809.016752719879 s
+- adding rdcc_nbytes= 0 took: 5696.401374340057
+ 
+
 **************************
 3) Bispectrum computation
 **************************

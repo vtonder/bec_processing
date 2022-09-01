@@ -42,22 +42,32 @@ start_index = start_indices[args.file]
 # Ensure data_len is a multiple of time_chunk_size
 data_len = int((data.shape[1]/time_chunk_size)*time_chunk_size - start_index)
 chunks_rank = np.floor(data_len / time_chunk_size / size) # number of chunks per rank to process, make it a round number
-data_len = int(size*chunks_rank*time_chunk_size)
-start = int(rank*chunks_rank*time_chunk_size)
+data_len = int(size*chunks_rank*time_chunk_size) # ensure data_len is a multiple of time_chunk_size
+start = int(rank*chunks_rank*time_chunk_size + start_index)
 end = int(start + chunks_rank*time_chunk_size)
 
-t1 = MPI.Wtime()
-d1 = data[:, start:end, :].astype(np.float)
-means = np.mean(d1, axis=1)
 if rank == 0:
-    print("mean analysis took: ", MPI.Wtime() - t1, " s")
+    print("total data length                    : ", data_len)
+    print("number of ranks                      : ", size)
+    print("number of chunks per rank to process : ", chunks_rank)   
+    print("start and end for rank 0             : ", start, end)
+    print("number of frequency channels         : ", num_ch)
+
 
 t1 = MPI.Wtime()
-sum_squares = np.sum(d1**2, axis=1)
+
+sum_squares = np.zeros([num_ch, 2], dtype='float64')
+int_means = np.zeros([int(chunks_rank), num_ch, 2], dtype='float64')
+
+for idx, i in enumerate(range(start, end, time_chunk_size)):
+    d1 = data[:, i:(i+time_chunk_size), :].astype(np.float)
+    int_means[idx,:,:] = np.mean(d1, axis=1)
+    sum_squares += np.sum(d1**2, axis=1)
+
+means = np.mean(int_means, axis=0)
 if rank == 0:
-    print("dtype sum square:", sum_squares.dtype)
-    print("chunks_rank: ", chunks_rank)
-    print("sum squares took: ", MPI.Wtime() - t1, " s")
+    print("mean analysis took: ", MPI.Wtime() - t1, " s")
+    print("shape of means: ", means.shape)
 
 #t1 = MPI.Wtime()
 #medians = np.median(data[:, start:end, :], axis=1)
@@ -92,9 +102,6 @@ if rank == 0:
         os.makedirs(directory, exist_ok=True)
 
     print("saving data to               : ", directory)
-    print("total data length            : ", data_len)
-    print("number of frequency channels : ", num_ch)
-    print("number of frequency channels : ", num_ch)
 
     pol = args.file[-5:-3]+'_'  # polarisation 0x or 0y
 
