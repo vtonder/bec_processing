@@ -42,6 +42,7 @@ start_index = start_indices[args.file]
 # Ensure data_len is a multiple of time_chunk_size
 data_len = int((data.shape[1]/time_chunk_size)*time_chunk_size - start_index)
 chunks_rank = np.floor(data_len / time_chunk_size / size) # number of chunks per rank to process, make it a round number
+data_len = int(size*chunks_rank*time_chunk_size)
 start = int(rank*chunks_rank*time_chunk_size)
 end = int(start + chunks_rank*time_chunk_size)
 
@@ -79,7 +80,7 @@ if rank == 0:
         total_sum_squares += tmp_ss
 
     total_mean = total_mean / size
-    var = (total_sum_squares - total_mean)/data_len
+    var = total_sum_squares/data_len - total_mean**2
     std_err = np.sqrt(var/data_len)
 
     # strip off last 4 digits of observation code and add it onto the directory path unless the path already contains it
