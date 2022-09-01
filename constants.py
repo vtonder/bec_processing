@@ -44,17 +44,16 @@ dirty_ch2 = 105
 # first non-zero indices for each file. Obtained using the first_nonzero_indices.py script
 # The data files have lots of 0s
 # The script searches for the largest first non 0 element across all 3 dimension in the file
+# Then made it a multiple of the time chunk size
 start_indices = {
  '1604641064_wide_tied_array_channelised_voltage_0x.h5': 0,
- '1604641064_wide_tied_array_channelised_voltage_0y.h5': 0,
- '1604641234_wide_tied_array_channelised_voltage_0x.h5': 13634560,
- '1604643883_wide_tied_array_channelised_voltage_0x.h5': 12445441,
- '1604641569_wide_tied_array_channelised_voltage_0x.h5': 13625088,
- '1604641064_wide_tied_array_channelised_voltage_0y.h5': 13634560
+ '1604641064_wide_tied_array_channelised_voltage_0y.h5': 13631488,
+ '1604641234_wide_tied_array_channelised_voltage_0x.h5': 13631488,
+ '1604643883_wide_tied_array_channelised_voltage_0x.h5': 12451840,
+ '1604641569_wide_tied_array_channelised_voltage_0x.h5': 13631488
 }
-# Make the start index a multiple of the time chunk size
 for key, i in start_indices.items():
- start_indices[key] = int(round(i/time_chunk_size)*time_chunk_size)
+  start_indices[key] = int(round(i/time_chunk_size)*time_chunk_size)
 
 # Pulsar information
 # Vela
