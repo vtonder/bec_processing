@@ -55,7 +55,7 @@ for i in np.arange(6):
     plt.imshow(np.abs(gps_data2[code]), origin='lower', extent=[w0, w1, w0, w1])
     plt.xlabel("$f_1$ [MHz]")
     plt.ylabel("$f_2$ [MHz]")
-    #plt.title(code+NUM_BITS2)
-    plt.savefig(URSI_DIR+code+'_300bit', bbox_inches='tight')
+    plt.title(code+NUM_BITS2)
+    #plt.savefig(URSI_DIR+code+'_300bit', bbox_inches='tight')
 
 plt.show()
