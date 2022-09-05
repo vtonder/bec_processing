@@ -54,6 +54,8 @@ for idx, i in enumerate(range(start, end, time_chunk_size)):
     sum_squares += np.sum(d1 ** 2, axis=1)
 
 means = np.mean(int_means, axis=0)
+t2 = MPI.Wtime() - t1
+
 if rank == 0:
     print("mean analysis took: ", MPI.Wtime() - t1, " s")
     print("shape of means: ", means.shape)
@@ -66,9 +68,12 @@ if rank == 0:
     for i in range(1, size):
         tmp_mean = np.zeros([num_ch, 2], dtype='float64')
         tmp_ss = np.zeros([num_ch, 2], dtype='float64')
+        tmp_t = 0 
 
         comm.Recv([tmp_mean, MPI.DOUBLE], source=i, tag=14)
         comm.Recv([tmp_ss, MPI.DOUBLE], source=i, tag=15)
+        comm.Recv([tmp_t, MPI.DOUBLE], source=i, tag=15)
+
 
         total_mean += tmp_mean
         total_sum_squares += tmp_ss
