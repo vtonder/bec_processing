@@ -64,24 +64,29 @@ if rank == 0:
     total_mean = means
     total_sum_squares = sum_squares
     print("dtype total sum square:", total_sum_squares.dtype)
-
+    longest_t = t2 # Assume rank 0 takes the longest to get started
+    rank_lt = 0 # longest time rank
     for i in range(1, size):
         tmp_mean = np.zeros([num_ch, 2], dtype='float64')
         tmp_ss = np.zeros([num_ch, 2], dtype='float64')
-        tmp_t = 0 
+        tmp_t = 0
 
         comm.Recv([tmp_mean, MPI.DOUBLE], source=i, tag=14)
         comm.Recv([tmp_ss, MPI.DOUBLE], source=i, tag=15)
-        comm.Recv([tmp_t, MPI.DOUBLE], source=i, tag=15)
-
+        comm.Recv([tmp_t, MPI.DOUBLE], source=i, tag=16)
 
         total_mean += tmp_mean
         total_sum_squares += tmp_ss
+
+        if longest_t < tmp_t:
+            longest_t = tmp_t
+            rank_lt = i
 
     total_mean = total_mean / size
     var = total_sum_squares / data_len - total_mean ** 2
     std_err = np.sqrt(var / data_len)
 
+    print("Longest time: ", longest_t, "s by rank: ", rank_lt)
     # strip off last 4 digits of observation code and add it onto the directory path unless the path already contains it
     if args.file[6:10] not in args.directory:
         directory = args.directory + args.file[6:10] + '/'
@@ -100,3 +105,4 @@ if rank == 0:
 else:
     comm.Send([means, MPI.DOUBLE], dest=0, tag=14)
     comm.Send([sum_squares, MPI.DOUBLE], dest=0, tag=15)
+    comm.Send([t2, MPI.DOUBLE], dest=0, tag=16)
