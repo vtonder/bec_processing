@@ -36,12 +36,12 @@ data_len = int(size * chunks_rank * time_chunk_size)  # ensure data_len is a mul
 start = int(rank * chunks_rank * time_chunk_size + start_index)
 end = int(start + chunks_rank * time_chunk_size)
 
-if rank == 0:
-    print("total data length                    : ", data_len)
-    print("number of ranks                      : ", size)
-    print("number of chunks per rank to process : ", chunks_rank)
-    print("start and end for rank 0             : ", start, end)
-    print("number of frequency channels         : ", num_ch)
+#if rank == 0:
+#    print("total data length                    : ", data_len)
+#    print("number of ranks                      : ", size)
+#    print("number of chunks per rank to process : ", chunks_rank)
+#    print("start and end for rank 0             : ", start, end)
+#    print("number of frequency channels         : ", num_ch)
 
 t1 = MPI.Wtime()
 
@@ -54,39 +54,29 @@ for idx, i in enumerate(range(start, end, time_chunk_size)):
     sum_squares += np.sum(d1 ** 2, axis=1)
 
 means = np.mean(int_means, axis=0)
-t2 = MPI.Wtime() - t1
 
-if rank == 0:
-    print("mean analysis took: ", MPI.Wtime() - t1, " s")
-    print("shape of means: ", means.shape)
+#if rank == 0:
+    #print("mean analysis took: ", MPI.Wtime() - t1, " s")
+    #print("shape of means: ", means.shape)
 
 if rank == 0:
     total_mean = means
     total_sum_squares = sum_squares
-    print("dtype total sum square:", total_sum_squares.dtype)
-    longest_t = t2 # Assume rank 0 takes the longest to get started
-    rank_lt = 0 # longest time rank
+    #print("dtype total sum square:", total_sum_squares.dtype)
     for i in range(1, size):
         tmp_mean = np.zeros([num_ch, 2], dtype='float64')
         tmp_ss = np.zeros([num_ch, 2], dtype='float64')
-        tmp_t = 0
 
         comm.Recv([tmp_mean, MPI.DOUBLE], source=i, tag=14)
         comm.Recv([tmp_ss, MPI.DOUBLE], source=i, tag=15)
-        comm.Recv([tmp_t, MPI.DOUBLE], source=i, tag=16)
 
         total_mean += tmp_mean
         total_sum_squares += tmp_ss
-
-        if longest_t < tmp_t:
-            longest_t = tmp_t
-            rank_lt = i
 
     total_mean = total_mean / size
     var = total_sum_squares / data_len - total_mean ** 2
     std_err = np.sqrt(var / data_len)
 
-    print("Longest time: ", longest_t, "s by rank: ", rank_lt)
     # strip off last 4 digits of observation code and add it onto the directory path unless the path already contains it
     if args.file[6:10] not in args.directory:
         directory = args.directory + args.file[6:10] + '/'
@@ -95,7 +85,7 @@ if rank == 0:
     if not os.path.exists(directory):
         os.makedirs(directory, exist_ok=True)
 
-    print("saving data to               : ", directory)
+    #print("saving data to               : ", directory)
 
     pol = args.file[-5:-3] + '_'  # polarisation 0x or 0y
 
@@ -105,4 +95,3 @@ if rank == 0:
 else:
     comm.Send([means, MPI.DOUBLE], dest=0, tag=14)
     comm.Send([sum_squares, MPI.DOUBLE], dest=0, tag=15)
-    comm.Send([t2, MPI.DOUBLE], dest=0, tag=16)
