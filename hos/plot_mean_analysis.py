@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from constants import gps_l1_ch, gps_l2_ch, gal_e6_ch, gal_5b_ch, h1_ch, freq_resolution
+from constants import gps_l1_ch, gps_l2_ch, gal_e6_ch, gal_5b_ch, h1_ch, frequencies
 
 font = {'family': 'STIXGeneral',
         'size': 26}
@@ -8,8 +8,6 @@ plt.rc('font', **font)
 
 # TODO: Finish up plot on time vs mean and std err of mean as error bar (this will be for only 1 channel)
 # TODO: Create a plot of freq ch vs mean of means and std err of mean as error bar
-
-frequencies = np.arange(856, 1712, freq_resolution)
 
 class mean_stats():
     def __init__(self, directory, fn_means_re=None, fn_means_im=None, fn_std_err_re=None, fn_std_err_im=None,
@@ -90,15 +88,15 @@ outlier_im = np.load("/home/vereese/git/phd_data/mean_analysis/1064/1064_imag_ou
 
 bias_re = np.load('/home/vereese/git/phd_data/mean_analysis/1569/means_bias_re_0x_1024ch_9.npy')
 bias_im = np.load('/home/vereese/git/phd_data/mean_analysis/1569/means_bias_im_0x_1024ch_9.npy')
-
+"""
 # Mean of means become less because use more data points
-"""fig, (ax1, ax2) = plt.subplots(2, sharex=True, figsize=[15,12])
-ax1.plot(frequencies[1:], n10000s239.mean_means_re[1:],   label='N1=12 ms')
-ax1.plot(frequencies[1:], n100000s239.mean_means_re[1:],  label='N2=0.12s')
-ax1.plot(frequencies[1:], n1000000s239.mean_means_re[1:], label='N3=1.2s')
-ax2.plot(frequencies[1:], n10000s239.mean_means_im[1:],   label='N1=12ms')
-ax2.plot(frequencies[1:], n100000s239.mean_means_im[1:],  label='N2=0.12s')
-ax2.plot(frequencies[1:], n1000000s239.mean_means_im[1:], label='N3=1.2s')
+fig, (ax1, ax2) = plt.subplots(2, sharex=True, figsize=[15,12])
+ax1.plot(frequencies[1:], n10000s239.mean_means_re[1:],   label='N1=2.86 s')
+ax1.plot(frequencies[1:], n100000s239.mean_means_re[1:],  label='N2=28.6 s')
+ax1.plot(frequencies[1:], n1000000s239.mean_means_re[1:], label='N3=286 s')
+ax2.plot(frequencies[1:], n10000s239.mean_means_im[1:],   label='N1=2.86 s')
+ax2.plot(frequencies[1:], n100000s239.mean_means_im[1:],  label='N2=28.6 s')
+ax2.plot(frequencies[1:], n1000000s239.mean_means_im[1:], label='N3=286 s')
 ax1.set_xlim([frequencies[1], frequencies[-1]])
 ax2.set_xlim([frequencies[1], frequencies[-1]])
 ax1.grid()
@@ -108,7 +106,8 @@ ax2.legend()
 ax2.set_xlabel("Frequency MHz")
 ax1.set_ylabel("Real Mean")
 ax2.set_ylabel("Imag Mean")
-#plt.savefig('/home/vereese/Documents/PhD/CASPER2022/presentation/means', bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/CASPER2022/presentation/means', bbox_inches='tight')
+plt.show()
 """
 
 #Mean of means stay constant because use the same number of data points and therefore mean would stay the same
@@ -210,12 +209,12 @@ plt.grid()
 
 # Outliers are 0 around 1200MHz becausestd is so high because the data hits the rails all the time
 plt.figure(7)
-plt.plot(np.arange(0,1024), outlier_re)
+plt.plot(frequencies[1:], outlier_re[1:])
 plt.title("outliers Re")
 plt.grid()
 
 plt.figure(8)
-plt.plot(np.arange(0,1024), outlier_im)
+plt.plot(frequencies[1:], outlier_im[1:])
 plt.title("outliers Im")
 plt.grid()
 
