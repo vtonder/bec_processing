@@ -95,11 +95,17 @@ class Bispectrum():
         return np.dot(self.signal, f_coef)
 
     def calc_power_spectrum(self):
+        shifted_ps = np.zeros(self.M)
 
         S = self.discrete_FT()
         S = np.fft.fft(self.signal, self.M)
         P = np.abs(S) ** 2
-        self.power_spectrum = S.sum(axis=0) #1.0 / self.K * P.sum(axis=0)
+        self.power_spectrum = 1.0 / self.K * P.sum(axis=0)
+
+        shifted_ps[0:int(self.M / 2)] = self.power_spectrum[int(self.M / 2):self.M]
+        shifted_ps[int(self.M / 2):self.M] = self.power_spectrum[0:int(self.M / 2)]
+
+        self.power_spectrum = shifted_ps
 
         return self.power_spectrum
 
@@ -190,11 +196,8 @@ class Bispectrum():
 
     def plot_power_spectrum(self, i=0, name=None, show = False):
 
-        shifted_ps = np.zeros(self.M)
-        shifted_ps[0:int(self.M/2)] = self.power_spectrum[int(self.M/2):self.M]
-        shifted_ps[int(self.M/2):self.M] = self.power_spectrum[0:int(self.M/2)]
         plt.figure(i)
-        plt.plot(self.freq, shifted_ps)
+        plt.plot(self.freq, self.power_spectrum)
         plt.xlabel("frequency ")
         plt.title(name)
         plt.grid()
@@ -235,7 +238,7 @@ if __name__ == '__main__':
     #phi1 = np.pi/3
     #phi2 = np.pi/4
     #phi3 = phi2+phi1
-    fs = 1200  # Hz
+    fs = 1000  # Hz
     bw = fs / 2
     num_sec = 10
     t = np.arange(0, num_sec, 1 / fs)
@@ -249,41 +252,20 @@ if __name__ == '__main__':
     freq = np.arange(0, fs, f_res)
 
     # Cosine signals with added Gaussian noise
-    s = np.cos(2 * np.pi * f1 * t) + np.cos(2 * np.pi * f2 * t) + np.cos(2 * np.pi * f3 *t)
+    s = np.cos(2 * np.pi * f1 * t) + np.cos(2 * np.pi * f2 * t) #+ np.cos(2 * np.pi * f3 *t)
     noise = np.random.normal(0, 0.1, W) + s
     noise = noise.reshape(K, M)
-    #b = Bispectrum(noise, fft_size=fs, method='direct', fs=fs)
+    b = Bispectrum(noise, fft_size=fs, method='direct', fs=fs)
 
-    fft_size = 2048
-    N = 100*fft_size
-    #up_sample_factor = 5 need to make this generic
-
-    pulse_train = np.round(np.random.random(N))*2 - 1 # array*2 - 1 is to get alternating -1 1
-    pulse_train_up = pulse_train.reshape(N,1)
-    pulse_train_up = np.concatenate((pulse_train_up, pulse_train_up, pulse_train_up, pulse_train_up, pulse_train_up, pulse_train_up, pulse_train_up), axis=1)
-    b = Bispectrum(list(pulse_train_up.flatten()), reshape=True, fft_size=fft_size, method='direct')
-    #b = Bispectrum(pulse_train, reshape=True, fft_size=1024, method='direct', fs=1000)
-    #b.calc_full_bispectrum()
-
-    b.calc_power_spectrum()
+    #b.calc_power_spectrum()
     b.direct_bispectrum()
     #b.bicoherence()
     #b.plot_bicoherence()
     b.plot_power_spectrum()
+    #b.plot_full_bispectrum(i=1)
 
     plt.figure(1)
     plt.imshow(np.abs(b.bispectrum_I),aspect='auto', origin='lower')
     plt.title('name')
-
-    '''plt.figure(2)
-    plt.hist(pulse_train)
-    plt.title("Pulse train")
-
-    plt.figure(3)
-    plt.hist(pulse_train_up.flatten())
-    plt.title("Pulse train up")'''
-
-
-
     plt.show()
 
