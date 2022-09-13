@@ -30,18 +30,14 @@ data_file = h5py.File('/net/com08/data6/vereese/' + args.file, 'r', rdcc_nbytes=
 data = data_file['Data/bf_raw']
 start_index = start_indices[args.file]
 # Ensure data_len is a multiple of time_chunk_size
-data_len = int(data.shape[1] - start_index)
-num_chunks = data_len / time_chunk_size   # total number of chunks to process
-chunks_rank = np.ceil(num_chunks / size)  # number of chunks per rank to process, make it a round number
-#data_len = int(size * chunks_rank * time_chunk_size)  # ensure data_len is a multiple of time_chunk_size
+data_len = int((data.shape[1] / time_chunk_size) * time_chunk_size - start_index)
+chunks_rank = np.floor(data_len / time_chunk_size / size)  # number of chunks per rank to process, make it a round number
+data_len = int(size * chunks_rank * time_chunk_size)  # ensure data_len is a multiple of time_chunk_size
 start = int(rank * chunks_rank * time_chunk_size + start_index)
 end = int(start + chunks_rank * time_chunk_size)
 
-if end > data.shape[1]:
-    end = data.shape[1]
-
-if rank == 0:
-    print("total data length                    : ", data_len)
+#if rank == 0:
+#    print("total data length                    : ", data_len)
 #    print("number of ranks                      : ", size)
 #    print("number of chunks per rank to process : ", chunks_rank)
 #    print("start and end for rank 0             : ", start, end)

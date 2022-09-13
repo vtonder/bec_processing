@@ -50,7 +50,18 @@ start_indices = {
  '1604641064_wide_tied_array_channelised_voltage_0y.h5': 13631488,
  '1604641234_wide_tied_array_channelised_voltage_0x.h5': 13631488,
  '1604643883_wide_tied_array_channelised_voltage_0x.h5': 12451840,
- '1604641569_wide_tied_array_channelised_voltage_0x.h5': 13631488
+ '1604641569_wide_tied_array_channelised_voltage_0x.h5': 13631488,
+ '1604641569_wide_tied_array_channelised_voltage_0y.h5': 13631488,
+ '1604642210_wide_tied_array_channelised_voltage_0x.h5': 13631488,
+ '1604642210_wide_tied_array_channelised_voltage_0y.h5': 13631488,
+ '1604642762_wide_tied_array_channelised_voltage_0x.h5': 13631488,
+ '1604642762_wide_tied_array_channelised_voltage_0y.h5': 13631488,
+ '1604643330_wide_tied_array_channelised_voltage_0x.h5': 13631488,
+ '1604643330_wide_tied_array_channelised_voltage_0y.h5': 13631488,
+ '1604643883_wide_tied_array_channelised_voltage_0x.h5': 13631488,
+ '1604643883_wide_tied_array_channelised_voltage_0y.h5': 13631488,
+ '1604644511_wide_tied_array_channelised_voltage_0x.h5': 13631488,
+ '1604644511_wide_tied_array_channelised_voltage_0y.h5': 13631488
 }
 for key, i in start_indices.items():
   start_indices[key] = int(round(i/time_chunk_size)*time_chunk_size)

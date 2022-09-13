@@ -16,7 +16,8 @@ data_file = h5py.File('/net/com08/data6/vereese/' + args.file, 'r')
 data = data_file['Data/bf_raw']
 data_len = data_file['Data/timestamps'].shape[0]
 sub_integrations = int(data_len/(16384*100)) # chunk size
-waterfall = np.empty(num_ch, sub_integrations)
+print('int', sub_integrations)
+waterfall = np.empty((num_ch, 16384 * 100))
 t1 = time.time()
 for i in np.arange(sub_integrations):
     start = int(i * 16384 * 100)
