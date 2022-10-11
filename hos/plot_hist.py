@@ -27,7 +27,7 @@ start = int(rank * chunks_rank * time_chunk_size + start_index)
 end = int(start + chunks_rank * time_chunk_size)
 
 for idx, i in enumerate(range(start, end, time_chunk_size)):
-    d1 = data[:, i:(i + time_chunk_size), :].astype(np.float)
+    d1 = data[int(args.ch), i:(i + time_chunk_size), 0].astype(np.float)
     if idx == 0:
         data_cnt = Counter(d1)
     else:
@@ -36,9 +36,9 @@ for idx, i in enumerate(range(start, end, time_chunk_size)):
 if rank == 0:
     for i in range(1, size):
         if i == 1:
-            data_tmp = comm.Recv(source=i, tag=14)
+            data_tmp = comm.recv(source=i, tag=14)
         else:
-            data_tmp = data_tmp + comm.Recv(source=i, tag=14)
+            data_tmp = data_tmp + comm.recv(source=i, tag=14)
 
     data_cnt = data_cnt + data_tmp
     pol = args.file[-5:-3]
@@ -48,7 +48,7 @@ if rank == 0:
     plt.bar(data_cnt.keys(),data_cnt.values())
     plt.savefig(fig_name)
 else:
-    comm.Send(data_cnt, dest=0, tag=14)
+    comm.send(data_cnt, dest=0, tag=14)
 
 
 
