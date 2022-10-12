@@ -3,6 +3,7 @@ import h5py
 import numpy as np
 import argparse
 import sys
+import pickle
 sys.path.append('..')
 from constants import start_indices, time_chunk_size
 from matplotlib import pyplot as plt
@@ -42,11 +43,9 @@ if rank == 0:
 
     data_cnt = data_cnt + data_tmp
     pol = args.file[-5:-3]
-    fig_name = 'hist_'+args.file[6:10]+'_'+pol+'_'+args.ch
-
-    plt.figure()
-    plt.bar(data_cnt.keys(),data_cnt.values())
-    plt.savefig(fig_name)
+    file_name = 'hist_'+args.file[6:10]+'_'+pol+'_'+args.ch
+    with open('/home/vereese/phd_data/hist/'+file_name, 'wb') as outputfile:
+        pickle.dump(data_cnt, outputfile)
 else:
     comm.send(data_cnt, dest=0, tag=14)
 
