@@ -14,6 +14,7 @@ import os
 comm = MPI.COMM_WORLD
 size = comm.Get_size()
 rank = comm.Get_rank()
+print("number of processors: ", size)
 print("processor: ", rank)
 
 parser = argparse.ArgumentParser()
@@ -55,20 +56,16 @@ if rank == 0:
         comm.Recv([tmp_sk, MPI.DOUBLE], source=i, tag=14)
         tot_SK[:,i*chunks_rank:(i+1)*chunks_rank] = tmp_sk
 
-    # strip off last 4 digits of observation code and add it onto the directory path unless the path already contains it
-    if args.file[6:10] not in args.directory:
-        directory = args.directory + args.file[6:10] + '/'
-    else:
-        directory = args.directory
-    if not os.path.exists(directory):
-        os.makedirs(directory, exist_ok=True)
+    if not os.path.exists(args.directory):
+        os.makedirs(args.directory, exist_ok=True)
+    tag = args.file[6:10] + '_'   # add last 4 digits of observation code onto the file_name
+    pol = args.file[-5:-3] + '_'  # polarisation 0x or 0y
+    np.save(args.directory + tag + pol + 'sk', SK)
 
-    np.save(directory + 'SK', SK)
-
-    #plt.figure(0)
-    #plt.imshow(SK)
-    #plt.grid()
-    #plt.show()
+    plt.figure(0)
+    plt.imshow(SK)
+    plt.grid()
+    plt.show()
 else:
     comm.Send([SK, MPI.DOUBLE], dest=0, tag=14)
 
