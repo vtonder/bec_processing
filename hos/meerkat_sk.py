@@ -14,11 +14,12 @@ import os
 comm = MPI.COMM_WORLD
 size = comm.Get_size()
 rank = comm.Get_rank()
+print("processor: ", rank)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("file", help="observation file to process. search path: /net/com08/data6/vereese/")
 parser.add_argument("-d", "--directory", dest="directory", help="path of directory to save data products to",
-                    default="/home/vereese/phd_data/mean_analysis/")
+                    default="/home/vereese/phd_data/sk_analysis/")
 args = parser.parse_args()
 
 data_file = h5py.File('/net/com08/data6/vereese/' + args.file, 'r', rdcc_nbytes=0)
@@ -32,18 +33,21 @@ data_len = int(size * chunks_rank * time_chunk_size)  # ensure data_len is a mul
 start = int(rank * chunks_rank * time_chunk_size + start_index)
 end = int(start + chunks_rank * time_chunk_size)
 
+print("start: ", start, "end: ", end)
+print("chunks_rank: ", chunks_rank)
+
 FFT_LEN = 1024
 freqs = np.arange(bw,adc_sample_rate,bw/FFT_LEN)
-SK = np.zeros(FFT_LEN, chunks_rank)
+SK = np.zeros([int(FFT_LEN), int(chunks_rank)])
 
-for i in np.arange(start, end, time_chunk_size):
-    idx_start = i
-    idx_stop = i+time_chunk_size
-    SK[:, i] = spectral_kurtosis_cm(data[idx_start:idx_stop, idx_start:idx_stop, 0]
-                                    + 1j * data[idx_start:idx_stop, idx_start:idx_stop, 1], time_chunk_size, FFT_LEN)
+for i, idx in enumerate(np.arange(start, end, time_chunk_size)):
+    idx_start = idx
+    idx_stop = idx + time_chunk_size
+    print(i, idx_start, idx_stop)
+    SK[:, i] = spectral_kurtosis_cm(data[:, idx_start:idx_stop, 0] + 1j * data[:, idx_start:idx_stop, 1], time_chunk_size, FFT_LEN)
 
 if rank == 0:
-    tot_SK = np.zeros(FFT_LEN,size*chunks_rank)
+    tot_SK = np.zeros([int(FFT_LEN), int(size*chunks_rank)])
     tot_SK[:,start:end] = SK
 
     for i in range(1, size):
@@ -51,12 +55,20 @@ if rank == 0:
         comm.Recv([tmp_sk, MPI.DOUBLE], source=i, tag=14)
         tot_SK[:,i*chunks_rank:(i+1)*chunks_rank] = tmp_sk
 
-    np.save(args.directory + 'SK', SK)
+    # strip off last 4 digits of observation code and add it onto the directory path unless the path already contains it
+    if args.file[6:10] not in args.directory:
+        directory = args.directory + args.file[6:10] + '/'
+    else:
+        directory = args.directory
+    if not os.path.exists(directory):
+        os.makedirs(directory, exist_ok=True)
 
-    plt.figure(0)
-    plt.imshow(SK)
-    plt.grid()
-    plt.show()
+    np.save(directory + 'SK', SK)
+
+    #plt.figure(0)
+    #plt.imshow(SK)
+    #plt.grid()
+    #plt.show()
 else:
     comm.Send([SK, MPI.DOUBLE], dest=0, tag=14)
 
