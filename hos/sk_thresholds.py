@@ -4,18 +4,18 @@ from scipy.special import gammaln, loggamma
 from matplotlib import pyplot as plt
 from scipy.integrate import quad
 from kurtosis import spectral_kurtosis
+from mpmath import hyp2f1, nstr, re, im
+import math
 
-alpha = 1 # shaping parameter
-beta = 1 # rate parameter
-
-def factorial(n):
-    fact = 0
-    for i in np.arange(n):
-        fact = fact
+def hypergeo(a,b,c,z):
+    res = hyp2f1(a,b,c,z)
+    r = re(res)
+    i = im(res)
+    return complex(r,i)
 
 N = 1
 d = 1
-M = 512
+M = 6104
 
 u1 = 1
 u2 = (4*M**2)/((M-1)*(M+2)*(M+3)) # this is variance
@@ -43,13 +43,12 @@ else:
 l = u1 - 0.25*(r-2)*np.sqrt(u2*b1)
 
 xmode = l - (a*v)/(2*m)
-x = np.arange(0.6,1.8,0.01)
+x = np.arange(0,2,0.01)
+# Pearson type IV PDF
 A = (- np.log(a) - 0.5 * np.log(np.pi)) + (loggamma(m+1j*(v/2)) + loggamma(m-1j*(v/2)) - loggamma(m-0.5) - loggamma(m))
-print("A: ", A)
-#p4 = np.exp(A) * (1 + ((x-l)/a)**2)**-m * np.exp(-v*np.arctan((x-l)/a))
 p4 = np.exp(A - m*np.log(1 + ((x-l)/a)**2) - v*np.arctan((x-l)/a))
 
-result, error = quad(lambda x: (np.exp(A - m*np.log(1 + ((x-l)/a)**2) - v*np.arctan((x-l)/a))), 0.6, 1.8)
+#result, error = quad(lambda x: (np.exp(A - m*np.log(1 + ((x-l)/a)**2) - v*np.arctan((x-l)/a))), 0.6, 1.8)
 
 print("max occurs at x: ", xmode)
 print("m: ", m)
@@ -57,6 +56,55 @@ print("v: ", v)
 print("l: ", l)
 print("a: ", a)
 
+#P1 of CDF
+h1 = np.asarray([hypergeo(1, m+1j * v/2, 2 * m, 2 / (1-1j * ((xi - l) / a))) for xi in x])
+h11 = np.asarray([hypergeo(1, m-1j * v/2, 2 * m, 2 / (1-1j * ((xi + l) / a))) for xi in x])
+p1 = (a / (2*m - 1)) * (1j - ((x - l) / a)) * p4 * h1
+p11 = (a / (2*m - 1)) * (1j - ((x + l) / a)) * p4 * h11
+
+# P2 of CDF
+h2 = np.asarray([hypergeo(1, 2 - 2 * m, 2 - m + (1j * v / 2), (1 + 1j * ((xi - l) / a)) / 2) for xi in x])
+denom_t2 = np.exp(-np.pi * (v + 1j * 2 *m)) # second term of denominator
+if math.isinf(denom_t2):
+    term1 = 0
+else:
+    term1 = (1/(1 - denom_t2))
+p2 = term1 - ((1j * a / (1j * v - 2 * m + 2)) * (1 + ((x - l) / a)**2) * p4 * h2)
+
+cdf = np.zeros(len(x))
+x_cdf_low = l - a*np.sqrt(3)
+x_cdf_up = l + a*np.sqrt(3)
+for i, xi in enumerate(x):
+    if xi < x_cdf_low:
+        cdf[i] = 1 + p1[i]
+    elif xi > x_cdf_up:
+        cdf[i] = 1 - p11[i]
+    else:
+        cdf[i] = p2[i]
+
+cdf2 = 1 - cdf
+sigma3 = 3*np.sqrt(4/M) # theoretical 3 sigma lines
+pfa = 0.0013499 # probability of a false alarm
+print("CDF theoretical 3 sigma upper limit: ", 1+sigma3)
+print("CDF theoretical 3 sigma lower limit: ", 1-sigma3)
+
+plt.figure(0)
+plt.semilogy(x, p4)
+plt.grid()
+
+
+plt.figure(1)
+plt.semilogy(x, cdf)
+plt.semilogy(x, cdf2)
+plt.axhline(pfa, color = 'r')
+plt.axvline(1+sigma3, color = 'g', linestyle = '--')
+plt.axvline(1-sigma3, color = 'g', linestyle = '--')
+plt.axvline(0.9274, color = 'g', linestyle = '-')
+plt.axvline(1.08139, color = 'g', linestyle = '-')
+plt.ylabel("SK CF and CCF")
+plt.xlabel("SK")
+plt.grid()
+plt.show()
 
 # Ludwig Code
 """from scipy.special import loggamma as lnG
