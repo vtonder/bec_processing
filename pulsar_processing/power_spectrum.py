@@ -54,8 +54,8 @@ if DEDISPERSE:
     print("dedisperse data t:", t)
     # Note, delaying high frequencies not advancing lower frequencies
     for i, freq in enumerate(frequencies):
-        delay = dispersion_constant * vela_dm * (1 / (f2 ** 2) - 1 / (freq ** 2))  # ms
-        num_2_roll = int(np.round(delay / (time_resolution * 1000)))
+        delay = 10 ** 6 * (dispersion_constant * vela_dm * (1/(f2**2) - 1 / (freq ** 2)))  # us
+        num_2_roll = int(np.round(delay / time_resolution))
         # print(freq, delay, num_2_roll)
         data[i, :, 0] = np.roll(data[i, :, 0], num_2_roll)  # re[i,:] = np.roll(re[i,:], num_2_roll)
         data[i, :, 1] = np.roll(data[i, :, 1], num_2_roll)

@@ -13,15 +13,15 @@ font = {'family': 'STIXGeneral',
         'size': 22}
 plt.rc('font', **font)
 
-vela_sub_int = np.load('sub_int_vela_11.1946499395.npy')
+vela_sub_int = np.load('sub_int_vela_11.185053620637202.npy')
 last = vela_sub_int[-1,:]
-first = vela_sub_int[1,:]
+first = np.roll(np.asarray(vela_sub_int[8,:]),-700)
 
 plt.figure(0)
 plt.autoscale(True)
 plt.ylabel('observation time [s]')
 plt.xlabel('Pulsar phase')
-plt.imshow(vela_sub_int, aspect='auto', extent=[0,4,0,300], origin='lower')
+plt.imshow(vela_sub_int, aspect='auto', extent=[0,1,0,300], origin='lower')
 
 
 plt.figure(1)

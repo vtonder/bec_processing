@@ -13,7 +13,8 @@ class Pulsar:
         self.rotational_frequency = rotational_frequency  # Hz
         self.period = 1 / self.rotational_frequency  # s
         self.dm = dm  # parsec/cm^3
-        self.data = h5py.File(file_name, 'r')
+        self.fn = h5py.File(file_name, 'r')
+        self.data = self.fn['Data/bf_raw']
         self.fp = fp  # number of periods to fold over ie fold in multiples of 1 or 2 periods, default is 1
         self.samples_T = self.period*10**6 / time_resolution  # number of samples per period
         self.samples_int_T = int(self.samples_T)  # integer number of samples per period
