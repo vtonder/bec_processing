@@ -36,8 +36,20 @@ local_data = data[:, start:stop, :].astype(np.float)  # get the portion of the a
 
 # SK RFI mitigation
 FFT_LEN = 1024
-M = 512
-
+M = 519
+data_len = count*vela_int_samples_T
+low_lim = 0.776424
+up_lim = 1.32275
+SK_flags = np.zeros(data_len/M)
+for i in np.arange(start, stop, M):
+    SK = spectral_kurtosis_cm(local_data[:, i:i+M, 0] + 1j * local_data[:, i:i+M, 1], M, FFT_LEN)
+    for i, val in enumerate(SK):
+        if val < low_lim or val > up_lim:
+            SK_flags[i] = 1
+            wgn_re = np.random.normal(0, 1, size=M)
+            wgn_im = np.random.normal(0, 1, size=M)
+            local_data[:, i:i + M, 0] = wgn_re
+            local_data[:, i:i + M, 1] = wgn_im
 
 # Calculate power spectrum
 local_results = np.empty((num_ch, vela_int_samples_T))
