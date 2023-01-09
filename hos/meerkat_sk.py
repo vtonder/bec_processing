@@ -29,31 +29,32 @@ start_index = start_indices[args.file]
 
 
 # Ensure data_len is a multiple of time_chunk_size
-data_len = int((data.shape[1] / time_chunk_size) * time_chunk_size - start_index) / 10
-chunks_rank = np.floor(data_len / time_chunk_size / size)  # number of chunks per rank to process, make it a round number
+data_len = int((data.shape[1] / time_chunk_size) * time_chunk_size - start_index) / 20
+chunks_rank = int(np.floor(data_len / time_chunk_size / size))  # number of chunks per rank to process, make it a round number
 data_len = int(size * chunks_rank * time_chunk_size)  # ensure data_len is a multiple of time_chunk_size
 start = int(rank * chunks_rank * time_chunk_size + start_index)
 end = int(start + chunks_rank * time_chunk_size)
-
-print("start: ", start, "end: ", end)
-print("chunks_rank: ", chunks_rank)
-print("data len: ", data_len)
 
 M = 1024
 FFT_LEN = 1024
 freqs = np.arange(bw,adc_sample_rate,bw/FFT_LEN)
 SK = np.zeros([int(FFT_LEN), int(chunks_rank*16)]) #16 is from time_chunk_size/1024
-print("shape SK: ", np.shape(SK))
+
+if rank == 0:
+    print("start: ", start, "end: ", end)
+    print("chunks_rank: ", chunks_rank)
+    print("data len: ", data_len)
+    print("shape SK: ", np.shape(SK))
 
 for i, idx in enumerate(np.arange(start, end, M)):
     idx_start = idx
     idx_stop = idx + M
-    print(i, idx_start, idx_stop)
-    SK[:, i] = np.zeros([int(FFT_LEN), 1]) #spectral_kurtosis_cm(data[:, idx_start:idx_stop, 0] + 1j * data[:, idx_start:idx_stop, 1], M, FFT_LEN)
+    #print(i, idx_start, idx_stop)
+    SK[:, i] = spectral_kurtosis_cm(data[:, idx_start:idx_stop, 0] + 1j * data[:, idx_start:idx_stop, 1], M, FFT_LEN)
 
 if rank == 0:
-    idx_start = rank*chunks_rank*16
-    idx_end = idx_start + time_chunk_size*chunks_rank
+    idx_start = int(rank*chunks_rank*16)
+    idx_end = int(idx_start + 16*chunks_rank)
     tot_SK = np.zeros([int(FFT_LEN), int(size*chunks_rank*16)])
     print("shape tot_SK: ", np.shape(tot_SK))
     tot_SK[:,idx_start:idx_end] = SK
@@ -61,7 +62,7 @@ if rank == 0:
     for i in range(1, size):
         tmp_sk = np.zeros([FFT_LEN, chunks_rank*16], dtype='float64')
         comm.Recv([tmp_sk, MPI.DOUBLE], source=i, tag=14)
-        tot_SK[:,i*16*chunks_rank:(i+1)*chunks_rank*16] = tmp_sk
+        tot_SK[:,int(i*16*chunks_rank):int((i+1)*chunks_rank*16)] = tmp_sk
 
     if not os.path.exists(args.directory):
         os.makedirs(args.directory, exist_ok=True)
@@ -69,10 +70,10 @@ if rank == 0:
     pol = args.file[-5:-3] + '_'  # polarisation 0x or 0y
     np.save(args.directory + tag + pol + 'sk', SK)
 
-    #plt.figure(0)
-    #plt.imshow(SK)
-    #plt.grid()
-    #plt.show()
+    plt.figure(0)
+    plt.imshow(tot_SK,aspect='auto')
+    plt.grid()
+    plt.show()
 else:
     comm.Send([SK, MPI.DOUBLE], dest=0, tag=14)
 
