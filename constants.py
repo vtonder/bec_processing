@@ -49,6 +49,7 @@ start_indices = {
  '1604641064_wide_tied_array_channelised_voltage_0x.h5': 0,
  '1604641064_wide_tied_array_channelised_voltage_0y.h5': 13631488,
  '1604641234_wide_tied_array_channelised_voltage_0x.h5': 13631488,
+ '1604641234_wide_tied_array_channelised_voltage_0y.h5': 13631488,
  '1604643883_wide_tied_array_channelised_voltage_0x.h5': 12451840,
  '1604641569_wide_tied_array_channelised_voltage_0x.h5': 13631488,
  '1604641569_wide_tied_array_channelised_voltage_0y.h5': 13631488,
