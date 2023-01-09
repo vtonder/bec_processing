@@ -35,11 +35,11 @@ data_len = int(size * chunks_rank * time_chunk_size)  # ensure data_len is a mul
 start = int(rank * chunks_rank * time_chunk_size + start_index)
 end = int(start + chunks_rank * time_chunk_size)
 
-M = 1024
+M = 512 # must be a multiple of time_chunk_size
+div = int(time_chunk_size / M) # number to divide time_chunk_size into
 FFT_LEN = 1024
 freqs = np.arange(bw,adc_sample_rate,bw/FFT_LEN)
-SK = np.zeros([int(FFT_LEN), int(chunks_rank*16)]) #16 is from time_chunk_size/1024
-
+SK = np.zeros([int(FFT_LEN), int(chunks_rank*div)]) 
 if rank == 0:
     print("start: ", start, "end: ", end)
     print("chunks_rank: ", chunks_rank)
@@ -53,22 +53,22 @@ for i, idx in enumerate(np.arange(start, end, M)):
     SK[:, i] = spectral_kurtosis_cm(data[:, idx_start:idx_stop, 0] + 1j * data[:, idx_start:idx_stop, 1], M, FFT_LEN)
 
 if rank == 0:
-    idx_start = int(rank*chunks_rank*16)
-    idx_end = int(idx_start + 16*chunks_rank)
-    tot_SK = np.zeros([int(FFT_LEN), int(size*chunks_rank*16)])
+    idx_start = int(rank*chunks_rank*div)
+    idx_end = int(idx_start + chunks_rank*div)
+    tot_SK = np.zeros([int(FFT_LEN), int(size*chunks_rank*div)])
     print("shape tot_SK: ", np.shape(tot_SK))
     tot_SK[:,idx_start:idx_end] = SK
 
     for i in range(1, size):
-        tmp_sk = np.zeros([FFT_LEN, chunks_rank*16], dtype='float64')
+        tmp_sk = np.zeros([FFT_LEN, chunks_rank*div], dtype='float64')
         comm.Recv([tmp_sk, MPI.DOUBLE], source=i, tag=14)
-        tot_SK[:,int(i*16*chunks_rank):int((i+1)*chunks_rank*16)] = tmp_sk
+        tot_SK[:,i*div*chunks_rank:(i+1)*chunks_rank*div] = tmp_sk
 
     if not os.path.exists(args.directory):
         os.makedirs(args.directory, exist_ok=True)
     tag = args.file[6:10] + '_'   # add last 4 digits of observation code onto the file_name
     pol = args.file[-5:-3] + '_'  # polarisation 0x or 0y
-    np.save(args.directory + tag + pol + 'sk', SK)
+    np.save(args.directory + tag + pol + 'sk', tot_SK)
 
     plt.figure(0)
     plt.imshow(tot_SK,aspect='auto')
