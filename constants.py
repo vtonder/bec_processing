@@ -41,6 +41,11 @@ clean_ch = np.abs(frequencies-1450).argmin()
 clean_ch2 = 600
 dirty_ch2 = 105
 
+# SK lower and upper limits
+
+lower_limit = {512:0.77511, 519:0.776424, 1024:0.83425, 1038:0.83527, 1557:0.86281, 2048:0.87892}
+upper_limit = {512:1.3254, 519:1.32275, 1024:1.21685, 1038:1.2152, 1557:1.17110, 2048:1.1469}
+
 # first non-zero indices for each file. Obtained using the first_nonzero_indices.py script
 # The data files have lots of 0s
 # The script searches for the largest first non 0 element across all 3 dimension in the file
@@ -49,7 +54,7 @@ start_indices = {
  '1604641064_wide_tied_array_channelised_voltage_0x.h5': 0,
  '1604641064_wide_tied_array_channelised_voltage_0y.h5': 13631488,
  '1604641234_wide_tied_array_channelised_voltage_0x.h5': 13631488,
- '1604641234_wide_tied_array_channelised_voltage_0y.h5': 13631488,
+ '1604641234_wide_tied_array_channelised_voltage_0y.h5': 46767104,
  '1604641569_wide_tied_array_channelised_voltage_0x.h5': 13631488,
  '1604641569_wide_tied_array_channelised_voltage_0y.h5': 13631488,
  '1604642210_wide_tied_array_channelised_voltage_0x.h5': 13631488,
