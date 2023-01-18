@@ -8,21 +8,27 @@ from mpi4py import MPI
 sys.path.append('../pulsar_processing')
 from square_accumulate import *
 from kurtosis import spectral_kurtosis_cm
+import argparse
 
 # get number of processors and processor rank
 comm = MPI.COMM_WORLD
 size = comm.Get_size()
 rank = comm.Get_rank()
 
+parser = argparse.ArgumentParser()
+parser.add_argument("file", help="observation file to process. search path: /net/com08/data6/vereese/")
+parser.add_argument("-m", dest="M", help="Number of spectra to accumulate in SK calculation", default=512)
+args = parser.parse_args()
+
 if rank == 0:
     t1 = time.time()
 
-df = h5py.File('/net/com08/data6/vereese/1604641234_wide_tied_array_channelised_voltage_0x.h5', 'r', rdcc_nbytes=0)
+df = h5py.File('/net/com08/data6/vereese/' + args.file, 'r', rdcc_nbytes=0)
 data = df['Data/bf_raw']
-start_index = start_indices['1604641234_wide_tied_array_channelised_voltage_0x.h5']
+start_index = start_indices[args.file]
 
 num_data_points = df['Data/timestamps'].shape[0] - start_index
-M = 1024 
+M = int(args.M) 
 num_sk = int(num_data_points / M)
 num_sk_rank = num_sk // size  # number of sk per rank to process 
 
@@ -55,6 +61,9 @@ else:
         comm.Recv([tmp_SK, MPI.DOUBLE], source=i, tag=15)  # receive SK results from the process
         tot_SK[:,int(i*num_sk_rank):int((i+1)*num_sk_rank)] = tmp_SK
 
-    np.save('mpi_sk_M1024_1234_0y', tot_SK)
+    tag = '_' + args.file[6:10] + '_'   # add last 4 digits of observation code onto the file_name
+    pol = args.file[-5:-3] # polarisation 0x or 0y
+
+    np.save('sk_M' +str(M) + tag + pol , tot_SK)
     print("procesing took: ", time.time() - t1)
 
