@@ -41,6 +41,11 @@ clean_ch = np.abs(frequencies-1450).argmin()
 clean_ch2 = 600
 dirty_ch2 = 105
 
+# SK lower and upper limits
+
+lower_limit = {512:0.77511, 519:0.776424, 1024:0.83425, 1038:0.83527, 1557:0.86281, 2048:0.87892, 10240:0.94336}
+upper_limit = {512:1.3254, 519:1.32275, 1024:1.21685, 1038:1.2152, 1557:1.17110, 2048:1.1469, 10240:1.06193}
+
 # first non-zero indices for each file. Obtained using the first_nonzero_indices.py script
 # The data files have lots of 0s
 # The script searches for the largest first non 0 element across all 3 dimension in the file
@@ -49,12 +54,12 @@ start_indices = {
  '1604641064_wide_tied_array_channelised_voltage_0x.h5': 0,
  '1604641064_wide_tied_array_channelised_voltage_0y.h5': 13631488,
  '1604641234_wide_tied_array_channelised_voltage_0x.h5': 13631488,
- '1604641234_wide_tied_array_channelised_voltage_0y.h5': 13631488,
+ '1604641234_wide_tied_array_channelised_voltage_0y.h5': 46767104,
  '1604641569_wide_tied_array_channelised_voltage_0x.h5': 13631488,
  '1604641569_wide_tied_array_channelised_voltage_0y.h5': 13631488,
  '1604642210_wide_tied_array_channelised_voltage_0x.h5': 13631488,
  '1604642210_wide_tied_array_channelised_voltage_0y.h5': 13631488,
- '1604642762_wide_tied_array_channelised_voltage_0x.h5': 13631488,
+ '1604642762_wide_tied_array_channelised_voltage_0x.h5': 44459264,
  '1604642762_wide_tied_array_channelised_voltage_0y.h5': 13631488,
  '1604643330_wide_tied_array_channelised_voltage_0x.h5': 13631488,
  '1604643330_wide_tied_array_channelised_voltage_0y.h5': 13631488,
@@ -76,14 +81,40 @@ vela_freq = 11.185084597305504  # unit Hz 11.185053620637202  #11.18503149448932
 #deltaT=(time_resolution*17500) # 17500 is a rough estimate from the plot
 # vela_true_period = vela_T*(1+delaT/tot_obs)
 
-vela_dm = 67.97 # from ATNF catalog. units: parsec/cm^3
+vela_dm = 67.99 # from ATNF catalog. units: parsec/cm^3
 # vela_dm = 68.0247344970703 <-> where is this from?
 vela_T = 1.0 / vela_freq  # vela period unit s
 vela_samples_T = vela_T*10**6 / time_resolution  # samples per vela period
+
+J0835 = {'freq':vela_freq,
+         'T':vela_T,
+         'samples_T':vela_samples_T,
+         'dm':vela_dm
+        } 
 
 # J0742-2822 
 J0742_T = 166.762*10**-3
 J0742_freq = 1/J0742_T
 J0742_dm = 73.78
 J0742_samples_T = J0742_T*10**6 / time_resolution
+J0742 = {'freq':J0742_freq,
+         'T':J0742_T,
+         'samples_T':J0742_samples_T, 
+         'dm':J0742_dm
+        }
 
+# J0536-7543
+J0536_freq = 0.8026
+J0536_T = 1/J0536_freq
+J0536_samples_T = J0536_T*10**6 / time_resolution
+J0536_dm = 18.53
+J0536 = {'freq':0.8026,
+         'T':J0536_T,
+         'samples_T':J0536_samples_T, 
+         'dm':J0536_dm
+        }
+# Dictionary to link code to pulsar
+pulsars = {'1234':J0835,
+           '3883':J0742,
+           '2762':J0536 
+          }
