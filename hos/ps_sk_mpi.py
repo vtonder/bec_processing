@@ -27,7 +27,7 @@ df = h5py.File('/net/com08/data6/vereese/' + args.file, 'r', rdcc_nbytes=0)
 data = df['Data/bf_raw']
 start_index = start_indices[args.file]
 
-num_data_points = df['Data/timestamps'].shape[0] - start_index
+num_data_points = df['Data/timestamps'].shape[0] - start_index 
 M = int(args.M) 
 num_sk = int(num_data_points / M)
 num_sk_rank = num_sk // size  # number of sk per rank to process 
@@ -48,7 +48,7 @@ if rank == 0:
     print("SK shape: ", np.shape(SK))
 
 for i, idx in enumerate(np.arange(0, num_sk_rank*M, M)):
-    SK[:, i] = spectral_kurtosis_cm(local_data[:, idx:idx+M, 0] + 1j*local_data[:, idx:idx+M, 1], M, FFT_LEN)
+    SK[:, i] = spectral_kurtosis_cm(local_data[:, idx:idx+M, 0] + 1j*local_data[:, idx:idx+M, 1], M, FFT_LEN*2)
 
 # send results to rank 0
 if rank > 0:
