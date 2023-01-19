@@ -81,7 +81,7 @@ vela_freq = 11.185084597305504  # unit Hz 11.185053620637202  #11.18503149448932
 #deltaT=(time_resolution*17500) # 17500 is a rough estimate from the plot
 # vela_true_period = vela_T*(1+delaT/tot_obs)
 
-vela_dm = 67.99 # from ATNF catalog. units: parsec/cm^3
+vela_dm = 67.97 # from ATNF catalog. units: parsec/cm^3
 # vela_dm = 68.0247344970703 <-> where is this from?
 vela_T = 1.0 / vela_freq  # vela period unit s
 vela_samples_T = vela_T*10**6 / time_resolution  # samples per vela period
