@@ -7,6 +7,11 @@ from kurtosis import spectral_kurtosis
 from mpmath import hyp2f1, nstr, re, im
 import math
 
+font = {'family': 'STIXGeneral',
+        'size': 42}
+plt.rc('font', **font)
+
+
 def hypergeo(a,b,c,z):
     res = hyp2f1(a,b,c,z)
     r = re(res)
@@ -15,7 +20,7 @@ def hypergeo(a,b,c,z):
 
 N = 1
 d = 1
-M = 6104
+M = 512
 
 u1 = 1
 u2 = (4*M**2)/((M-1)*(M+2)*(M+3)) # this is variance
@@ -88,22 +93,30 @@ pfa = 0.0013499 # probability of a false alarm
 print("CDF theoretical 3 sigma upper limit: ", 1+sigma3)
 print("CDF theoretical 3 sigma lower limit: ", 1-sigma3)
 
-plt.figure(0)
+plt.figure(0, figsize=[22,16])
 plt.semilogy(x, p4)
 plt.grid()
+plt.xlim([0.8, 1.2])
+plt.ylim([10**-1, 10**1])
+plt.ylabel("SK PDF")
+plt.xlabel("SK")
+#plt.savefig('/home/vereese/Documents/PhD/URSI2023/paper/pdf', bbox_inches='tight')
 
-
-plt.figure(1)
+plt.figure(1, figsize=[22,16])
 plt.semilogy(x, cdf)
 plt.semilogy(x, cdf2)
 plt.axhline(pfa, color = 'r')
 plt.axvline(1+sigma3, color = 'g', linestyle = '--')
 plt.axvline(1-sigma3, color = 'g', linestyle = '--')
-plt.axvline(0.9274, color = 'g', linestyle = '-')
-plt.axvline(1.08139, color = 'g', linestyle = '-')
+plt.axvline(0.77511, color = 'g', linestyle = '-')
+plt.axvline(1.3254, color = 'g', linestyle = '-')
+plt.xlim([0.65, 1.35])
+plt.ylim([10**-7, 10**1])
+plt.tight_layout()
 plt.ylabel("SK CF and CCF")
 plt.xlabel("SK")
 plt.grid()
+#plt.savefig('/home/vereese/Documents/PhD/URSI2023/paper/cdf', bbox_inches='tight')
 plt.show()
 
 # Ludwig Code
