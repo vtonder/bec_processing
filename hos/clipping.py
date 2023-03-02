@@ -33,7 +33,6 @@ for std in stds:
     mean_sk_clipped.append(np.mean(sk_clipped))
 
     # Ludwig code
-    #x = np.clip(std * np.random.randn(10000, M), -127, 127) + 1j * np.clip(std * np.random.randn(10000, M), -127, 127)
     x = np.clip(std * np.random.randn(FFT_LEN, M), -127, 127) + 1j * np.clip(std * np.random.randn(FFT_LEN, M), -127, 127)
     l_clipped_std.append(np.sqrt((np.var(x))))
     x2 = np.abs(x * x.conj())
@@ -46,7 +45,6 @@ print(clipped_std)
 print(l_clipped_std)
 
 plt.figure()
-#plt.plot(sk[0:int(FFT_LEN/2)], label='Row Major')
 plt.plot(stds, mean_sk, label="no clipping")
 plt.plot(clipped_std, mean_sk_clipped, label="v clipping")
 plt.plot(l_clipped_std, l_sk, label="l clipping")
@@ -58,12 +56,8 @@ plt.xlabel('respective stds')
 plt.ylabel('mean SK')
 plt.show()
 
-# Ludwig code:
 
-lstd = 30
-
-
-# To add spikes
+# To add spikes - to pretend like they're pulsars
 spike = np.random.rand(10000, M) > 0.99
 ampl = np.where(spike, 200, 20)
 x = np.clip(ampl * np.random.randn(10000, M), -127, 127) + 1j * np.clip(ampl * np.random.randn(10000, M), -127, 127)
