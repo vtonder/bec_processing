@@ -8,27 +8,65 @@ This script investigates the effect of clipping on spectral kurtosis
 '''
 
 FFT_LEN = 1024
-M = 100000
+M = 1000
 mean = 0
-std = 1
+stds = np.arange(10, 200, 10)
 
-wgn_raw = np.random.normal(mean, std, size=M*FFT_LEN)
-wgn_cm = np.fft.fft(wgn_raw.reshape([FFT_LEN, M]), axis=1)
+mean_sk = []
+mean_sk_clipped = []
+l_sk = []
 
-sk_cm = spectral_kurtosis_cm(wgn_cm, M, FFT_LEN)
-sk_rm = spectral_kurtosis(wgn_raw, M, FFT_LEN, fft=True, normalise=False)
+clipped_std = []
+l_clipped_std = []
 
-print("sk_rm", np.mean(sk_rm))
-print("sk_cm", np.mean(sk_cm))
+# pretend fft has already been taken, hence creating re, im data
+for std in stds:
+    wgn = np.random.normal(mean, std, size = M * FFT_LEN) + 1j * np.random.normal(mean, std, size = M * FFT_LEN)
+    wgn_clipped = np.clip(wgn.real, -127, 127) + 1j*np.clip(wgn.imag, -127, 127)
 
-#plt.figure()
-#plt.plot(sk_cm[0:int(FFT_LEN/2)], label='CM')
-#plt.plot(sk_rm[0:int(FFT_LEN/2)], label='RM')
-#plt.grid()
-#plt.legend()
-#plt.axhline(0.77, linestyle = '--')
-#plt.axhline(1.33, linestyle = '--')
-#plt.show()
+    clipped_std.append(np.sqrt((np.var(wgn_clipped))))
+
+    sk = spectral_kurtosis(wgn, M, FFT_LEN, fft=False, normalise=False)
+    sk_clipped = spectral_kurtosis(wgn_clipped, M, FFT_LEN, fft=False, normalise=False)
+
+    mean_sk.append(np.mean(sk))
+    mean_sk_clipped.append(np.mean(sk_clipped))
+
+    # Ludwig code
+    #x = np.clip(std * np.random.randn(10000, M), -127, 127) + 1j * np.clip(std * np.random.randn(10000, M), -127, 127)
+    x = np.clip(std * np.random.randn(FFT_LEN, M), -127, 127) + 1j * np.clip(std * np.random.randn(FFT_LEN, M), -127, 127)
+    l_clipped_std.append(np.sqrt((np.var(x))))
+    x2 = np.abs(x * x.conj())
+    S1 = np.sum(x2, axis=-1)
+    S2 = np.sum(x2 * x2, axis=-1)
+    SK = M / (M - 1) * (M * S2 / (S1 * S1) - 1)
+    l_sk.append(np.mean(SK))
+
+print(clipped_std)
+print(l_clipped_std)
+
+plt.figure()
+#plt.plot(sk[0:int(FFT_LEN/2)], label='Row Major')
+plt.plot(stds, mean_sk, label="no clipping")
+plt.plot(clipped_std, mean_sk_clipped, label="v clipping")
+plt.plot(l_clipped_std, l_sk, label="l clipping")
+plt.grid()
+plt.legend()
+plt.axhline(0.77, linestyle = '--')
+plt.axhline(1.33, linestyle = '--')
+plt.xlabel('respective stds')
+plt.ylabel('mean SK')
+plt.show()
+
+# Ludwig code:
+
+lstd = 30
+
+
+# To add spikes
+spike = np.random.rand(10000, M) > 0.99
+ampl = np.where(spike, 200, 20)
+x = np.clip(ampl * np.random.randn(10000, M), -127, 127) + 1j * np.clip(ampl * np.random.randn(10000, M), -127, 127)
 
 '''# Generate a random signal with some narrowband and impulsive components
 t = np.linspace(0, 1, 1000)

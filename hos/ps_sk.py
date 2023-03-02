@@ -39,7 +39,8 @@ for i, idx in enumerate(np.arange(0, int(num_data_points), M)):
     idx_start = int(idx)
     idx_stop = int(idx_start + M)
     if i == np.shape(sk)[1]:
-        break;
+        break
+
     if idx_stop > num_data_points+start_index:
         idx_stop = num_data_points+start_index-1
 
