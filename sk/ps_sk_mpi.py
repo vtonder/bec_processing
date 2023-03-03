@@ -39,7 +39,6 @@ local_data = data[:, start:stop, :].astype(np.float)/128  # get the portion of t
 # SK RFI mitigation
 FFT_LEN = 1024
 SK = np.zeros([FFT_LEN, num_sk_rank])
-SK_flags = np.zeros([FFT_LEN, num_sk_rank])
 
 if rank == 0:
     print("start index: ", start_index)
@@ -55,7 +54,7 @@ if rank > 0:
     comm.Send([SK, MPI.DOUBLE], dest=0, tag=15)  # send results to process 0
 else:
     tot_SK = np.zeros([FFT_LEN, num_sk])
-    tot_SK[:,0:num_sk_rank] = SK
+    tot_SK[:, 0:num_sk_rank] = SK
     for i in range(1, size):  # determine the size of the array to be received from each process
         tmp_SK = np.zeros([FFT_LEN, num_sk_rank])
         comm.Recv([tmp_SK, MPI.DOUBLE], source=i, tag=15)  # receive SK results from the process
