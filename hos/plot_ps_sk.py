@@ -4,139 +4,139 @@ sys.path.append('../')
 from constants import *
 from matplotlib import pyplot as plt
 
-spx = np.load('ps_1234_0x.npy')
-sp1x = np.load('./1024/ps_M512_1234_0x.npy')
-sp2x = np.load('./1024/ps_M1024_1234_0x.npy')
-sp3x = np.load('./1024/ps_M2048_1234_0x.npy')
+direc = './'
+code = '2762'
+pulsar = pulsars[code] 
 
-spy = np.load('ps_1234_0y.npy')
-sp1y = np.load('./1024/ps_M512_1234_0y.npy')
-sp2y = np.load('./1024/ps_M1024_1234_0y.npy')
-sp3y = np.load('./1024/ps_M2048_1234_0y.npy')
+spx = {'ps_'+code+'_0x.npy':[]}#, 'ps_M512_'+code+'_0x.npy':[], 'ps_M1024_'+code+'_0x.npy':[], 'ps_M2048_'+code+'_0x.npy':[], 'ps_M10240_'+code+'_0x.npy':[]} 
+spy = {'ps_'+code+'_0y.npy':[]}#, 'ps_M512_'+code+'_0y.npy':[], 'ps_M1024_'+code+'_0y.npy':[], 'ps_M2048_'+code+'_0y.npy':[], 'ps_M10240_'+code+'_0y.npy':[]} 
+sp = {'ps_'+code:[]}#, 'ps_M512_'+code:[], 'ps_M1024_'+code:[], 'ps_M2048_'+code:[], 'ps_M10240_'+code:[]}
+
+px = {'ps_'+code+'_0x.npy':[]}#, 'ps_M512_'+code+'_0x.npy':[], 'ps_M1024_'+code+'_0x.npy':[], 'ps_M2048_'+code+'_0x.npy':[], 'ps_M10240_'+code+'_0x.npy':[]} 
+px_max = {'ps_'+code+'_0x.npy':0}#, 'ps_M512_'+code+'_0x.npy':0, 'ps_M1024_'+code+'_0x.npy':0, 'ps_M2048_'+code+'_0x.npy':0, 'ps_M10240_'+code+'_0x.npy':0} 
+py = {'ps_'+code+'_0y.npy':[]}#, 'ps_M512_'+code+'_0y.npy':[], 'ps_M1024_'+code+'_0y.npy':[], 'ps_M2048_'+code+'_0y.npy':[], 'ps_M10240_'+code+'_0y.npy':[]} 
+py_max = {'ps_'+code+'_0x.npy':0}#, 'ps_M512_'+code+'_0x.npy':0, 'ps_M1024_'+code+'_0x.npy':0, 'ps_M2048_'+code+'_0x.npy':0, 'ps_M10240_'+code+'_0y.npy':0} 
+p = {'ps_'+code:[]}#, 'ps_M512_'+code:[], 'ps_M1024_'+code:[], 'ps_M2048_'+code:[], 'ps_M10240_'+code:[]} 
+
+summed_flagsx = {}#{'summed_flags512_'+code+'_0x.npy':[], 'summed_flags1024_'+code+'_0x.npy':[], 'summed_flags2048_'+code+'_0x.npy':[], 'summed_flags10240_'+code+'_0x.npy':[]}
+summed_flagsy = {}#{'summed_flags512_'+code+'_0y.npy':[], 'summed_flags1024_'+code+'_0y.npy':[], 'summed_flags2048_'+code+'_0y.npy':[], 'summed_flags10240_'+code+'_0y.npy':[]}
+summed_flags = {}#{'summed_flags512_'+code:[], 'summed_flags1024_'+code:[], 'summed_flags2048_'+code:[], 'summed_flags10240_'+code:[]}
+
+sk ={}# {'SK_flags512_'+code+'_0x.npy':[], 'SK_flags1024_'+code+'_0x.npy':[], 'SK_flags2048_'+code+'_0x.npy':[], 'SK_flags10240_'+code+'_0x.npy':[]}
+
+
+for fn, data in summed_flagsx.items():
+    summed_flagsx[fn] = np.load(direc+fn)
+
+for fn, data in summed_flagsy.items():
+    summed_flagsy[fn] = np.load(direc+fn)
+
+for fn, data in sk.items():
+    sk[fn] = np.load(direc+fn)
+
+for fn, data in spx.items():
+    spx[fn] = np.load(direc+fn)
+
+for fn, data in spy.items():
+    spy[fn] = np.load(direc+fn)
 
 f2 = 1712 - (freq_resolution / 2)
+j, k = 0, 0
+dm = pulsar['dm']
 
 for i, freq in enumerate(frequencies):
-    delay = 10 ** 6 * (dispersion_constant * vela_dm * (1/(f2**2) - 1 / (freq ** 2)))  # us
+    delay = 10 ** 6 * (dispersion_constant * dm * (1/(f2**2) - 1 / (freq ** 2)))  # us
     num_2_roll = int(np.round(delay / time_resolution))
-    spx[i,:] = np.roll(spx[i,:], num_2_roll)
-    sp1x[i,:] = np.roll(sp1x[i,:], num_2_roll)
-    #sp2x[i,:] = np.roll(sp2x[i,:], num_2_roll)
-    #sp3x[i,:] = np.roll(sp3x[i,:], num_2_roll)
-    #sp4x[i,:] = np.roll(sp4x[i,:], num_2_roll)
-    #sp5x[i,:] = np.roll(sp5x[i,:], num_2_roll)
-    spy[i,:] = np.roll(spy[i,:], num_2_roll)
-    sp1y[i,:] = np.roll(sp1y[i,:], num_2_roll)
-    #sp2y[i,:] = np.roll(sp2y[i,:], num_2_roll)
-    #sp3y[i,:] = np.roll(sp3y[i,:], num_2_roll)
-    #sp4y[i,:] = np.roll(sp4y[i,:], num_2_roll)
-    #sp5y[i,:] = np.roll(sp5y[i,:], num_2_roll)
 
-px = np.sum(spx, axis=0)
-p1x = np.sum(sp1x, axis=0)
-#p2x = np.sum(sp2x, axis=0)
-#p3x = np.sum(sp3x, axis=0)
-#p4x = np.sum(sp4x, axis=0)
-#p5x = np.sum(sp5x, axis=0)
-#
-idx_max_px = px.argmax()
-idx_max_p1x = p1x.argmax()
-#idx_max_p2x = p2x.argmax()
-#idx_max_p3x = p3x.argmax()
-#idx_max_p4x = p4x.argmax()
-#idx_max_p5x = p5x.argmax()
+    for fn, data in spx.items(): 
+        spx[fn][i,:] = np.roll(spx[fn][i,:], num_2_roll)
+    for fn, data in summed_flagsx.items():
+       summed_flagsx[fn][i,:] = np.roll(summed_flagsx[fn][i,:], num_2_roll)
 
-py = np.sum(spy, axis=0)
-p1y = np.sum(sp1y, axis=0)
-#p2y = np.sum(sp2y, axis=0)
-#p3y = np.sum(sp3y, axis=0)
-#p4y = np.sum(sp4y, axis=0)
-#p5y = np.sum(sp5y, axis=0)
+    for fn, data in spy.items(): 
+        spy[fn][i,:] = np.roll(spy[fn][i,:], num_2_roll)
+    for fn, data in summed_flagsy.items():
+       summed_flagsy[fn][i,:] = np.roll(summed_flagsy[fn][i,:], num_2_roll)
 
-idx_max_py = py.argmax()
-idx_max_p1y = p1y.argmax()
-idx_max_p2y = p2y.argmax()
-idx_max_p3y = p3y.argmax()
-idx_max_p4y = p4y.argmax()
-idx_max_p5y = p5y.argmax()
 
-mid_vT = int(vela_samples_T/2) 
+mid_T = int(pulsar['samples_T']/2) 
 
-px = np.roll(px, mid_vT-idx_max_px)
-p1x = np.roll(p1x, mid_vT-idx_max_p1x)
-#p2x = np.roll(p2x, mid_vT-idx_max_p2x)
-#p3x = np.roll(p3x, mid_vT-idx_max_p3x)
-##p4x = np.roll(p4x, mid_vT-idx_max_p4x)
-##p5x = np.roll(p5x, mid_vT-idx_max_p5x)
-#
-py = np.roll(py, mid_vT-idx_max_py)
-p1y = np.roll(p1y, mid_vT-idx_max_p1y)
-#p2y = np.roll(p2y, mid_vT-idx_max_p2y)
-#p3y = np.roll(p3y, mid_vT-idx_max_p3y)
-#p4y = np.roll(p4y, mid_vT-idx_max_p4y)
-#p5y = np.roll(p5y, mid_vT-idx_max_p5y)
-sp1x = np.roll(sp1x, mid_vT-idx_max_p1x)
-sp1y = np.roll(sp1y, mid_vT-idx_max_p1y)
+for fn, data in px.items():
+    px[fn] = np.sum(spx[fn], axis=0)
+    px_max[fn] = px[fn].argmax()
+    px[fn] = np.roll(px[fn], mid_T-px_max[fn])
+    spx[fn] = np.roll(spx[fn], mid_T-px_max[fn])
+for fn, data in summed_flagsx.items():
+    summed_flagsx[fn] = np.roll(summed_flagsx[fn], mid_T-px_max['ps_M'+fn[12:]])
 
-p = px**2 + py**2
-p1 = p1x**2 + p1y**2
-#p2 = p2x**2 + p2y**2
-#p3 = p3x**2 + p3y**2
-#p4 = p4x**2 + p4y**2
-#p5 = p5x**2 + p5y**2
-#
+for fn, data in py.items():
+    py[fn] = np.sum(spy[fn], axis=0)
+    py_max[fn] = py[fn].argmax()
+    py[fn] = np.roll(py[fn], mid_T-py_max[fn])
+    spy[fn] = np.roll(spy[fn], mid_T-py_max[fn])
+for fn, data in summed_flagsy.items():
+    summed_flagsy[fn] = np.roll(summed_flagsy[fn], mid_T-py_max['ps_M'+fn[12:]])
+
+for fn, data in sp.items():
+    x = fn+'_0x.npy'
+    y = fn+'_0y.npy'
+
+    sp[fn] = spx[x]**2 + spy[y]**2
+    p[fn] = px[x]**2 + py[y]**2
+
+for fn, data in summed_flags.items():
+    x = fn+'_0x.npy'
+    y = fn+'_0y.npy'
+    summed_flags[fn] = summed_flagsx[x]**2 + summed_flagsy[y]**2
+
+# remove noise floor
+'''for fn, data in p.items():
+    p1 = np.mean(data[0:33000])
+    p2 = np.mean(data[45000:])
+    mean_p = np.mean([p1, p2])
+    p[fn] = p[fn]-mean_p'''
 
 plt.figure(0)
-plt.plot(p/max(p), label='No mitigation')
-plt.plot(p1/max(p1), label='M=512')
-#plt.plot(p2/max(p2), label='M=1024')
-#plt.plot(p3/max(p3), label='M=2048')
-
-#plt.plot(p2/max(p2), label='M=519')
-#plt.plot(p3/max(p3), label='M=1557')
-#plt.plot(p4/max(p4), label='M=1038')
-#plt.plot(p5/max(p5), label='M=2076')
-#
-#plt.xlim([35000,40000])
+for fn, data in p.items():
+    plt.plot(data/max(data), label=fn)
 plt.xlabel('samples')
-plt.title('vela normalised')
+plt.title('normalised')
 plt.legend()
 plt.grid()
-
+#plt.savefig(direc+'vela_normalised', bbox_inches='tight')
 
 plt.figure(1)
-plt.plot(p1y, label='y')
-plt.plot(p1x, label='x')
-#plt.plot(p2, label='M=1024')
-#plt.plot(p3, label='M=2048')
-
-#plt.plot(p2/max(p2), label='M=519')
-#plt.plot(p3/max(p3), label='M=1557')
-#plt.plot(p4/max(p4), label='M=1038')
-#plt.plot(p5/max(p5), label='M=2076')
-#
-#plt.xlim([35000,40000])
+for fn, data in p.items():
+    plt.plot(data, label=fn)
 plt.xlabel('samples')
-plt.title('vela non normalised')
+plt.title('non normalised')
 plt.legend()
 plt.grid()
+#plt.savefig(direc+'vela_non_normalised', bbox_inches='tight')
 
-plt.figure(2)
-plt.imshow(sp1x**2+sp1y**2,aspect='auto',origin='lower')
-plt.title('spx')
+i = 2
+mini = min(sp['ps_'+code].flatten())
+maxi = max(sp['ps_'+code].flatten())/8 #choose max of pulsar, 600 is known rfi free channel 
 
-plt.figure(3)
-plt.imshow(sp1y, aspect='auto',origin='lower')
-plt.title('spy')
+for fn, data in sp.items(): 
+    plt.figure(i)
+    plt.imshow(data, aspect='auto', origin='lower', vmin=mini, vmax=maxi)
+    plt.title(fn)
+    #plt.savefig(direc+fn, bbox_inches='tight')
+    i = i + 1
 
-'''plt.figure(4)
-plt.imshow(sp2y, aspect='auto',origin='lower')
-plt.title('M=1024')
+'''for fn, data in summed_flags.items():
+    plt.figure(i)
+    plt.imshow(data, aspect='auto', origin='lower')
+    plt.title(fn)
+    #plt.savefig(direc+fn[:-4], bbox_inches='tight')
+    i = i + 1
 
-plt.figure(5)
-plt.imshow(sp3y, aspect='auto',origin='lower')
-plt.title('M=2048')'''
-
+for fn, data in sk.items():
+    plt.figure(i)
+    plt.imshow(data, aspect='auto', origin='lower')
+    plt.title(fn[:-4])
+    #plt.savefig(direc+fn[:-4], bbox_inches='tight')
+    i = i + 1
+'''
 plt.show()
-
-
