@@ -22,43 +22,43 @@ parser.add_argument("file", help="observation file to process. search path: /net
 parser.add_argument("-d", "--directory", dest="directory", help="path of directory to save data products to",
                     default="/home/vereese/phd_data/sk_analysis/")
 parser.add_argument("-m", dest="M", help="Number of spectra to accumulate in SK calculation", default=512)
-parser.add_argument("-l", "--lower", dest="low_lim", help="lower threshold",default=0.776424)
-parser.add_argument("-u", "--upper", dest="up_lim", help="upper threshold", default=1.32275)
+parser.add_argument("-l", "--lower", dest="low_lim", help="lower threshold",default=0.77511)
+parser.add_argument("-u", "--upper", dest="up_lim", help="upper threshold", default=1.3254)
 args = parser.parse_args()
 
-data_file = h5py.File('/net/com08/data6/vereese/' + args.file, 'r', rdcc_nbytes=0)
+data_file = h5py.File('/net/com08/data6/vereese/' + args.file, 'r')
 data = data_file['Data/bf_raw']
 start_index = start_indices[args.file]
-
-# Ensure data_len is a multiple of time_chunk_size
-data_len = int((data.shape[1] / time_chunk_size) * time_chunk_size - start_index) / 20
-chunks_rank = int(np.floor(data_len / time_chunk_size / size))  # number of chunks per rank to process, make it a round number
-data_len = int(size * chunks_rank * time_chunk_size)  # ensure data_len is a multiple of time_chunk_size
-start = int(rank * chunks_rank * time_chunk_size + start_index)
-end = int(start + chunks_rank * time_chunk_size)
+data_len = int((data.shape[1] / time_chunk_size) * time_chunk_size - start_index)
 
 M = args.M # must be a multiple of time_chunk_size
 FFT_LEN = int(1024)
 num_sk = int(data_len/(size*M))
+
+start = int(rank * num_sk * M + start_index)
+end = int(start + num_sk * M)
+
 freqs = np.arange(bw,adc_sample_rate,bw/FFT_LEN)
 SK = np.zeros([FFT_LEN, num_sk])
 SK_flags = np.zeros([FFT_LEN, num_sk])
 
-low_lim = float(args.low_lim)
+low_lim = args.low_lim
 up_lim = args.up_lim
 
 if rank == 0:
     print("start: ", start, "end: ", end)
-    print("chunks_rank: ", chunks_rank)
     print("data len: ", data_len)
     print("shape SK: ", np.shape(SK))
+    print(low_lim, type(low_lim))
+    print(up_lim, type(up_lim))
+
 
 for i, idx in enumerate(np.arange(start, end, M)):
     idx_start = idx
     idx_stop = idx + M
-    SK[:, i] = spectral_kurtosis_cm(data[:, idx_start:idx_stop, 0] + 1j * data[:, idx_start:idx_stop, 1], M, FFT_LEN)
+    SK[:, i] = spectral_kurtosis_cm(data[:, idx_start:idx_stop, 0]/128 + 1j * data[:, idx_start:idx_stop, 1]/128, M, FFT_LEN)
     for j, val in enumerate(SK[:, i]):
-        if val < low_lim :
+        if val < low_lim or val > up_lim:
             SK_flags[j, i] = 1
 
 if rank == 0:
