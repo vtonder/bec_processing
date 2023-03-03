@@ -1,6 +1,8 @@
 import h5py
 import numpy as np
 import time
+import sys
+sys.path.append("../")
 from constants import frequencies, freq_resolution, time_resolution, num_ch, vela_samples_T
 from mpi4py import MPI
 from square_accumulate import *
