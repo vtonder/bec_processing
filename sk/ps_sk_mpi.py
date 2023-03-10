@@ -23,7 +23,7 @@ args = parser.parse_args()
 if rank == 0:
     t1 = time.time()
 
-df = h5py.File('/net/com08/data6/vereese/' + args.file, 'r', rdcc_nbytes=0)
+df = h5py.File('/net/com08/data6/vereese/' + args.file, 'r')
 data = df['Data/bf_raw']
 start_index = start_indices[args.file]
 
