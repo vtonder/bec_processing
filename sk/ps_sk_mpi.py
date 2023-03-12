@@ -34,11 +34,11 @@ num_sk_rank = num_sk // size  # number of sk per rank to process
 
 start = int(start_index + rank*num_sk_rank*M)
 stop = int(start + num_sk_rank*M)
-local_data = data[:, start:stop, :].astype(np.float)/128  # get the portion of the array to be analyzed by each rank
+local_data = data[:, start:stop, :]  # get the portion of the array to be analyzed by each rank
 
 # SK RFI mitigation
 FFT_LEN = 1024
-SK = np.zeros([FFT_LEN, num_sk_rank])
+SK = np.zeros([FFT_LEN, num_sk_rank], dtype=np.float16)
 
 if rank == 0:
     print("start index: ", start_index)
