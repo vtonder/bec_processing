@@ -23,7 +23,7 @@ if rank == 0:
     print("start bench test at:", t1)
 
     if time_chunk_size % M:
-        print("not respecting the chunk! M must be divisble by time_chunk_size: ", time_chunk_size) 
+        print("not respecting the chunk! M must be divisible by time_chunk_size: ", time_chunk_size)
         exit()
 
 df = h5py.File('/net/com08/data6/vereese/' + args.file, 'r')
