@@ -21,14 +21,19 @@ for file_name in file_names:
     num_chunk = dl/time_chunk_size
     start_index = 0
     for i in np.arange(num_chunk):
-        start = i*time_chunk_size
-        stop = start + time_chunk_size
+        start = int(i*time_chunk_size)
+        stop = int(start + time_chunk_size)
         dt = data[:,start:stop,:]
-        for ch in np.arange(freq_chunk_size):
-            temp_non_zero = next(i for i, x in enumerate(data[ch, :, :]) if any(x))
+
+        # Throw away 55 ch on each side given receiver band is 900-1670 MHz
+        #for ch in np.arange(55,969):
+        for ch in np.arange(600,800):
+            temp_non_zero = next((j for j, x in enumerate(dt[ch, :, :]) if any(x)), 0)
             if start_index < temp_non_zero:
                 start_index = temp_non_zero
 
+    print("before time_chunk_size normalisation: ", start_index)
+    start_index = (round(start_index/time_chunk_size))*time_chunk_size
     start_indices.update({file_name:start_index})
     print(start_indices)
     print(file_name, " ", time.time()-t1)
