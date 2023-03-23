@@ -53,21 +53,32 @@ for i in np.arange(num_pulses):
     end = start + int_samples_T
     chunk_start = int(np.floor(start / time_chunk_size) * time_chunk_size)
     chunk_stop = int(np.ceil(end / time_chunk_size) * time_chunk_size)
+    data_window_len = chunk_stop - chunk_start
 
-    print("pulse i       : ", i)
-    #print("chunk_start   : ", chunk_start)
-    #print("chunk_stop    : ", chunk_stop)
-    #print("cstp - cstrt  : ", chunk_stop - chunk_start)
+    print("pulse i         : ", i)
+    print("chunk_start     : ", chunk_start)
+    print("chunk_stop      : ", chunk_stop)
+    print("data_window_len : ", data_window_len)
 
     if chunk_stop >= tot_ndp:
         break
     data = df['Data/bf_raw'][:, chunk_start:chunk_stop, :]
     clean_data =  data[600, 0:M, 0]
+    print("shape data: ", data.shape)
+    print("shape clean data: ", clean_data.shape)
+
+    print("***starting RFI mitigation***")
     # RFI mitigation
-    for j, idx in enumerate(np.arange(chunk_start, chunk_stop, M)):
+    for j, idx in enumerate(np.arange(0, data_window_len, M)):
         idx_start = int(idx)
         idx_stop = int(idx_start + M)
         sk_idx = int(num_sk_chunk*i + j)
+        data_idx = int(chunk_start+idx_start-start_index) 
+
+        #print("idx_start :", idx_start)
+        #print("idx_stop  :", idx_stop)
+        #print("sk_idx    :", sk_idx)
+
         if idx_stop > tot_ndp:
             print("shortening range because otherwise it will read from memory that doesn't exist")
             print("tot_ndp : ", tot_ndp)
@@ -77,7 +88,8 @@ for i in np.arange(num_pulses):
         for ch, val in enumerate(sk[:, sk_idx]):
             if val < low or val > up:
                 SK_flags[ch, sk_idx] = 1
-                SK_flags2[ch, idx_start:idx_stop] = np.ones(M)
+                #TODO: verify that this is correct
+                SK_flags2[ch, data_idx:data_idx+M] = np.ones(M, dtype=np.float16)
                 # TODO: improve this mitigation strategy. coincidentally ch 600 works for vela and J0536
                 data[ch, idx_start:idx_stop, 0] = clean_data
                 data[ch, idx_start:idx_stop, 1] = clean_data
@@ -92,7 +104,7 @@ for i in np.arange(num_pulses):
     re = np.float16(data[:, pulse_start:pulse_stop, 0]/128)
     im = np.float16(data[:, pulse_start:pulse_stop, 1]/128)
     summed_profile += re ** 2 + im ** 2
-    summed_flags += SK_flags2[:, start:end]
+    summed_flags += SK_flags2[:, pulse_start:pulse_stop]
 
 np.save('ps_M' + str(M) + "_" + tag + pol, summed_profile)
 np.save('SK_flags' + str(M) + "_" + tag + pol, SK_flags)
