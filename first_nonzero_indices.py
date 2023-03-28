@@ -3,6 +3,10 @@ import numpy as np
 import time
 import sys
 
+# The script searches for the largest first non 0 element across all 3 dimension in the file
+
+
+# TODO: first_non_zero should be a multiple of time_chunk_size
 file_name = sys.argv[1] 
 t1 = time.time()
 f = h5py.File(file_name, 'r')

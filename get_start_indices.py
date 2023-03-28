@@ -6,10 +6,14 @@ from constants import freq_chunk_size, time_chunk_size
 import yaml
 import time
 
+# TODO: this script errors with the following: 
+# when processing:  /net/com08/data6/vereese/1604644511_wide_tied_array_channelised_voltage_0y.h5
+# numpy.core._exceptions.MemoryError: Unable to allocate 508. GiB for an array with shape (1024, 266158080, 2) and data type int8
+
 # The meerkat data has lots of 0s
 # This script takes h5py input file
 # It calculates the first index to be non 0 per channel
-# The ultimate index chosen is the maximum index between all the channels for re and imaginary
+# The ultimate index chosen is the maximum index between all the channels for real and imaginary
 
 file_names = glob.glob('/net/com08/data6/vereese/*.h5')
 start_indices = {}

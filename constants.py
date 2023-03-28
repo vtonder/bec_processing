@@ -41,35 +41,34 @@ clean_ch = np.abs(frequencies-1450).argmin()
 clean_ch2 = 600
 dirty_ch2 = 105
 
-# SK lower and upper limits
-
+# SK lower and upper limits. Obtained using sk/sk_thresholds.py script
 lower_limit = {512:0.77511, 519:0.776424, 1024:0.83425, 1038:0.83527, 1557:0.86281, 2048:0.87892, 10240:0.94336}
 upper_limit = {512:1.3254, 519:1.32275, 1024:1.21685, 1038:1.2152, 1557:1.17110, 2048:1.1469, 10240:1.06193}
 
-# first non-zero indices for each file. Obtained using the first_nonzero_indices.py script
-# The data files have lots of 0s
-# The script searches for the largest first non 0 element across all 3 dimension in the file
-# Then made it a multiple of the time chunk size
-start_indices = {
- '1604641064_wide_tied_array_channelised_voltage_0x.h5': 0,
- '1604641064_wide_tied_array_channelised_voltage_0y.h5': 13631488,
- '1604641234_wide_tied_array_channelised_voltage_0x.h5': 13631488,
- '1604641234_wide_tied_array_channelised_voltage_0y.h5': 46776320,
- '1604641569_wide_tied_array_channelised_voltage_0x.h5': 13631488,
- '1604641569_wide_tied_array_channelised_voltage_0y.h5': 13631488,
- '1604642210_wide_tied_array_channelised_voltage_0x.h5': 13631488,
- '1604642210_wide_tied_array_channelised_voltage_0y.h5': 13631488,
- '1604642762_wide_tied_array_channelised_voltage_0x.h5': 44466176,
- '1604642762_wide_tied_array_channelised_voltage_0y.h5': 13631488,
- '1604643330_wide_tied_array_channelised_voltage_0x.h5': 13631488,
- '1604643330_wide_tied_array_channelised_voltage_0y.h5': 13631488,
- '1604643883_wide_tied_array_channelised_voltage_0x.h5': 13631488,
- '1604643883_wide_tied_array_channelised_voltage_0y.h5': 13631488,
- '1604644511_wide_tied_array_channelised_voltage_0x.h5': 13631488,
- '1604644511_wide_tied_array_channelised_voltage_0y.h5': 13631488
+# first non-zero indices for each file. Obtained using the first_nonzero_indices.{py,sh} scripts. 
+# The output was written to first_nonzero_indices
+first_nonzero_indices = {
+ '1604641064_wide_tied_array_channelised_voltage_0x.h5': 10306048, 
+ '1604641064_wide_tied_array_channelised_voltage_0y.h5': 7668736,
+ '1604641234_wide_tied_array_channelised_voltage_0x.h5': 13523200,
+ '1604641234_wide_tied_array_channelised_voltage_0y.h5': 8161024,
+ '1604641569_wide_tied_array_channelised_voltage_0x.h5': 12952064,
+ '1604641569_wide_tied_array_channelised_voltage_0y.h5': 13651712,
+ '1604642210_wide_tied_array_channelised_voltage_0x.h5': 12290304,
+ '1604642210_wide_tied_array_channelised_voltage_0y.h5': 37167104,
+ '1604642762_wide_tied_array_channelised_voltage_0x.h5': 6007040,
+ '1604642762_wide_tied_array_channelised_voltage_0y.h5': 13642240,
+ '1604643330_wide_tied_array_channelised_voltage_0x.h5': 11668992,
+ '1604643330_wide_tied_array_channelised_voltage_0y.h5': 34685952,
+ '1604643883_wide_tied_array_channelised_voltage_0x.h5': 11906304,
+ '1604643883_wide_tied_array_channelised_voltage_0y.h5': 11587840,
+ '1604644511_wide_tied_array_channelised_voltage_0x.h5': 10692096,
+ '1604644511_wide_tied_array_channelised_voltage_0y.h5': 9924608
 }
-for key, i in start_indices.items():
-  start_indices[key] = int(round(i/time_chunk_size)*time_chunk_size)
+# make the indices a multiple of the time chunk size
+start_indices = {}
+for file_name, idx in first_nonzero_indices.items():
+  start_indices.update({file_name : int(round(idx/time_chunk_size)*time_chunk_size)})
 
 # Pulsar information
 # Vela
