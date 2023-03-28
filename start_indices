@@ -1,0 +1,54 @@
+/net/com08/data6/vereese/1604641064_wide_tied_array_channelised_voltage_0x.h5: 16384
+/net/com08/data6/vereese/1604641064_wide_tied_array_channelised_voltage_0y.h5: 16384
+/net/com08/data6/vereese/1604641234_wide_tied_array_channelised_voltage_0x.h5: 16384
+/net/com08/data6/vereese/1604641234_wide_tied_array_channelised_voltage_0y.h5: 16384
+/net/com08/data6/vereese/1604641569_wide_tied_array_channelised_voltage_0x.h5: 16384
+/net/com08/data6/vereese/1604641569_wide_tied_array_channelised_voltage_0y.h5: 16384
+/net/com08/data6/vereese/1604642210_wide_tied_array_channelised_voltage_0x.h5: 16384
+/net/com08/data6/vereese/1604642210_wide_tied_array_channelised_voltage_0y.h5: 16384
+/net/com08/data6/vereese/1604642762_wide_tied_array_channelised_voltage_0x.h5: 16384
+/net/com08/data6/vereese/1604642762_wide_tied_array_channelised_voltage_0y.h5: 16384
+/net/com08/data6/vereese/1604643330_wide_tied_array_channelised_voltage_0x.h5: 16384
+/net/com08/data6/vereese/1604643330_wide_tied_array_channelised_voltage_0y.h5: 16384
+/net/com08/data6/vereese/1604643883_wide_tied_array_channelised_voltage_0x.h5: 16384
+/net/com08/data6/vereese/1604643883_wide_tied_array_channelised_voltage_0y.h5: 16384
+/net/com08/data6/vereese/1604644511_wide_tied_array_channelised_voltage_0x.h5: 16384
+/net/com08/data6/vereese/1604644511_wide_tied_array_channelised_voltage_0y.h5: 16384
+processing:  /net/com08/data6/vereese/1604642210_wide_tied_array_channelised_voltage_0x.h5
+before time_chunk_size normalisation:  12290304                                                                                                                                                            after time_chunk_size normalisation:  12288000
+time:  1902.4691791534424
+processing:  /net/com08/data6/vereese/1604641064_wide_tied_array_channelised_voltage_0x.h5
+before time_chunk_size normalisation:  10306048
+after time_chunk_size normalisation:  10305536
+time:  838.2042112350464
+processing:  /net/com08/data6/vereese/1604643883_wide_tied_array_channelised_voltage_0x.h5
+before time_chunk_size normalisation:  11906304
+after time_chunk_size normalisation:  11911168
+time:  2927.197732925415
+processing:  /net/com08/data6/vereese/1604641064_wide_tied_array_channelised_voltage_0y.h5
+before time_chunk_size normalisation:  7668736
+after time_chunk_size normalisation:  7667712
+time:  761.1444535255432
+processing:  /net/com08/data6/vereese/1604641569_wide_tied_array_channelised_voltage_0x.h5
+before time_chunk_size normalisation:  12952064
+after time_chunk_size normalisation:  12959744
+time:  4194.7654366493225
+processing:  /net/com08/data6/vereese/1604641234_wide_tied_array_channelised_voltage_0y.h5
+before time_chunk_size normalisation:  8161024
+after time_chunk_size normalisation:  8159232
+time:  1227.9397103786469
+processing:  /net/com08/data6/vereese/1604643330_wide_tied_array_channelised_voltage_0y.h5
+before time_chunk_size normalisation:  34685952
+after time_chunk_size normalisation:  34684928
+time:  3758.1316652297974
+processing:  /net/com08/data6/vereese/1604644511_wide_tied_array_channelised_voltage_0y.h5
+Traceback (most recent call last):
+  File "get_start_indices.py", line 20, in <module>
+    data = input_data['Data/bf_raw'][()]
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "/home/vereese/anaconda3/lib/python3.8/site-packages/h5py/_hl/dataset.py", line 768, in __getitem__
+    return self._fast_reader.read(args)
+  File "h5py/_selector.pyx", line 368, in h5py._selector.Reader.read
+  File "h5py/_selector.pyx", line 342, in h5py._selector.Reader.make_array
+numpy.core._exceptions.MemoryError: Unable to allocate 508. GiB for an array with shape (1024, 266158080, 2) and data type int8
