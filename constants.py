@@ -70,7 +70,8 @@ start_indices = {}
 for file_name, idx in first_nonzero_indices.items():
   start_indices.update({file_name : int(round(idx/time_chunk_size)*time_chunk_size)})
 
-# Pulsar information
+# Pulsar information is obtained from:
+# https://www.atnf.csiro.au/people/joh414/glast/database/summary.html
 # Vela
 vela_freq = 11.185084597305504  # unit Hz 11.185053620637202  #11.185031494489326 #11.18500936838522
 #vela_freq = 11.1946499395 #11.184900190310714 #11.18512 #11.18512 #11.195 # 11.1946499395
@@ -103,11 +104,11 @@ J0742 = {'freq':J0742_freq,
         }
 
 # J0536-7543
-J0536_freq = 0.8026
-J0536_T = 1/J0536_freq
+J0536_T = 1.245861 
+J0536_freq = 1/J0536_T
 J0536_samples_T = J0536_T*10**6 / time_resolution
-J0536_dm = 18.53
-J0536 = {'freq':0.8026,
+J0536_dm = 18.58
+J0536 = {'freq':J0536_freq,
          'T':J0536_T,
          'samples_T':J0536_samples_T, 
          'dm':J0536_dm
