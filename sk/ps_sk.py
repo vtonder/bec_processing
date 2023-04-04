@@ -9,7 +9,8 @@ import argparse
 
 def rfi_mitigation(data, sk_flags, sk_sum_flags, sk, pulse_i, num_sk_chunk, M, data_window_len, start_index, chunk_start):
     print("***starting RFI mitigation***")
-    clean_data =  data[600, 0:M, 0]
+    # TODO: improve this mitigation strategy. coincidentally ch 600 works for vela and J0536
+    clean_data =  data[600, 0:M, 0] # TODO: need an improved scheme ie generate Gaussian noise with same variance
     for j, idx in enumerate(np.arange(0, data_window_len, M)):
         idx_start = int(idx)
         idx_stop = int(idx_start + M)
@@ -31,7 +32,7 @@ def rfi_mitigation(data, sk_flags, sk_sum_flags, sk, pulse_i, num_sk_chunk, M, d
                 sk_flags[ch, sk_idx] = 1
                 # TODO: verify that indices are correct
                 sk_sum_flags[ch, sk_sum_idx:sk_sum_idx+M] = np.ones(M, dtype=np.float16)
-                # TODO: improve this mitigation strategy. coincidentally ch 600 works for vela and J0536
+
                 data[ch, idx_start:idx_stop, 0] = clean_data
                 data[ch, idx_start:idx_stop, 1] = clean_data
 
@@ -57,16 +58,16 @@ pulsar = pulsars[tag[:-1]]
 samples_T = pulsar['samples_T']
 int_samples_T = int(np.floor(samples_T))
 
-num_pulses = int(np.floor(num_data_points / samples_T))  # number of vela pulses per observation
+num_pulses = int(np.floor(num_data_points / samples_T))  # number of pulses per observation
 M = int(args.M)
 num_sk_chunk = 0
 if M:
     num_sk_chunk = time_chunk_size / M  # number of SK's in 1 chunk
 
 sk = np.load("sk_M" + str(M) + "_" + tag + pol + ".npy")
-FFT_LEN = int(num_ch) 
-low = lower_limit[M] 
-up = upper_limit[M] 
+FFT_LEN = int(num_ch)
+low = lower_limit[M]
+up = upper_limit[M]
 
 sk_flags = np.zeros([num_ch, int(num_data_points / M)], dtype=np.float16) # spans all the number of sk sets and indicated which ones were flagged
 sk_sum_flags = np.zeros([num_ch, int(num_data_points)], dtype=np.float16) # make this so that it can be folded ito num vela pulses
@@ -74,6 +75,7 @@ summed_profile = np.zeros([num_ch, int_samples_T], dtype=np.float16)
 summed_flags = np.zeros([num_ch, int_samples_T], dtype=np.float16)
 
 print("***DEBUG INFO***")
+print("processing         : ", args.file)
 print("start_index        : ", start_index)
 print("total data len     : ", tot_ndp)
 print("num_data_points    : ", num_data_points)
@@ -108,13 +110,13 @@ for i in np.arange(num_pulses):
     pulse_start = int(start_index + (i*samples_T) - chunk_start)
     pulse_stop = pulse_start + int_samples_T
 
-    re = np.float16(data[:, pulse_start:pulse_stop, 0])
-    im = np.float16(data[:, pulse_start:pulse_stop, 1])
-    summed_profile += re ** 2 + im ** 2
+    re = data[:, pulse_start:pulse_stop, 0]
+    im = data[:, pulse_start:pulse_stop, 1]
+    summed_profile += np.float16((re ** 2 + im ** 2)/128**2)
     summed_flags += sk_sum_flags[:, pulse_start:pulse_stop]
 
 np.save('ps_M' + str(M) + "_" + tag + pol, summed_profile)
 np.save('SK_flags' + str(M) + "_" + tag + pol, sk_flags)
 np.save('summed_flags' + str(M) + "_" + tag + pol, summed_flags)
-print("procesing took: ", time.time() - t1)
+print("processing took: ", time.time() - t1)
 
