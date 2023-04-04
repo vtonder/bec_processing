@@ -108,8 +108,8 @@ for i in np.arange(num_pulses):
     pulse_start = int(start_index + (i*samples_T) - chunk_start)
     pulse_stop = pulse_start + int_samples_T
 
-    re = np.float16(data[:, pulse_start:pulse_stop, 0]/128)
-    im = np.float16(data[:, pulse_start:pulse_stop, 1]/128)
+    re = np.float16(data[:, pulse_start:pulse_stop, 0])
+    im = np.float16(data[:, pulse_start:pulse_stop, 1])
     summed_profile += re ** 2 + im ** 2
     summed_flags += sk_sum_flags[:, pulse_start:pulse_stop]
 
