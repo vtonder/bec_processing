@@ -36,7 +36,7 @@ num_data_points = ((data_len - start_index) // (size*time_chunk_size)) * (size*t
 num_data_points_rank = num_data_points / size
 
 num_sk_rank = int(num_data_points_rank / M)  # number of sk per rank to process
-
+num_sk_chunk = int(time_chunk_size / M) # number sk in 1 chunk
 start = int(start_index + rank*num_data_points_rank)
 stop = int(start + num_data_points_rank)
 #local_data = data[:, start:stop, :]  # get the portion of the array to be analyzed by each rank
@@ -51,6 +51,7 @@ if rank == 0:
     print("processing only    :", num_data_points)
     print("data points rank   :", num_data_points_rank)
     print("number sk rank     :", num_sk_rank)
+    print("number sk chunk    :", num_sk_chunk)
     print("start_index        :", start_index)
     print("start              :", start)
     print("stop               :", stop)
@@ -64,8 +65,9 @@ if rank == 0:
 # faster for each processor to just read and process 1 chunk at a time
 for i, ld_idx in enumerate(np.arange(start, stop, time_chunk_size)):
     local_data = data[:, ld_idx:int(ld_idx+time_chunk_size), :]
+    sk_idx_offset = i * num_sk_chunk
     for j, idx in enumerate(np.arange(0, time_chunk_size, M)):
-        sk[:, int(i*time_chunk_size + j)] = spectral_kurtosis_cm(local_data[:, idx:idx + M, 0] + 1j * local_data[:, idx:idx + M, 1], M, FFT_LEN * 2)
+        sk[:, sk_idx_offset + j] = spectral_kurtosis_cm(local_data[:, idx:idx + M, 0] + 1j * local_data[:, idx:idx + M, 1], M, FFT_LEN * 2)
 
 # send results to rank 0
 if rank > 0:
