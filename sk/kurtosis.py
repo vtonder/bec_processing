@@ -1,29 +1,5 @@
 import matplotlib.pyplot as plt
-from scipy.fftpack import fft
 import numpy as np
-
-def gpt_spectral_kurtosis(x, fs):
-    """
-    Calculate the spectral kurtosis of a signal.
-
-    Parameters:
-    x (ndarray): The input signal.
-    fs (float): The sampling frequency of the signal.
-
-    Returns:
-    ndarray: The spectral kurtosis of the input signal at each frequency bin.
-    """
-    # Calculate the Fourier transform of the signal
-
-    Pxx = np.abs(fft(np.asarray(x), 1024))
-    M=5000
-    # Calculate the spectral kurtosis for each frequency bin
-    #SK = ((M + 1) / (M - 1)) * ((M * S2 / S1 ** 2) - 1)
-    #sk = np.mean(Pxx ** 4, axis=0) / np.mean(Pxx ** 2, axis=0) ** 2
-    sk = ((M + 1) / (M - 1)) * (((Pxx ** 4) / (Pxx ** 2) ** 2) - 1)
-    print("GPT SK", sk)
-    return sk
-
 
 #TODO need to apply normalisation to spectra otherwise the estimator will fail - Nita 2007
 #row major implementation
