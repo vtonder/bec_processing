@@ -25,7 +25,7 @@ offsets = {}
 for fn in file_names:
     offsets.update({fn:0})
 
-number_observations = len(file_names)/2
+number_observations = int(len(file_names)/2)
 
 for i in np.arange(number_observations):
     print(file_names[2 * i])
@@ -33,12 +33,18 @@ for i in np.arange(number_observations):
     yf = h5py.File('/net/com08/data6/vereese/'+file_names[2*i + 1], 'r')
     xt1 = xf['Data/timestamps'][start_indices[file_names[2*i]]]
     yt1 = yf['Data/timestamps'][start_indices[file_names[2*i + 1]]]
-    x_offset = 0
-    y_offset = 0
+    x_offset = int(0)
+    y_offset = int(0)
     if xt1 < yt1:
-        y_offset = (yt1 - xt1) / 2048
+        print("xt1 < yt1")
+        print("xt1:", xt1)
+        print("yt1:", yt1)
+        x_offset = int((yt1 - xt1) / 2048)
     elif yt1 < xt1:
-        x_offset = (xt1 - yt1) / 2048
+        print("yt1 < xt1")
+        print("xt1:", xt1)
+        print("yt1:", yt1)
+        y_offset = int((xt1 - yt1) / 2048)
 
     offsets[file_names[2*i]] = x_offset
     offsets[file_names[2*i + 1]] = y_offset
