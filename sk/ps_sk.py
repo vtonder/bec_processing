@@ -61,18 +61,16 @@ int_samples_T = int(np.floor(samples_T))
 num_pulses = int(np.floor(num_data_points / samples_T))  # number of pulses per observation
 M = int(args.M)
 num_sk_chunk = 0
+FFT_LEN = int(num_ch)
 if M:
     num_sk_chunk = time_chunk_size / M  # number of SK's in 1 chunk
-
-sk = np.load("sk_M" + str(M) + "_" + tag + pol + ".npy")
-FFT_LEN = int(num_ch)
-low = lower_limit[M]
-up = upper_limit[M]
-
-sk_flags = np.zeros([num_ch, int(num_data_points / M)], dtype=np.float16) # spans all the number of sk sets and indicated which ones were flagged
-sk_sum_flags = np.zeros([num_ch, int(num_data_points)], dtype=np.float16) # make this so that it can be folded ito num vela pulses
+    sk = np.load("sk_M" + str(M) + "_" + tag + pol + ".npy")
+    low = lower_limit[M]
+    up = upper_limit[M]
+    sk_flags = np.zeros([num_ch, int(num_data_points / M)], dtype=np.float16) # spans all the number of sk sets and indicated which ones were flagged
+    sk_sum_flags = np.zeros([num_ch, int(num_data_points)], dtype=np.float16) # make this so that it can be folded ito num vela pulses
+    summed_flags = np.zeros([num_ch, int_samples_T], dtype=np.float16)
 summed_profile = np.zeros([num_ch, int_samples_T], dtype=np.float16)
-summed_flags = np.zeros([num_ch, int_samples_T], dtype=np.float16)
 
 print("***DEBUG INFO***")
 print("processing         : ", args.file)
@@ -81,11 +79,12 @@ print("total data len     : ", tot_ndp)
 print("num_data_points    : ", num_data_points)
 print("num_pulses         : ", num_pulses)
 print("***SHAPES***")
-print("sk             :", sk.shape)
-print("sk_flags       :", sk_flags.shape)
-print("sk_flags2      :", sk_sum_flags.shape)
+if M:
+    print("sk             :", sk.shape)
+    print("sk_flags       :", sk_flags.shape)
+    print("sk_flags2      :", sk_sum_flags.shape)
+    print("summed_flags   :", summed_flags.shape)
 print("summed_profile :", summed_profile.shape)
-print("summed_flags   :", summed_flags.shape)
 print("************")
 
 for i in np.arange(num_pulses):
@@ -95,28 +94,29 @@ for i in np.arange(num_pulses):
     chunk_stop = int(np.ceil(end / time_chunk_size) * time_chunk_size)
     data_window_len = chunk_stop - chunk_start
 
-    print("pulse i         : ", i)
+    '''print("pulse i         : ", i)
     print("chunk_start     : ", chunk_start)
     print("chunk_stop      : ", chunk_stop)
-    print("data_window_len : ", data_window_len)
+    print("data_window_len : ", data_window_len)'''
 
     if chunk_stop >= tot_ndp:
         break
     data = df['Data/bf_raw'][:, chunk_start:chunk_stop, :]
-
-    if M:
-        data, sk_flags, sk_sum_flags = rfi_mitigation(data, sk_flags, sk_sum_flags, sk, i, num_sk_chunk, M, data_window_len, start_index, chunk_start)
-
     pulse_start = int(start_index + (i*samples_T) - chunk_start)
     pulse_stop = pulse_start + int_samples_T
 
-    re = data[:, pulse_start:pulse_stop, 0]
-    im = data[:, pulse_start:pulse_stop, 1]
+    if M:
+        data, sk_flags, sk_sum_flags = rfi_mitigation(data, sk_flags, sk_sum_flags, sk, i, num_sk_chunk, M, data_window_len, start_index, chunk_start)
+        summed_flags += np.float16(sk_sum_flags[:, pulse_start:pulse_stop])
+
+    re = data[:, pulse_start:pulse_stop, 0].astype(np.float16)
+    im = data[:, pulse_start:pulse_stop, 1].astype(np.float16)
+
     summed_profile += np.float16((re ** 2 + im ** 2)/128**2)
-    summed_flags += sk_sum_flags[:, pulse_start:pulse_stop]
 
 np.save('ps_M' + str(M) + "_" + tag + pol, summed_profile)
-np.save('SK_flags' + str(M) + "_" + tag + pol, sk_flags)
-np.save('summed_flags' + str(M) + "_" + tag + pol, summed_flags)
+if M:
+    np.save('SK_flags' + str(M) + "_" + tag + pol, sk_flags)
+    np.save('summed_flags' + str(M) + "_" + tag + pol, summed_flags)
 print("processing took: ", time.time() - t1)
 
