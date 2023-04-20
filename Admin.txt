@@ -1,0 +1,57 @@
+SU pulseDrive IP: 146.232.222.44:5000
+SARAO data machine: https://protect-za.mimecast.com/s/ycnTCAn7q3fl0Lf842Qt?domain=10.98.2.129
+SARAO computer: ray.science.kat.ac.za 			/net/com08/data6/vereese
+
+Vela
+File name: 1604641569
+DM: 67.99 
+Measured F: 11.185075
+Num Pulses: 2800
+Start Time: 15 sec
+Time Offset: fy[x] = fx[x+t], t = 13681920 
+Best prof: 
+
+J0437-4715
+File name: 1604642210
+DM: 2.6
+Measured F: 173.69148
+Num Pulses: 45000
+Start Time: 40 sec
+Time Offset: fy[x] = fx[x+t], t = -11144960
+Best prof: SNR>93 ~ 1000 pulses
+
+J0536-7543
+File Name: 1604642762
+DM: 18.58
+Measured F: 0.80266
+Num Pulses: 204
+Start Time: 15 sec
+Time Offset: fy[x] = fx[x+t], t = 30827776
+Best prof:
+
+J0737-3039A
+File Name: 1604643330
+DM: 48.92
+Measured F: 44.085374 + Pdot=0.000102
+Num Pulses: 11520
+Start Time: 41 sec
+Time Offset: fy[x] = fx[x+t], t = -11403520
+Best prof:
+
+J0742-2822
+File Name: 1604643883
+DM: 73.73 
+Measured F: 5.996435
+Num Pulses: 1400
+Start Time: 27
+Time Offset: fy[x] = fx[x+t], t = -12010240
+Best prof: SNR>220
+
+J1644-4559
+File Name: 1604644511
+DM: 478.8
+Measured F: 2.19731
+Num Pulses: 500
+Start Time: 18
+Time Offset: fy[x] = fx[x+t], t = -09966848
+Best prof: SNR>1600 ~ 30
