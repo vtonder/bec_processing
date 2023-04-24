@@ -1,20 +1,23 @@
 import h5py
 import numpy as np
 import time
+from matplotlib import pyplot as plt
+
+import sys
+sys.path.append('../')
 from constants import frequencies, freq_resolution, time_resolution, num_ch, vela_dm, vela_T, vela_samples_T, \
     dispersion_constant
-from matplotlib import pyplot as plt
 
 # TODO: find out how to read a chunk and operate on entire chunks at a time
 # https://stackoverflow.com/questions/21766145/h5py-correct-way-to-slice-array-datasets
 #TODO: check if things are not out by a factor of 10e6 changed from freq_resolution being in Hz to MHz
 # Also how flipping might affect this
 
-SAVE_DATA = True
+SAVE_DATA = False 
 COMPUTE_POWER_SPECTA = True
 COMPUTE_TIME_SERIES = False
-DEDISPERSE = True
-CODEDISPERSE = True
+DEDISPERSE = False 
+CODEDISPERSE = False 
 MEAS_RESIDUAL_DISP = False
 
 font = {'family': 'STIXGeneral',
@@ -23,24 +26,22 @@ plt.rc('font', **font)
 
 # vela_x = h5py.File('/home/vereese/pulsar_data/1604641569_wide_tied_array_channelised_voltage_0x.h5', 'r')
 # vela_x = h5py.File('/home/vereese/pulsar_data/1604641064_wide_tied_array_channelised_voltage_0y.h5', 'r')
-vela_x = h5py.File('/home/vereese/pulsar_data/1604641234_wide_tied_array_channelised_voltage_0x.h5', 'r')
+vela_x = h5py.File('/net/com08/data6/vereese/1604641234_wide_tied_array_channelised_voltage_0x.h5', 'r')
 
-num_data_points = vela_x['Data/timestamps'].shape[0]
-print("Number of data points", num_data_points)
 
 t = time.time()
 print("read in data t:", t)
 data = vela_x['Data/bf_raw'][...]  # [()]
-data = data[:, 11620864:, :]
+data = data[:, 11616256:, :]
 print("done reading in data: ", time.time() - t)
 
 num_data_points = data.shape[1]
 num_pulses = int(np.floor(num_data_points / vela_samples_T))  # number of vela pulses per observation
-print("number of pulses", num_pulses)
+print("Number of data points : ", num_data_points)
+print("Number of pulses      : ", num_pulses)
 vela_int_samples_T = int(np.floor(vela_samples_T))
 fp = 1  # number of vela periods to fold over
 summed_profile = np.zeros([num_ch, fp * vela_int_samples_T])
-inverted_summed_profile = np.zeros([num_ch, fp * vela_int_samples_T])
 
 # all_data = vela_x['Data']['bf_raw'][()] #.value[:,:,0]
 # re = all_data[:,:,0].astype('int16')
@@ -67,11 +68,10 @@ smearing_band = [dispersion_constant * vela_dm * (1 / ((freq - b_2) ** 2) - 1 / 
                  reversed_frequencies]  # ms
 smearing_samples = [int(np.round(smear_time / (time_resolution * 1000))) for smear_time in smearing_band]
 
-# smearing_samples.reverse() # because the channels are reversed ie highest frequency is ch0
+# smearing_samples.reverse()
 
 if CODEDISPERSE:
-    k = -2 * 1j * np.pi * vela_dm / (
-                2.41 * 10 ** -4)  # negative because we're interested in the inverse transfer function
+    k = -2 * 1j * np.pi * vela_dm / (2.41 * 10 ** -4)  # negative because we're interested in the inverse transfer function
     t = time.time()
     print("co-dedisperse data t:", t)
 
@@ -222,24 +222,24 @@ if COMPUTE_POWER_SPECTA:
         if end >= num_data_points:
             break
 
-        re = data[:, start:end, 0].astype(np.float)
-        im = data[:, start:end, 1].astype(np.float)
+        re = data[:, start:end, 0].astype(np.float16)
+        im = data[:, start:end, 1].astype(np.float16)
 
         summed_profile += re ** 2 + im ** 2
 
         # t2=time.time()
         # diff = t2-t1
         # print('at addition: ', i, 'of', tot_int ,'took ',  diff, 's')
+    plt.figure()
+    plt.imshow(summed_profile, aspect="auto", origin="lower")
+    plt.show()
     print("done fold data", time.time() - t1)
 
     # take the mean and subtract from each channel to rid the RFI
     # TODO: look into using max power, then sigma, then mean statistics to get rid of RFI
-    # invert the channels because we are working with filterbank data
-    # In filterbank data the ch0 corresponds to higher frequency components and the higher channels correspond to lower frequencies
-    for i in np.arange(num_ch):
-        mean = np.mean(summed_profile[i, :])
-        # summed_profile[i,:] = summed_profile[i,:]-mean
-        inverted_summed_profile[(num_ch - 1) - i, :] = summed_profile[i, :] - mean
+    #for i in np.arange(num_ch):
+    #    mean = np.mean(summed_profile[i, :])
+    #    summed_profile[i,:] = summed_profile[i,:]-mean
 
     if SAVE_DATA:
-        np.save('summed_profile_1234', inverted_summed_profile)
+        np.save('summed_profile_1234', summed_profile)
