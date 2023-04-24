@@ -10,14 +10,14 @@ from constants import frequencies, freq_resolution, time_resolution, num_ch, vel
 
 # TODO: find out how to read a chunk and operate on entire chunks at a time
 # https://stackoverflow.com/questions/21766145/h5py-correct-way-to-slice-array-datasets
-#TODO: check if things are not out by a factor of 10e6 changed from freq_resolution being in Hz to MHz
+# TODO: check if things are not out by a factor of 10e6 changed from freq_resolution being in Hz to MHz
 # Also how flipping might affect this
 
-SAVE_DATA = False 
+SAVE_DATA = False
 COMPUTE_POWER_SPECTA = True
 COMPUTE_TIME_SERIES = False
-DEDISPERSE = False 
-CODEDISPERSE = False 
+DEDISPERSE = True
+CODEDISPERSE = False
 MEAS_RESIDUAL_DISP = False
 
 font = {'family': 'STIXGeneral',
@@ -26,7 +26,7 @@ plt.rc('font', **font)
 
 # vela_x = h5py.File('/home/vereese/pulsar_data/1604641569_wide_tied_array_channelised_voltage_0x.h5', 'r')
 # vela_x = h5py.File('/home/vereese/pulsar_data/1604641064_wide_tied_array_channelised_voltage_0y.h5', 'r')
-vela_x = h5py.File('/net/com08/data6/vereese/1604641234_wide_tied_array_channelised_voltage_0x.h5', 'r')
+vela_x = h5py.File('/net/com08/data6/vereese/1604641569_wide_tied_array_channelised_voltage_0x.h5', 'r')
 
 
 t = time.time()
@@ -201,7 +201,7 @@ if COMPUTE_TIME_SERIES:
             vela_sub_int[i, :] += re ** 2 + im ** 2
 
     if SAVE_DATA:
-        np.save('sub_integration_true_period_1569', vela_sub_int)
+        np.save('sub_int_vela_11.185075', vela_sub_int)
 
 if COMPUTE_POWER_SPECTA:
     tot_int = int(num_pulses / fp)
