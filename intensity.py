@@ -8,16 +8,19 @@ from constants import num_ch, start_indices, xy_time_offsets, pulsars, time_chun
 import argparse
 
 
-def get_pulse_i(df, start_index, pulse_i, samples_T, int_samples_T, tot_ndp):
+def get_data_window(start_index, pulse_i, samples_T, int_samples_T, tot_ndp):
     start = start_index + (pulse_i * samples_T)
     end = start + int_samples_T
     chunk_start = int(np.floor(start / time_chunk_size) * time_chunk_size)
     chunk_stop = int(np.ceil(end / time_chunk_size) * time_chunk_size)
-    
-    if chunk_stop >= tot_ndp:
-        return -1
 
-    data = df['Data/bf_raw'][:, chunk_start:chunk_stop, :]
+    if chunk_stop >= tot_ndp:
+        return -1, -1
+
+    return chunk_start, chunk_stop
+
+def get_pulse_power(dfx, chunk_start, chunk_stop, start_index, pulse_i, samples_T, int_samples_T):
+    data = dfx['Data/bf_raw'][:, chunk_start:chunk_stop, :]
     pulse_start = int(start_index + (pulse_i * samples_T) - chunk_start)
     pulse_stop = pulse_start + int_samples_T
     re = data[:, pulse_start:pulse_stop, 0].astype(np.float16)
@@ -76,10 +79,15 @@ if rank == 0:
     print("**************")
 
 for i in np.arange(rank*np_rank, (rank+1)*np_rank):
-    data_x = get_pulse_i(dfx, si_x, i, samples_T, int_samples_T, tot_ndp_x)
-    data_y = get_pulse_i(dfy, si_y, i, samples_T, int_samples_T, tot_ndp_y)
-    if data_x == -1 or data_y == -1:
+    chunk_start_x, chunk_stop_x = get_data_window(si_x, i, samples_T, int_samples_T, tot_ndp_x)
+    chunk_start_y, chunk_stop_y = get_data_window(si_y, i, samples_T, int_samples_T, tot_ndp_y)
+
+    if chunk_stop_x == -1 or chunk_stop_y == -1:
         break
+
+    data_x = get_pulse_power(dfx, chunk_start_x, chunk_stop_x, si_x, i, samples_T, int_samples_T)
+    data_y = get_pulse_power(dfy, chunk_start_y, chunk_stop_y, si_y, i, samples_T, int_samples_T)
+
     summed_profile += data_x**2 + data_y**2
 
 if rank > 0:
