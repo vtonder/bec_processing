@@ -48,49 +48,104 @@ upper_limit = {512:1.3254, 519:1.32275, 1024:1.21685, 1038:1.2152, 1557:1.17110,
 # first non-zero indices for each file. Obtained using the first_nonzero_indices.{py,sh} scripts. 
 # The output was written to first_nonzero_indices
 first_nonzero_indices = {
- '1604641064_wide_tied_array_channelised_voltage_0x.h5': 10306048, 
- '1604641064_wide_tied_array_channelised_voltage_0y.h5': 7668736,
- '1604641234_wide_tied_array_channelised_voltage_0x.h5': 13523200,
- '1604641234_wide_tied_array_channelised_voltage_0y.h5': 8161024,
- '1604641569_wide_tied_array_channelised_voltage_0x.h5': 12952064,
- '1604641569_wide_tied_array_channelised_voltage_0y.h5': 13651712,
- '1604642210_wide_tied_array_channelised_voltage_0x.h5': 12290304,
- '1604642210_wide_tied_array_channelised_voltage_0y.h5': 37167104,
- '1604642762_wide_tied_array_channelised_voltage_0x.h5': 6007040,
- '1604642762_wide_tied_array_channelised_voltage_0y.h5': 13642240,
- '1604643330_wide_tied_array_channelised_voltage_0x.h5': 11668992,
- '1604643330_wide_tied_array_channelised_voltage_0y.h5': 34685952,
- '1604643883_wide_tied_array_channelised_voltage_0x.h5': 11906304,
- '1604643883_wide_tied_array_channelised_voltage_0y.h5': 11587840,
- '1604644511_wide_tied_array_channelised_voltage_0x.h5': 10692096,
- '1604644511_wide_tied_array_channelised_voltage_0y.h5': 9924608
+  '1604641064_wide_tied_array_channelised_voltage_0x.h5': 10306048,
+  '1604641064_wide_tied_array_channelised_voltage_0y.h5': 7668736,
+  '1604641234_wide_tied_array_channelised_voltage_0x.h5': 13523200,
+  '1604641234_wide_tied_array_channelised_voltage_0y.h5': 8161024,
+  '1604641569_wide_tied_array_channelised_voltage_0x.h5': 12952064,
+  '1604641569_wide_tied_array_channelised_voltage_0y.h5': 13651712,
+  '1604642210_wide_tied_array_channelised_voltage_0x.h5': 12290304,
+  '1604642210_wide_tied_array_channelised_voltage_0y.h5': 37167104,
+  '1604642762_wide_tied_array_channelised_voltage_0x.h5': 6007040,
+  '1604642762_wide_tied_array_channelised_voltage_0y.h5': 13642240,
+  '1604643330_wide_tied_array_channelised_voltage_0x.h5': 11668992,
+  '1604643330_wide_tied_array_channelised_voltage_0y.h5': 34685952,
+  '1604643883_wide_tied_array_channelised_voltage_0x.h5': 11906304,
+  '1604643883_wide_tied_array_channelised_voltage_0y.h5': 11587840,
+  '1604644511_wide_tied_array_channelised_voltage_0x.h5': 10692096,
+  '1604644511_wide_tied_array_channelised_voltage_0y.h5': 9924608
 }
 # make the indices a multiple of the time chunk size
 start_indices = {}
 for file_name, idx in first_nonzero_indices.items():
   start_indices.update({file_name : int(round(idx/time_chunk_size)*time_chunk_size)})
 
+# obtained from get_xy_offsets script which takes start indices into account
+xy_time_offsets = {
+  '1604641064_wide_tied_array_channelised_voltage_0x.h5': 0,
+  '1604641064_wide_tied_array_channelised_voltage_0y.h5': 10875392,
+  '1604641234_wide_tied_array_channelised_voltage_0x.h5': 0,
+  '1604641234_wide_tied_array_channelised_voltage_0y.h5': 38493184,
+  '1604641569_wide_tied_array_channelised_voltage_0x.h5': 14370048,
+  '1604641569_wide_tied_array_channelised_voltage_0y.h5': 0,
+  '1604642210_wide_tied_array_channelised_voltage_0x.h5': 13725952,
+  '1604642210_wide_tied_array_channelised_voltage_0y.h5': 0,
+  '1604642762_wide_tied_array_channelised_voltage_0x.h5': 38462720,
+  '1604642762_wide_tied_array_channelised_voltage_0y.h5': 0,
+  '1604643330_wide_tied_array_channelised_voltage_0x.h5': 11616000,
+  '1604643330_wide_tied_array_channelised_voltage_0y.h5': 0,
+  '1604643883_wide_tied_array_channelised_voltage_0x.h5': 0,
+  '1604643883_wide_tied_array_channelised_voltage_0y.h5': 12337920,
+  '1604644511_wide_tied_array_channelised_voltage_0x.h5': 0,
+  '1604644511_wide_tied_array_channelised_voltage_0y.h5': 10736896
+}
+"""xy_offsets = np.load("xy_offsets.npy", allow_pickle=True)
+for fn, si in start_indices.items():
+    start_indices[fn] = int(si + xy_offsets[fn])"""
+
 # Pulsar information is obtained from:
 # https://www.atnf.csiro.au/people/joh414/glast/database/summary.html
 # Vela
-vela_freq = 11.185084597305504  # unit Hz 11.185053620637202  #11.185031494489326 #11.18500936838522
+vela_freq = 11.185075 # from Alex's admin.txt
+#11.185084597305504  # unit Hz 11.185053620637202  #11.185031494489326 #11.18500936838522
 #vela_freq = 11.1946499395 #11.184900190310714 #11.18512 #11.18512 #11.195 # 11.1946499395
 #vela_freq = 11.184893175250126
 #vela_freq = 11.184168797246667
 #tot_obs=(vela_samples_T*time_resolution*22*11) 22 vela pulses , 22 is chosen randomly, that gave 11 subintegrations
 #deltaT=(time_resolution*17500) # 17500 is a rough estimate from the plot
 # vela_true_period = vela_T*(1+delaT/tot_obs)
-
 vela_dm = 67.97 # from ATNF catalog. units: parsec/cm^3
 # vela_dm = 68.0247344970703 <-> where is this from?
 vela_T = 1.0 / vela_freq  # vela period unit s
 vela_samples_T = vela_T*10**6 / time_resolution  # samples per vela period
-
 J0835 = {'freq':vela_freq,
          'T':vela_T,
          'samples_T':vela_samples_T,
          'dm':vela_dm
         } 
+
+# J0437-4715
+J0437_freq = 173.69148
+J0437_T = 1.0/J0437_freq
+J0437_samples_T = J0437_T*10**6 / time_resolution
+J0437_dm = 2.6
+J0437 = {'freq':J0437_freq,
+         'T':J0437_T,
+         'samples_T':J0437_samples_T,
+         'dm':J0437_dm
+         }
+
+# J0536-7543
+J0536_T = 1.245861
+J0536_freq = 1.0/J0536_T
+J0536_samples_T = J0536_T*10**6 / time_resolution
+J0536_dm = 18.58
+J0536 = {'freq':J0536_freq,
+         'T':J0536_T,
+         'samples_T':J0536_samples_T,
+         'dm':J0536_dm
+        }
+
+# J0737-3039A
+J0737_freq = 44.085374 # Pdot=0.000102
+J0737_T = 1.0/J0737_freq
+J0737_samples_T = J0737_T*10**6 / time_resolution
+J0737_dm = 48.92
+J0737 = {'freq':J0737_freq,
+         'T':J0737_T,
+         'samples_T':J0737_samples_T,
+         'dm':J0737_dm
+         }
 
 # J0742-2822 
 J0742_T = 166.762*10**-3
@@ -103,18 +158,22 @@ J0742 = {'freq':J0742_freq,
          'dm':J0742_dm
         }
 
-# J0536-7543
-J0536_T = 1.245861 
-J0536_freq = 1/J0536_T
-J0536_samples_T = J0536_T*10**6 / time_resolution
-J0536_dm = 18.58
-J0536 = {'freq':J0536_freq,
-         'T':J0536_T,
-         'samples_T':J0536_samples_T, 
-         'dm':J0536_dm
-        }
+# J1644-4559
+J1644_freq = 2.19731
+J1644_T = 1.0/J1644_freq
+J1644_samples_T = J1644_T*10**6 / time_resolution
+J1644_dm = 478.8
+J1644 = {'freq':J1644_freq,
+         'T':J1644_T,
+         'samples_T':J1644_samples_T,
+         'dm':J1644_dm
+         }
+
 # Dictionary to link code to pulsar
-pulsars = {'1234':J0835,
+pulsars = {'1569':J0835,
+           '2210':J0437,
+           '2762':J0536,
+           '3330':J0737,
            '3883':J0742,
-           '2762':J0536 
+           '4511':J1644
           }
