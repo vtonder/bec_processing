@@ -115,10 +115,10 @@ J0835 = {'freq':vela_freq,
         } 
 
 # J0437-4715
-J0437_freq = 173.69148
+J0437_freq = 173.69148 # this is as measured by Alex and ATNF = 173.6879458121843
 J0437_T = 1.0/J0437_freq
 J0437_samples_T = J0437_T*10**6 / time_resolution
-J0437_dm = 2.6
+J0437_dm = 2.64476
 J0437 = {'freq':J0437_freq,
          'T':J0437_T,
          'samples_T':J0437_samples_T,
