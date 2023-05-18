@@ -108,7 +108,8 @@ vela_dm = 67.97 # from ATNF catalog. units: parsec/cm^3
 # vela_dm = 68.0247344970703 <-> where is this from?
 vela_T = 1.0 / vela_freq  # vela period unit s
 vela_samples_T = vela_T*10**6 / time_resolution  # samples per vela period
-J0835 = {'freq':vela_freq,
+J0835 = {'name':'Vela',
+         'freq':vela_freq,
          'T':vela_T,
          'samples_T':vela_samples_T,
          'dm':vela_dm
@@ -119,7 +120,8 @@ J0437_freq = 173.69148 # this is as measured by Alex and ATNF = 173.687945812184
 J0437_T = 1.0/J0437_freq
 J0437_samples_T = J0437_T*10**6 / time_resolution
 J0437_dm = 2.64476
-J0437 = {'freq':J0437_freq,
+J0437 = {'name':'J0437-4715',
+         'freq':J0437_freq,
          'T':J0437_T,
          'samples_T':J0437_samples_T,
          'dm':J0437_dm
@@ -130,7 +132,8 @@ J0536_T = 1.245861
 J0536_freq = 1.0/J0536_T
 J0536_samples_T = J0536_T*10**6 / time_resolution
 J0536_dm = 18.58
-J0536 = {'freq':J0536_freq,
+J0536 = {'name':'J0536-7543',
+         'freq':J0536_freq,
          'T':J0536_T,
          'samples_T':J0536_samples_T,
          'dm':J0536_dm
@@ -141,7 +144,8 @@ J0737_freq = 44.085374 # Pdot=0.000102
 J0737_T = 1.0/J0737_freq
 J0737_samples_T = J0737_T*10**6 / time_resolution
 J0737_dm = 48.92
-J0737 = {'freq':J0737_freq,
+J0737 = {'name':'J0737-3039A',
+         'freq':J0737_freq,
          'T':J0737_T,
          'samples_T':J0737_samples_T,
          'dm':J0737_dm
@@ -152,7 +156,8 @@ J0742_T = 166.762*10**-3
 J0742_freq = 1/J0742_T
 J0742_dm = 73.78
 J0742_samples_T = J0742_T*10**6 / time_resolution
-J0742 = {'freq':J0742_freq,
+J0742 = {'name':'J0742-2822',
+         'freq':J0742_freq,
          'T':J0742_T,
          'samples_T':J0742_samples_T, 
          'dm':J0742_dm
@@ -163,7 +168,8 @@ J1644_freq = 2.19731
 J1644_T = 1.0/J1644_freq
 J1644_samples_T = J1644_T*10**6 / time_resolution
 J1644_dm = 478.8
-J1644 = {'freq':J1644_freq,
+J1644 = {'name':'J1644-4559',
+         'freq':J1644_freq,
          'T':J1644_T,
          'samples_T':J1644_samples_T,
          'dm':J1644_dm
