@@ -17,8 +17,7 @@ def get_data_window(start_index, pulse_i, samples_T, int_samples_T, tot_ndp):
 
     return chunk_start, chunk_stop
 
-def get_pulse_power(dfx, chunk_start, chunk_stop, start_index, pulse_i, samples_T, int_samples_T):
-    data = dfx['Data/bf_raw'][:, chunk_start:chunk_stop, :]
+def get_pulse_power(data, chunk_start, start_index, pulse_i, samples_T, int_samples_T):
     pulse_start = int(start_index + (pulse_i * samples_T) - chunk_start)
     pulse_stop = pulse_start + int_samples_T
 
@@ -26,10 +25,10 @@ def get_pulse_power(dfx, chunk_start, chunk_stop, start_index, pulse_i, samples_
     print("pulse_start: ", pulse_start)
     print("pulse_stop : ", pulse_stop)
 
-    re = data[:, pulse_start:pulse_stop, 0].astype(np.float)
-    im = data[:, pulse_start:pulse_stop, 1].astype(np.float)
+    re = data[:, pulse_start:pulse_stop, 0].astype(np.float32)
+    im = data[:, pulse_start:pulse_stop, 1].astype(np.float32)
 
-    return re**2 + im**2
+    return np.float32(re**2) + np.float32(im**2)
 
 # get number of processors and processor rank
 comm = MPI.COMM_WORLD
@@ -64,9 +63,9 @@ if ndp_x <= ndp_y:
 else:
     ndp = ndp_y
 
-num_pulses = int(np.floor(ndp / samples_T))  # number of pulses per observation
-np_rank = num_pulses / size # number of pulses per rank
-summed_profile = np.zeros([num_ch, int_samples_T])
+num_pulses = ndp / samples_T  # number of pulses per observation
+np_rank = int(np.floor(num_pulses / size)) # number of pulses per rank
+summed_profile = np.zeros([num_ch, int_samples_T], dtype=np.float32)
 
 if rank == 0:
     t1 = time.time()
@@ -78,9 +77,12 @@ if rank == 0:
     print("total y pol data len  : ", tot_ndp_y)
     print("num_data_points       : ", ndp)
     print("num_pulses            : ", num_pulses)
+    print("num pulses per rank   : ", np_rank)
     print("summed_profile shape  : ", summed_profile.shape)
     print("**************")
 
+prev_start_x, prev_stop_x = 0, 0
+prev_start_y, prev_stop_y = 0, 0
 for i in np.arange(rank*np_rank, (rank+1)*np_rank):
     chunk_start_x, chunk_stop_x = get_data_window(si_x, i, samples_T, int_samples_T, tot_ndp_x)
     chunk_start_y, chunk_stop_y = get_data_window(si_y, i, samples_T, int_samples_T, tot_ndp_y)
@@ -88,20 +90,31 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
     if chunk_stop_x == -1 or chunk_stop_y == -1:
         break
 
-    data_x = get_pulse_power(dfx, chunk_start_x, chunk_stop_x, si_x, i, samples_T, int_samples_T)
-    data_y = get_pulse_power(dfy, chunk_start_y, chunk_stop_y, si_y, i, samples_T, int_samples_T)
+    # This code is specifically for J0437 who spins so fast that 1 chunk contains 3.4 pulses
+    if prev_start_x != chunk_start_x or prev_stop_x != chunk_stop_x:
+        data_x = dfx['Data/bf_raw'][:, chunk_start_x:chunk_stop_x, :]
+        prev_start_x = chunk_start_x
+        prev_stop_x = chunk_stop_x
 
-    summed_profile += data_x**2 + data_y**2
+    if prev_start_y != chunk_start_y or prev_stop_y != chunk_stop_y:
+        data_y = dfy['Data/bf_raw'][:, chunk_start_y:chunk_stop_y, :]
+        prev_start_y = chunk_start_y
+        prev_stop_y = chunk_stop_y
+
+    sp_x = get_pulse_power(data_x, chunk_start_x, si_x, i, samples_T, int_samples_T)
+    sp_y = get_pulse_power(data_y, chunk_start_y, si_y, i, samples_T, int_samples_T)
+
+    summed_profile += np.float32(data_x**2) + np.float32(data_y**2)
 
 if rank > 0:
     comm.Send([summed_profile, MPI.DOUBLE], dest=0, tag=15)  # send results to process 0
 else:
     for i in range(1, size):
-        tmp_summed_profile = np.zeros([num_ch, int_samples_T])
+        tmp_summed_profile = np.zeros([num_ch, int_samples_T], dtype=np.float32)
         comm.Recv([tmp_summed_profile, MPI.DOUBLE], source=i, tag=15)
-        summed_profile += tmp_summed_profile
+        summed_profile += np.float32(tmp_summed_profile)
 
-    summed_profile = incoherent_dedisperse(summed_profile, tag)
+    summed_profile = np.float32(incoherent_dedisperse(summed_profile, tag))
     np.save('intensity' + "_" + tag, summed_profile)
     print("processing took: ", time.time() - t1)
 
