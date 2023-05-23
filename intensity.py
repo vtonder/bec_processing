@@ -21,9 +21,9 @@ def get_pulse_power(data, chunk_start, start_index, pulse_i, samples_T, int_samp
     pulse_start = int(start_index + (pulse_i * samples_T) - chunk_start)
     pulse_stop = pulse_start + int_samples_T
 
-    print("pulse_i    : ", pulse_i)
+    '''print("pulse_i    : ", pulse_i)
     print("pulse_start: ", pulse_start)
-    print("pulse_stop : ", pulse_stop)
+    print("pulse_stop : ", pulse_stop)'''
 
     re = data[:, pulse_start:pulse_stop, 0].astype(np.float32)
     im = data[:, pulse_start:pulse_stop, 1].astype(np.float32)
@@ -57,7 +57,7 @@ samples_T = pulsar['samples_T']
 int_samples_T = int(np.floor(samples_T))
 
 ndp_x = dfx['Data/timestamps'].shape[0] - si_x # number of data points, x pol
-ndp_y = dfx['Data/timestamps'].shape[0] - si_y # number of data points, y pol
+ndp_y = dfy['Data/timestamps'].shape[0] - si_y # number of data points, y pol
 if ndp_x <= ndp_y:
     ndp = ndp_x
 else:
@@ -76,6 +76,8 @@ if rank == 0:
     print("total x pol data len  : ", tot_ndp_x)
     print("total y pol data len  : ", tot_ndp_y)
     print("num_data_points       : ", ndp)
+    print("num_data_points x pol : ", ndp_x)
+    print("num_data_points y pol : ", ndp_y)
     print("num_pulses            : ", num_pulses)
     print("num pulses per rank   : ", np_rank)
     print("summed_profile shape  : ", summed_profile.shape)
@@ -104,7 +106,7 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
     sp_x = get_pulse_power(data_x, chunk_start_x, si_x, i, samples_T, int_samples_T)
     sp_y = get_pulse_power(data_y, chunk_start_y, si_y, i, samples_T, int_samples_T)
 
-    summed_profile += np.float32(data_x**2) + np.float32(data_y**2)
+    summed_profile += np.float32(sp_x**2) + np.float32(sp_y**2)
 
 if rank > 0:
     comm.Send([summed_profile, MPI.DOUBLE], dest=0, tag=15)  # send results to process 0
