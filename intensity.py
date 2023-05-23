@@ -2,11 +2,9 @@ from mpi4py import MPI
 import h5py
 import numpy as np
 import time
-import sys
-sys.path.append('../')
 from constants import num_ch, start_indices, xy_time_offsets, pulsars, time_chunk_size
+from pulsar_processing.pulsar_functions import incoherent_dedisperse
 import argparse
-
 
 def get_data_window(start_index, pulse_i, samples_T, int_samples_T, tot_ndp):
     start = start_index + (pulse_i * samples_T)
@@ -23,10 +21,15 @@ def get_pulse_power(dfx, chunk_start, chunk_stop, start_index, pulse_i, samples_
     data = dfx['Data/bf_raw'][:, chunk_start:chunk_stop, :]
     pulse_start = int(start_index + (pulse_i * samples_T) - chunk_start)
     pulse_stop = pulse_start + int_samples_T
-    re = data[:, pulse_start:pulse_stop, 0].astype(np.float16)
-    im = data[:, pulse_start:pulse_stop, 1].astype(np.float16)
 
-    return np.float16((re**2 + im**2) / 128**2)
+    print("pulse_i    : ", pulse_i)
+    print("pulse_start: ", pulse_start)
+    print("pulse_stop : ", pulse_stop)
+
+    re = data[:, pulse_start:pulse_stop, 0].astype(np.float)
+    im = data[:, pulse_start:pulse_stop, 1].astype(np.float)
+
+    return re**2 + im**2
 
 # get number of processors and processor rank
 comm = MPI.COMM_WORLD
@@ -63,7 +66,7 @@ else:
 
 num_pulses = int(np.floor(ndp / samples_T))  # number of pulses per observation
 np_rank = num_pulses / size # number of pulses per rank
-summed_profile = np.zeros([num_ch, int_samples_T], dtype=np.float16)
+summed_profile = np.zeros([num_ch, int_samples_T])
 
 if rank == 0:
     t1 = time.time()
@@ -94,9 +97,11 @@ if rank > 0:
     comm.Send([summed_profile, MPI.DOUBLE], dest=0, tag=15)  # send results to process 0
 else:
     for i in range(1, size):
-        tmp_summed_profile = np.zeros([num_ch, int_samples_T], dtype=np.float16)
+        tmp_summed_profile = np.zeros([num_ch, int_samples_T])
         comm.Recv([tmp_summed_profile, MPI.DOUBLE], source=i, tag=15)
         summed_profile += tmp_summed_profile
+
+    summed_profile = incoherent_dedisperse(summed_profile, tag)
     np.save('intensity' + "_" + tag, summed_profile)
     print("processing took: ", time.time() - t1)
 
