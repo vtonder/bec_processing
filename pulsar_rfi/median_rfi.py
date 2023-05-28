@@ -22,30 +22,29 @@ def median_smoothing(I, window_len=21):
 
     return diff
 
-def rfi_mit(I, diff, stds):
+def rfi_mit(I, diff):
     global int_samples_T
+    #I_flagged = np.zeros(I.shape)
     for phi in np.arange(int_samples_T):
-        std = stds[phi]
-        for ch in np.arange(num_ch):
-            if diff[ch, phi] >= 4 * std:
-                I[ch, phi] = 0
+        data = I[:, phi]
+        filtered_data = [d for d in data if d != 0]
+        std = np.std(filtered_data) #stds[phi]
+        I[:, phi] = [0 if diff[ch, phi] >= 3 * std else I[ch, phi] for ch in np.arange(num_ch)]
+
     return I
 
-diff = median_smoothing(I, 11)
+diff = median_smoothing(I, 31)
 stds = np.std(I, axis=0)
-I = rfi_mit(I, diff, stds)
+I = rfi_mit(I, diff)
 
-diff = median_smoothing(I,11)
-stds = np.std(I, axis=0)
-I = rfi_mit(I, diff, stds)
+#diff = median_smoothing(I,11)
+I = rfi_mit(I, diff)
 
-diff = median_smoothing(I,11)
-stds = np.std(I, axis=0)
-I = rfi_mit(I, diff, stds)
+#diff = median_smoothing(I,11)
+I = rfi_mit(I, diff)
 
-diff = median_smoothing(I,11)
-stds = np.std(I, axis=0)
-I = rfi_mit(I, diff, stds)
+#diff = median_smoothing(I,11)
+I = rfi_mit(I, diff)
 
 print("processing time took: ", time.time()-t1)
 #mini = np.min(I_median.flatten())
