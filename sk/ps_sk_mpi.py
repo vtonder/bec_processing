@@ -65,7 +65,7 @@ sk = np.zeros([FFT_LEN, num_sk_rank], dtype=np.float16)
 vars = np.zeros([FFT_LEN, num_var_rank], dtype=np.float16)
 
 if rank == 0:
-    print("processing         :", pulsars[args.tag]['name'])
+    print("processing         :", args.tag)
     print("number of data     :", num_data_points)
     print("data points rank   :", num_data_points_rank)
     print("number sk rank     :", num_sk_rank)
@@ -83,10 +83,10 @@ if rank == 0:
 
 # faster for each processor to just read and process 1 chunk at a time
 for i, ndp_i in enumerate(np.arange(0, num_data_points_rank, time_chunk_size)):
-    sx = start_x + ndp_i
-    sy = start_y + ndp_i
-    local_data_x = data_x[:, sx:sx + time_chunk_size, :].astype(np.float32)/128
-    local_data_y = data_x[:, sy:sy + time_chunk_size, :].astype(np.float32)/128
+    sx = int(start_x + ndp_i)
+    sy = int(start_y + ndp_i)
+    local_data_x = data_x[:, sx:int(sx + time_chunk_size), :].astype(np.float32)/128
+    local_data_y = data_x[:, sy:int(sy + time_chunk_size), :].astype(np.float32)/128
 
     local_data = (local_data_x[:,:,0] + 1j*local_data_x[:,:,1])**2 + (local_data_y[:,:,0] + 1j*local_data_y[:,:,1])**2
     sk_offset = int(i * num_sk_chunk)
