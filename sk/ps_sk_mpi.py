@@ -86,16 +86,16 @@ for i, ndp_i in enumerate(np.arange(0, num_data_points_rank, time_chunk_size)):
     sx = int(start_x + ndp_i)
     sy = int(start_y + ndp_i)
     local_data_x = data_x[:, sx:int(sx + time_chunk_size), :].astype(np.float32)/128
-    local_data_y = data_x[:, sy:int(sy + time_chunk_size), :].astype(np.float32)/128
+    local_data_y = data_y[:, sy:int(sy + time_chunk_size), :].astype(np.float32)/128
 
-    local_data = (local_data_x[:,:,0] + 1j*local_data_x[:,:,1])**2 + (local_data_y[:,:,0] + 1j*local_data_y[:,:,1])**2
+    local_data = local_data_x[:,:,0] + 1j*local_data_x[:,:,1] + local_data_y[:,:,0] + 1j*local_data_y[:,:,1]
     sk_offset = int(i * num_sk_chunk)
     for j, idx in enumerate(np.arange(0, time_chunk_size, M)):
         sk[:, sk_offset + j] = spectral_kurtosis_cm(local_data[:, idx:idx + M], M, FFT_LEN * 2)
 
     var_offset = int(i * num_var_chunk)
     for j, idx in enumerate(np.arange(0, time_chunk_size, var_size)):
-        vars[:, var_offset + j] = np.var(local_data[:, idx:idx+var_size])
+        vars[:, var_offset + j] = np.float16(np.var(local_data[:, idx:idx+var_size]))
 
 # send results to rank 0
 if rank > 0:
@@ -105,16 +105,16 @@ else:
     tot_SK = np.zeros([FFT_LEN, int(num_sk_rank*size)], dtype=np.float16)
     tot_var = np.zeros([FFT_LEN, int(num_var_rank*size)], dtype=np.float16)
     tot_SK[:, 0:num_sk_rank] = sk
-    tot_var[:,0:num_var_rank] = vars
+    tot_var[:,0:num_var_rank] = np.float16(vars)
     for i in range(1, size):  # determine the size of the array to be received from each process
         tmp_SK = np.zeros([FFT_LEN, num_sk_rank], dtype=np.float16)
         tmp_var = np.zeros([FFT_LEN, num_var_rank], dtype=np.float16)
         comm.Recv([tmp_SK, MPI.DOUBLE], source=i, tag=15)  # receive SK results from the process
         comm.Recv([tmp_var, MPI.DOUBLE], source=i, tag=16)  # receive SK results from the process
         tot_SK[:,int(i*num_sk_rank):int((i+1)*num_sk_rank)] = tmp_SK
-        tot_var[:,int(i*num_var_rank):int((i+1)*num_var_rank)] = tmp_var
+        tot_var[:,int(i*num_var_rank):int((i+1)*num_var_rank)] = np.float16(tmp_var)
 
-    np.save('sk_M' + str(M) + args.tag , tot_SK)
-    np.save('var_' + str(var_size) + args.tag , tot_var)
+    np.save('sk_M' + str(M) + '_' + args.tag , tot_SK)
+    np.save('var_' + str(var_size) + '_' + args.tag , tot_var)
     print("procesing took: ", time.time() - t1)
 
