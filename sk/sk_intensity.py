@@ -2,6 +2,8 @@ from mpi4py import MPI
 import h5py
 import numpy as np
 import time
+import sys
+sys.path.append("../")
 from constants import num_ch, start_indices, pulsars, xy_time_offsets, time_chunk_size, upper_limit, lower_limit
 from pulsar_processing.pulsar_functions import incoherent_dedisperse
 import argparse
@@ -14,6 +16,9 @@ def rfi_mitigation(data, sk_flags, sk_sum_flags, sk, M, data_window_len, start_i
 
         sk_sum_idx = int(chunk_start+idx_start-start_index)
         sk_idx = int(sk_sum_idx/M)
+        print("sk_sum_idx:", sk_sum_idx)
+        print("sk_idx:", sk_idx)
+
 
         if idx_stop > ndp:
             print("shortening range because otherwise it will read from memory that doesn't exist")
