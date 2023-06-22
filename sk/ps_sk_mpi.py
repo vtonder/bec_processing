@@ -88,7 +88,7 @@ for i, ndp_i in enumerate(np.arange(0, num_data_points_rank, time_chunk_size)):
     local_data_x = data_x[:, sx:int(sx + time_chunk_size), :].astype(np.float32)/128
     local_data_y = data_y[:, sy:int(sy + time_chunk_size), :].astype(np.float32)/128
 
-    local_data = local_data_x[:,:,0] + 1j*local_data_x[:,:,1] + local_data_y[:,:,0] + 1j*local_data_y[:,:,1]
+    local_data = ((local_data_x[:,:,0])**2 + (local_data_x[:,:,1])**2)**2 + ((local_data_y[:,:,0])**2 + (local_data_y[:,:,1])**2)**2
     sk_offset = int(i * num_sk_chunk)
     for j, idx in enumerate(np.arange(0, time_chunk_size, M)):
         sk[:, sk_offset + j] = spectral_kurtosis_cm(local_data[:, idx:idx + M], M, FFT_LEN * 2)
