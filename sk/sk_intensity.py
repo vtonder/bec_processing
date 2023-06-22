@@ -16,8 +16,8 @@ def rfi_mitigation(data, sk_flags, sk_sum_flags, sk, M, data_window_len, start_i
 
         sk_sum_idx = int(chunk_start+idx_start-start_index)
         sk_idx = int(sk_sum_idx/M)
-        print("sk_sum_idx:", sk_sum_idx)
-        print("sk_idx:", sk_idx)
+        #print("sk_sum_idx:", sk_sum_idx)
+        #print("sk_idx:", sk_idx)
 
 
         if idx_stop > ndp:
@@ -28,11 +28,12 @@ def rfi_mitigation(data, sk_flags, sk_sum_flags, sk, M, data_window_len, start_i
 
         for ch, val in enumerate(sk[:, sk_idx]):
             if val < low or val > up:
-                sk_flags[ch, sk_idx] = 1
+                #sk_flags[ch, sk_idx] = 1
                 # TODO: verify that indices are correct
                 sk_sum_flags[ch, sk_sum_idx:sk_sum_idx+M] = np.ones(M, dtype=np.float16)
 
-                data[ch, idx_start:idx_stop, :] = clean_data
+                data[ch, idx_start:idx_stop, 0] = clean_data
+                data[ch, idx_start:idx_stop, 1] = clean_data
 
     return data, sk_flags, sk_sum_flags
 
@@ -54,7 +55,7 @@ def get_pulse_power(data, chunk_start, start_index, pulse_i, samples_T, int_samp
     re = data[:, pulse_start:pulse_stop, 0].astype(np.float32)
     im = data[:, pulse_start:pulse_stop, 1].astype(np.float32)
 
-    return np.float32(re**2) + np.float32(im**2) , summed_flags[pulse_start:pulse_stop]
+    return np.float32(re**2) + np.float32(im**2) , summed_flags[:, pulse_start:pulse_stop]
 
 # get number of processors and processor rank
 comm = MPI.COMM_WORLD
@@ -147,27 +148,31 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
                                                     si_y, chunk_start_y)
     sp_x, flags_x = get_pulse_power(data_x, chunk_start_x, si_x, i, samples_T, int_samples_T, sk_sum_flags_x)
     sp_y, flags_y = get_pulse_power(data_y, chunk_start_y, si_y, i, samples_T, int_samples_T, sk_sum_flags_y)
+    print("flags_x shape", flags_x.shape)
     summed_flags += np.float16(flags_x) + np.float16(flags_y)
     summed_profile += np.float32(sp_x**2) + np.float32(sp_y**2)
 
 if rank > 0:
     comm.Send([summed_profile, MPI.DOUBLE], dest=0, tag=15)  # send results to process 0
-    comm.Send([sk_flags, MPI.DOUBLE], dest=0, tag=16)  # send results to process 0
+    #comm.Send([sk_flags, MPI.DOUBLE], dest=0, tag=16)  # send results to process 0
     comm.Send([summed_flags, MPI.DOUBLE], dest=0, tag=17)  # send results to process 0
 else:
+    #tot_sk_flags = np.zeros([num_ch, int_samples_T], dtype=np.float16)
+    #tot_sk_flags[] = sk_flags
+
     for i in range(1, size):
         tmp_summed_profile = np.zeros([num_ch, int_samples_T], dtype=np.float32)
-        tmp_sk_flags = np.zeros([num_ch, int_samples_T], dtype=np.float16)
+        #tmp_sk_flags = np.zeros([num_ch, int_samples_T], dtype=np.float16)
         tmp_sk_sum_flags = np.zeros([num_ch, int_samples_T], dtype=np.float16)
         comm.Recv([tmp_summed_profile, MPI.DOUBLE], source=i, tag=15)
-        comm.Recv([tmp_sk_flags, MPI.DOUBLE], source=i, tag=16)
+        #comm.Recv([tmp_sk_flags, MPI.DOUBLE], source=i, tag=16)
         comm.Recv([tmp_sk_sum_flags, MPI.DOUBLE], source=i, tag=17)
         summed_profile += np.float32(tmp_summed_profile)
-        sk_flags |= tmp_sk_flags
+        #tot_sk_flags[] = tmp_sk_flags
         summed_flags += np.float16(tmp_sk_sum_flags)
 
     summed_profile = np.float32(incoherent_dedisperse(summed_profile, tag))
     np.save('intensity' + "_" + tag, summed_profile)
-    np.save('SK_flags_' + str(M) + "_" + tag, sk_flags)
+    #np.save('SK_flags_' + str(M) + "_" + tag, tot_sk_flags)
     np.save('summed_flags' + str(M) + "_" + tag, summed_flags)
     print("processing took: ", time.time() - t1)
