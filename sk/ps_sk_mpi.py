@@ -50,8 +50,8 @@ num_data_points_rank = num_data_points / size
 
 num_sk_rank = int(num_data_points_rank / M)  # number of sk per rank to process
 num_sk_chunk = int(time_chunk_size / M)      # number sk in 1 chunk
-num_var_rank = int(num_data_points_rank / var_size) # number of variances per rank
-num_var_chunk = int(time_chunk_size / var_size)      # number variances in 1 chunk
+#num_var_rank = int(num_data_points_rank / var_size) # number of variances per rank
+#num_var_chunk = int(time_chunk_size / var_size)      # number variances in 1 chunk
 
 start_x = int(si_x + rank * num_data_points_rank)
 stop_x = int(start_x + num_data_points_rank)
@@ -62,7 +62,7 @@ stop_y = int(start_y + num_data_points_rank)
 # SK RFI mitigation
 FFT_LEN = 1024
 sk = np.zeros([FFT_LEN, num_sk_rank], dtype=np.float16)
-vars = np.zeros([FFT_LEN, num_var_rank], dtype=np.float16)
+#vars = np.zeros([FFT_LEN, num_var_rank], dtype=np.float16)
 
 if rank == 0:
     print("processing         :", args.tag)
@@ -93,28 +93,28 @@ for i, ndp_i in enumerate(np.arange(0, num_data_points_rank, time_chunk_size)):
     for j, idx in enumerate(np.arange(0, time_chunk_size, M)):
         sk[:, sk_offset + j] = spectral_kurtosis_cm(local_data[:, idx:idx + M], M, FFT_LEN * 2)
 
-    var_offset = int(i * num_var_chunk)
+    '''var_offset = int(i * num_var_chunk)
     for j, idx in enumerate(np.arange(0, time_chunk_size, var_size)):
-        vars[:, var_offset + j] = np.float16(np.var(local_data[:, idx:idx+var_size]))
+        vars[:, var_offset + j] = np.float16(np.var(local_data[:, idx:idx+var_size], axis=1))'''
 
 # send results to rank 0
 if rank > 0:
     comm.Send([sk, MPI.DOUBLE], dest=0, tag=15)  # send results to process 0
-    comm.Send([vars, MPI.DOUBLE], dest=0, tag=16)  # send results to process 0
+    #comm.Send([vars, MPI.DOUBLE], dest=0, tag=16)  # send results to process 0
 else:
     tot_SK = np.zeros([FFT_LEN, int(num_sk_rank*size)], dtype=np.float16)
-    tot_var = np.zeros([FFT_LEN, int(num_var_rank*size)], dtype=np.float16)
+    #tot_var = np.zeros([FFT_LEN, int(num_var_rank*size)], dtype=np.float16)
     tot_SK[:, 0:num_sk_rank] = sk
-    tot_var[:,0:num_var_rank] = np.float16(vars)
+    #tot_var[:,0:num_var_rank] = np.float16(vars)
     for i in range(1, size):  # determine the size of the array to be received from each process
         tmp_SK = np.zeros([FFT_LEN, num_sk_rank], dtype=np.float16)
-        tmp_var = np.zeros([FFT_LEN, num_var_rank], dtype=np.float16)
+        #tmp_var = np.zeros([FFT_LEN, num_var_rank], dtype=np.float16)
         comm.Recv([tmp_SK, MPI.DOUBLE], source=i, tag=15)  # receive SK results from the process
-        comm.Recv([tmp_var, MPI.DOUBLE], source=i, tag=16)  # receive SK results from the process
+        #comm.Recv([tmp_var, MPI.DOUBLE], source=i, tag=16)  # receive SK results from the process
         tot_SK[:,int(i*num_sk_rank):int((i+1)*num_sk_rank)] = tmp_SK
-        tot_var[:,int(i*num_var_rank):int((i+1)*num_var_rank)] = np.float16(tmp_var)
+        #tot_var[:,int(i*num_var_rank):int((i+1)*num_var_rank)] = np.float16(tmp_var)
 
     np.save('sk_M' + str(M) + '_' + args.tag , tot_SK)
-    np.save('var_' + str(var_size) + '_' + args.tag , tot_var)
+    #np.save('var_' + str(var_size) + '_' + args.tag , tot_var)
     print("procesing took: ", time.time() - t1)
 
