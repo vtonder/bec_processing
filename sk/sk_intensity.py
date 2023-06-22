@@ -19,6 +19,13 @@ def rfi_mitigation(data, sk_flags, sk_sum_flags, sk, M, data_window_len, start_i
         #print("sk_sum_idx:", sk_sum_idx)
         #print("sk_idx:", sk_idx)
 
+        if sk_idx > sk.shape[1]:
+            print("reached end of sk_idx")
+            break
+
+        if sk_sum_idx + M > sk_sum_flags.shape[1]:
+            print("reached end of sk_sum_flags")
+            break
 
         if idx_stop > ndp:
             print("shortening range because otherwise it will read from memory that doesn't exist")
@@ -28,7 +35,7 @@ def rfi_mitigation(data, sk_flags, sk_sum_flags, sk, M, data_window_len, start_i
 
         for ch, val in enumerate(sk[:, sk_idx]):
             if val < low or val > up:
-                #sk_flags[ch, sk_idx] = 1
+                sk_flags[ch, sk_idx] = 1
                 # TODO: verify that indices are correct
                 sk_sum_flags[ch, sk_sum_idx:sk_sum_idx+M] = np.ones(M, dtype=np.float16)
 
@@ -157,22 +164,20 @@ if rank > 0:
     #comm.Send([sk_flags, MPI.DOUBLE], dest=0, tag=16)  # send results to process 0
     comm.Send([summed_flags, MPI.DOUBLE], dest=0, tag=17)  # send results to process 0
 else:
-    #tot_sk_flags = np.zeros([num_ch, int_samples_T], dtype=np.float16)
-    #tot_sk_flags[] = sk_flags
 
     for i in range(1, size):
         tmp_summed_profile = np.zeros([num_ch, int_samples_T], dtype=np.float32)
-        #tmp_sk_flags = np.zeros([num_ch, int_samples_T], dtype=np.float16)
+        tmp_sk_flags = np.zeros([num_ch, int_samples_T], dtype=np.float16)
         tmp_sk_sum_flags = np.zeros([num_ch, int_samples_T], dtype=np.float16)
         comm.Recv([tmp_summed_profile, MPI.DOUBLE], source=i, tag=15)
-        #comm.Recv([tmp_sk_flags, MPI.DOUBLE], source=i, tag=16)
+        comm.Recv([tmp_sk_flags, MPI.DOUBLE], source=i, tag=16)
         comm.Recv([tmp_sk_sum_flags, MPI.DOUBLE], source=i, tag=17)
         summed_profile += np.float32(tmp_summed_profile)
-        #tot_sk_flags[] = tmp_sk_flags
+        sk_flags += tmp_sk_flags
         summed_flags += np.float16(tmp_sk_sum_flags)
 
     summed_profile = np.float32(incoherent_dedisperse(summed_profile, tag))
     np.save('intensity' + "_" + tag, summed_profile)
-    #np.save('SK_flags_' + str(M) + "_" + tag, tot_sk_flags)
+    np.save('SK_flags_' + str(M) + "_" + tag, sk_flags)
     np.save('summed_flags' + str(M) + "_" + tag, summed_flags)
     print("processing took: ", time.time() - t1)
