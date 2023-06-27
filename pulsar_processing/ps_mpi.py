@@ -13,7 +13,7 @@ comm = MPI.COMM_WORLD
 size = comm.Get_size()
 rank = comm.Get_rank()
 
-df = h5py.File('/net/com08/data6/vereese/1604641234_wide_tied_array_channelised_voltage_0x.h5', 'r', rdcc_nbytes=0)
+df = h5py.File('/net/com08/data6/vereese/1604641234_wide_tied_array_channelised_voltage_0x.h5', 'r')
 data = df['Data/bf_raw']
 num_data_points = df['Data/timestamps'].shape[0]
 num_pulses = int(np.floor(num_data_points / vela_samples_T))  # number of vela pulses per observation
