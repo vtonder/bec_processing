@@ -42,8 +42,8 @@ clean_ch2 = 600
 dirty_ch2 = 105
 
 # SK lower and upper limits. Obtained using sk/sk_thresholds.py script
-lower_limit = {512:0.77511, 519:0.776424, 1024:0.83425, 1038:0.83527, 1557:0.86281, 2048:0.87892, 10240:0.94336}
-upper_limit = {512:1.3254, 519:1.32275, 1024:1.21685, 1038:1.2152, 1557:1.17110, 2048:1.1469, 10240:1.06193}
+lower_limit = {512:0.77511, 519:0.776424, 1024:0.83425, 1038:0.83527, 1557:0.86281, 2048:0.87892, 4096:0.91233, 8192:0.93694, 10240:0.94336, 16384:0.95494}
+upper_limit = {512:1.3254, 519:1.32275, 1024:1.21685, 1038:1.2152, 1557:1.17110, 2048:1.1469, 4096:1.10073, 8192:1.06971, 10240:1.06193, 16384:1.04847}
 
 # first non-zero indices for each file. Obtained using the first_nonzero_indices.{py,sh} scripts. 
 # The output was written to first_nonzero_indices
