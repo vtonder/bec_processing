@@ -57,12 +57,17 @@ def spectral_kurtosis_cm(s, M, FFT_LEN, N = 1, d = 1):
 
     return SK
 
-#multiscale column major SK implementation for use with filterbank data
-def ms_spectral_kurtosis_cm(s, M, FFT_LEN, N = 1, d = 1):
+
+def s1_s2(s, FFT_LEN):
     perio = np.abs(s) ** 2 / FFT_LEN  # FFT has already been taken
 
     S1 = perio.sum(axis=1)
     S2 = np.sum(perio ** 2, axis=1)
+
+    return S1, S2
+
+#multiscale column major SK implementation for use with filterbank data
+def ms_spectral_kurtosis_cm(S1, S2, M, N = 1, d = 1):
 
     for ch in np.arange(S1.shape[0] - 1):
         for t in np.arange(S1.shape[1] - 1 ):
