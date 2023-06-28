@@ -7,6 +7,10 @@ from kurtosis import spectral_kurtosis_cm, spectral_kurtosis
 This script investigates the effect of clipping on spectral kurtosis
 '''
 
+font = {'family': 'STIXGeneral',
+        'size': 42}
+plt.rc('font', **font)
+
 FFT_LEN = 1024
 M = 1000
 mean = 0
@@ -28,7 +32,7 @@ for std in stds:
 
     sk = spectral_kurtosis(wgn, M, FFT_LEN, fft=False, normalise=False)
     sk_clipped = spectral_kurtosis(wgn_clipped, M, FFT_LEN, fft=False, normalise=False)
-
+    print(sk.shape)
     mean_sk.append(np.mean(sk))
     mean_sk_clipped.append(np.mean(sk_clipped))
 
@@ -44,16 +48,18 @@ for std in stds:
 print(clipped_std)
 print(l_clipped_std)
 
-plt.figure()
-plt.plot(stds, mean_sk, label="no clipping")
-plt.plot(clipped_std, mean_sk_clipped, label="v clipping")
-plt.plot(l_clipped_std, l_sk, label="l clipping")
+plt.figure(0, figsize=[22,16])
+plt.plot(stds, mean_sk, label="original")
+plt.plot(clipped_std, mean_sk_clipped, label="clipped")
+#plt.plot(l_clipped_std, l_sk, label="l clipping")
 plt.grid()
 plt.legend()
 plt.axhline(0.77, linestyle = '--')
 plt.axhline(1.33, linestyle = '--')
-plt.xlabel('respective stds')
-plt.ylabel('mean SK')
+plt.xlim([stds[0], stds[-1]])
+plt.xlabel('$\sigma$')
+plt.ylabel('$ \overline{SK}$')
+plt.savefig('/home/vereese/Documents/PhD/jai-2e/clip.eps', bbox_inches='tight')
 plt.show()
 
 
