@@ -57,6 +57,30 @@ def spectral_kurtosis_cm(s, M, FFT_LEN, N = 1, d = 1):
 
     return SK
 
+#multiscale column major SK implementation for use with filterbank data
+def ms_spectral_kurtosis_cm(s, M, FFT_LEN, N = 1, d = 1):
+    perio = np.abs(s) ** 2 / FFT_LEN  # FFT has already been taken
+
+    S1 = perio.sum(axis=1)
+    S2 = np.sum(perio ** 2, axis=1)
+
+    for ch in np.arange(S1.shape[0] - 1):
+        for t in np.arange(S1.shape[1] - 1 ):
+            S1[ch,t] = S1[ch, t] + S1[ch, t+1] + S1[ch+1, t] + S1[ch+1, t+1]
+            S2[ch,t] = S2[ch, t] + S2[ch, t+1] + S2[ch+1, t] + S2[ch+1, t+1]
+
+    SK = ((M*N*d + 1) / (M - 1)) * ((M * S2 / S1 ** 2) - 1)
+
+    return SK
+
+def complex_spectral_kurtosis(s, M):
+
+    S1 = ((np.abs(s))**2).sum(axis=1)
+    S2 = (np.real(s)**4 + np.imag(s)**4).sum(axis=1)
+    SK = 2*M*S2/S1**2
+
+    return SK - 3
+
 #column major SK cross correlation implementation for use with filterbank data
 def cc_spectral_kurtosis_cm(x1, x2, M, FFT_LEN, N = 1, d = 1):
     perio = np.abs(np.multiply(x1,np.conj(x2))) ** 2 / FFT_LEN  # FFT has already been taken
@@ -77,7 +101,7 @@ if __name__ == "__main__":
     PFB_TAPS = 8
     PFB_M = PFB_TAPS*FFT_LEN
 
-    f1 = 20
+    f1 = 40
     fs = 100
     t = np.arange(0, N/fs, 1.0/fs)
     k = np.arange(FFT_LEN/2)
@@ -85,17 +109,55 @@ if __name__ == "__main__":
     s = np.sin(2*np.pi*f1*t)
 
     pulse_train = np.zeros(N)
+    duty_perc = 80
+    duty_samples = int((duty_perc/100)*M)
+
     print("len pulse_train", len(pulse_train))
-    print("number of samples", N)
-    print("len pulse_train", pulse_train[2432000:2688000] )
-    for i in np.arange(0,N,10*FFT_LEN):
-        pulse_train[i+100:i+450] = np.ones(350)*50
+    print("number of duty samples", duty_samples)
 
-    wgn = np.random.normal(mean, std, size=N)
-    x =  wgn
-    x1 =  wgn + pulse_train
+    for i in np.arange(0, N, M):
+        pulse_train[i:i+duty_samples] = np.random.randn(duty_samples)*500 #np.ones(duty_samples)*50
 
-    #xsk = gpt_spectral_kurtosis(x,1024)
+    wgn_re = np.random.normal(mean, std, size=N)
+    wgn_im = np.random.normal(mean, std, size=N)
+
+    x =  wgn_re + wgn_im
+    x =  x + pulse_train
+    x = x.reshape(M, FFT_LEN)
+    XF = np.fft.fft(x, axis=1)
+
+    sk = spectral_kurtosis(XF, M, FFT_LEN, reshape=False, fft=False, normalise=False)
+    print(np.mean(sk))
+    plt.figure(0)
+    plt.plot(x.flatten())
+
+    plt.figure(1)
+    plt.plot(f, sk[0:int(FFT_LEN/2)])
+    plt.grid()
+    plt.show()
+
+    '''x = x.reshape(FFT_LEN, M)
+    XF = np.fft.fft(x, axis=0)
+    SK = complex_spectral_kurtosis(XF, M)
+    print("SK shape: ", SK.shape)
+
+    x = x.transpose()
+    XF = np.fft.fft(x, axis=1)
+    SK1 = spectral_kurtosis(XF, M, FFT_LEN, reshape=False, fft=False, normalise=False)
+
+    plt.figure(0)
+    plt.plot(SK)
+    plt.ylabel("SK")
+    plt.xlabel("frequency")
+    plt.grid()
+
+    plt.figure(1)
+    plt.plot(SK1)
+    plt.ylabel("SK")
+    plt.xlabel("frequency")
+    plt.grid()
+
+    plt.show()
 
     pfb_window = np.hamming(PFB_M) * np.sinc((np.arange(PFB_M) - PFB_M / 2.0) / FFT_LEN)
     pfb_window = pfb_window.reshape(PFB_TAPS, FFT_LEN)
@@ -109,36 +171,50 @@ if __name__ == "__main__":
         xf[i,:] = np.sum(a, axis=0)
         #xf[i,:] = np.sum(np.multiply(x[i:i+PFB_TAPS,:], pfb_window), axis=0)
 
-    xf = xf[0:M-PFB_TAPS,:]
-    XF = np.fft.fft(x, axis=1)
-    XPF = np.fft.fft(xf, axis=1)
+    x1 = x.reshape(FFT_LEN, M)
+    XF = np.fft.fft(x1, axis=0)
+    SK = complex_spectral_kurtosis(XF, M)
+    print("SK shape: ", SK.shape)
 
-    PXF = np.abs(XF**2 / FFT_LEN).sum(axis=0)
-    PXPF = np.abs(XPF**2 / FFT_LEN).sum(axis=0)
+    plt.figure(0)
+    plt.plot(f, SK[int(FFT_LEN/2):], label='FFT No Norm')
+    plt.ylabel("SK")
+    plt.xlabel("frequency")
+    plt.grid()
+
+    #xf = xf[0:M-PFB_TAPS,:]
+    x = x.reshape(M, FFT_LEN)
+    XF = np.fft.fft(x, axis=1)
+    #XPF = np.fft.fft(xf, axis=1)
+
+    #PXF = np.abs(XF**2 / FFT_LEN).sum(axis=0)
+    #PXPF = np.abs(XPF**2 / FFT_LEN).sum(axis=0)
 
     SK1 = spectral_kurtosis(XF, M, FFT_LEN, reshape=False, fft=False, normalise=False)
-    SK2 = spectral_kurtosis(XPF, M, FFT_LEN, reshape=False, fft=False, normalise=False)
-    SK3 = spectral_kurtosis(XPF, M, FFT_LEN, reshape=False, fft=False, normalise=True)
+    #SK2 = spectral_kurtosis(XPF, M, FFT_LEN, reshape=False, fft=False, normalise=False)
+    #SK3 = spectral_kurtosis(XPF, M, FFT_LEN, reshape=False, fft=False, normalise=True)
 
     print("SK 1 mean:", np.mean(SK1))
-    print("SK 2 mean:", np.mean(SK2))
-    print("SK 3 mean:", np.mean(SK3))
+    #print("SK 2 mean:", np.mean(SK2))
+    #print("SK 3 mean:", np.mean(SK3))
+    plt.figure(1)
+    plt.plot(f, SK1[0:int(FFT_LEN/2)], label='FFT No Norm')
+    plt.ylabel("SK")
+    plt.xlabel("frequency")
+    plt.grid()
 
-    print("a")
+    plt.show()
     plt.figure(0)
     plt.plot(x.reshape(N,1))
     plt.grid()
-    print("b")
     plt.figure(1)
     plt.plot(pfb_window.reshape(PFB_M))
     plt.grid()
-    print("c")
     plt.figure(2)
     plt.plot(f, PXF[0:int(FFT_LEN/2)], label='FFT')
     plt.plot(f, PXPF[0:int(FFT_LEN/2)], label='PFB')
     plt.grid()
     plt.legend()
-    print("d")
     plt.figure(3)
     plt.axhline(1.6)
     plt.axhline(0.4)
@@ -147,10 +223,8 @@ if __name__ == "__main__":
     plt.plot(f, SK3[0:int(FFT_LEN/2)], label='PFB Norm')
     plt.legend()
     plt.grid()
-
-    #plt.figure(4)
-    #plt.plot(xsk)
-    #plt.grid()
-
     plt.show()
+    '''
+
+
 
