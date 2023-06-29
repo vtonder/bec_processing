@@ -5,8 +5,7 @@ import sys
 sys.path.append('../')
 from constants import start_indices, time_chunk_size
 from mpi4py import MPI
-sys.path.append('../pulsar_processing')
-from kurtosis import spectral_kurtosis_cm, ms_spectral_kurtosis_cm
+from kurtosis import spectral_kurtosis_cm
 import argparse
 
 # get number of processors and processor rank
@@ -17,17 +16,9 @@ rank = comm.Get_rank()
 parser = argparse.ArgumentParser()
 parser.add_argument("file", help="observation file to process. search path: /net/com08/data6/vereese/")
 parser.add_argument("-m", dest="M", help="Number of spectra to accumulate in SK calculation", default=512)
-parser.add_argument("-s", dest="S", help="Multi-scale or single scale SK calculation. set to sk or msk", default="sk")
 args = parser.parse_args()
 
 M = int(args.M)
-
-if args.S == "sk":
-    file_prefix = "SK"
-    sk_func = spectral_kurtosis_cm
-else:
-    file_prefix = "MSK"
-    sk_func = ms_spectral_kurtosis_cm
 
 if rank == 0:
     t1 = time.time()
@@ -75,8 +66,7 @@ for i, ld_idx in enumerate(np.arange(start, stop, time_chunk_size)):
     local_data = data[:, ld_idx:int(ld_idx+time_chunk_size), :]
     sk_idx_offset = i * num_sk_chunk
     for j, idx in enumerate(np.arange(0, time_chunk_size, M)):
-        sk[:, sk_idx_offset + j] = sk_func(local_data[:, idx:idx + M, 0] + 1j*local_data[:, idx:idx + M, 1], M,
-                                           FFT_LEN * 2)
+        sk[:, sk_idx_offset + j] = spectral_kurtosis_cm(local_data[:, idx:idx + M, 0] + 1j*local_data[:, idx:idx + M, 1], M, FFT_LEN * 2)
 
 # accumulate results
 if rank > 0:
@@ -92,5 +82,5 @@ else:
     tag = '_' + args.file[6:10] + '_'  # add last 4 digits of observation code onto the file_name
     pol = args.file[-5:-3]  # polarisation 0x or 0y
 
-    np.save(file_prefix + '_M' + str(M) + tag + pol, tot_SK)
+    np.save('SK_M' + str(M) + tag + pol, tot_SK)
     print("procesing took: ", time.time() - t1)
