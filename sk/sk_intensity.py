@@ -15,20 +15,20 @@ def rfi_mitigation(data, sk_flags, sk_sum_flags, sk, M, data_window_len, start_i
         idx_stop = int(idx_start + M)
 
         sk_sum_idx = int(chunk_start+idx_start-start_index)
-
         sk_idx = int(sk_sum_idx/M)
-        #print("sk_sum_idx:", sk_sum_idx)
-        #print("sk_idx:", sk_idx)
 
-        if sk_idx > sk.shape[1]:
+        if sk_sum_idx < 0:
+            sk_sum_idx = 0
+
+        if sk_idx >= sk.shape[1]:
             print("reached end of sk_idx")
             break
 
-        if sk_sum_idx + M > sk_sum_flags.shape[1]:
+        if sk_sum_idx + M >= sk_sum_flags.shape[1]:
             print("reached end of sk_sum_flags")
             break
 
-        if idx_stop > ndp:
+        if idx_stop >= ndp:
             print("shortening range because otherwise it will read from memory that doesn't exist")
             print("tot_ndp : ", ndp)
             print("idx_stop: ", idx_stop)
@@ -87,7 +87,7 @@ si_y = start_indices[fy] + xy_time_offsets[fy]
 tot_ndp_x = dfx['Data/timestamps'].shape[0] # total number of data points of x polarisation
 tot_ndp_y = dfy['Data/timestamps'].shape[0]
 
-M = args.M
+M = int(args.M)
 low = lower_limit[M]
 up = upper_limit[M]
 
@@ -96,8 +96,8 @@ pulsar = pulsars[tag]
 samples_T = pulsar['samples_T']
 int_samples_T = int(np.floor(samples_T))
 
-skx = np.load('sk_M' + str(M) + "_" + tag + "_" + "0x.npy")
-sky = np.load('sk_M' + str(M) + "_" + tag + "_" + "0y.npy")
+skx = np.float32(np.load('MSK_M' + str(M) + "_" + tag + "_" + "0x.npy"))
+sky = np.float32(np.load('MSK_M' + str(M) + "_" + tag + "_" + "0y.npy"))
 
 ndp_x = dfx['Data/timestamps'].shape[0] - si_x # number of data points, x pol
 ndp_y = dfy['Data/timestamps'].shape[0] - si_y # number of data points, y pol
@@ -130,7 +130,6 @@ if rank == 0:
     print("num pulses per rank   : ", np_rank)
     print("summed_profile shape  : ", summed_profile.shape)
     print("**************")
-
 prev_start_x, prev_stop_x = 0, 0
 prev_start_y, prev_stop_y = 0, 0
 for i in np.arange(rank*np_rank, (rank+1)*np_rank):
@@ -158,7 +157,7 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
                                                     si_y, chunk_start_y)
     sp_x, flags_x = get_pulse_power(data_x, chunk_start_x, si_x, i, samples_T, int_samples_T, sk_sum_flags_x)
     sp_y, flags_y = get_pulse_power(data_y, chunk_start_y, si_y, i, samples_T, int_samples_T, sk_sum_flags_y)
-    print("flags_x shape", flags_x.shape)
+
     summed_flags += np.float16(flags_x) + np.float16(flags_y)
     summed_profile += np.float32(sp_x**2) + np.float32(sp_y**2)
 
@@ -171,12 +170,12 @@ else:
 
     for i in range(1, size):
         tmp_summed_profile = np.zeros([num_ch, int_samples_T], dtype=np.float32)
-        tmp_skx_flags = np.zeros([num_ch, int_samples_T], dtype=np.float16)
-        tmp_sky_flags = np.zeros([num_ch, int_samples_T], dtype=np.float16)
+        tmp_skx_flags = np.zeros(skx.shape, dtype=np.float16)
+        tmp_sky_flags = np.zeros(sky.shape, dtype=np.float16)
         tmp_sk_sum_flags = np.zeros([num_ch, int_samples_T], dtype=np.float16)
         comm.Recv([tmp_summed_profile, MPI.DOUBLE], source=i, tag=15)
         comm.Recv([tmp_skx_flags, MPI.DOUBLE], source=i, tag=16)
-        comm.Recv([tmp_sky_flags, MPI.DOUBLE], source=i, tag=16)
+        comm.Recv([tmp_sky_flags, MPI.DOUBLE], source=i, tag=17)
         comm.Recv([tmp_sk_sum_flags, MPI.DOUBLE], source=i, tag=18)
         summed_profile += np.float32(tmp_summed_profile)
         skx_flags += tmp_skx_flags
@@ -184,8 +183,8 @@ else:
         summed_flags += np.float16(tmp_sk_sum_flags)
 
     summed_profile = np.float32(incoherent_dedisperse(summed_profile, tag))
-    np.save('intensity' + "_" + tag, summed_profile)
-    np.save('SKX_flags_' + str(M) + "_" + tag, skx_flags)
-    np.save('SKY_flags_' + str(M) + "_" + tag, sky_flags)
-    np.save('summed_flags' + str(M) + "_" + tag, summed_flags)
+    np.save('MSK_intensity_M'+ str(M) + "_" + tag, summed_profile)
+    np.save('MSKX_flags_' + str(M) + "_" + tag, skx_flags)
+    np.save('MSKY_flags_' + str(M) + "_" + tag, sky_flags)
+    np.save('MSK_summed_flags' + str(M) + "_" + tag, summed_flags)
     print("processing took: ", time.time() - t1)
