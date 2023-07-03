@@ -42,16 +42,16 @@ stop = int(start + num_data_points_rank)
 
 # SK RFI mitigation
 FFT_LEN = 1024
-s1 = np.zeros([FFT_LEN, num_s_rank], dtype=np.float16)
-s2 = np.zeros([FFT_LEN, num_s_rank], dtype=np.float16)
+s1 = np.zeros([FFT_LEN, num_s_rank], np.float32)
+s2 = np.zeros([FFT_LEN, num_s_rank], np.float32)
 
 if rank == 0:
     print("processing         :", args.file)
     print("total data_len     :", data_len)
     print("processing only    :", num_data_points)
     print("data points rank   :", num_data_points_rank)
-    print("number S's rank     :", num_s_rank)
-    print("number S's chunk    :", num_s_chunk)
+    print("number S's rank    :", num_s_rank)
+    print("number S's chunk   :", num_s_chunk)
     print("start_index        :", start_index)
     print("start              :", start)
     print("stop               :", stop)
@@ -75,17 +75,17 @@ if rank > 0:
     comm.Send([s1, MPI.DOUBLE], dest=0, tag=15)  # send S1 results to process 0
     comm.Send([s2, MPI.DOUBLE], dest=0, tag=16)  # send S2 results to process 0
 else:
-    tot_S1 = np.zeros([FFT_LEN, int(num_s_rank*size)], dtype=np.float16)
-    tot_S2 = np.zeros([FFT_LEN, int(num_s_rank*size)], dtype=np.float16)
-    tot_S1[:, 0:num_s_rank] = s1
-    tot_S2[:, 0:num_s_rank] = s2
+    tot_S1 = np.zeros([FFT_LEN, int(num_s_rank*size)], np.float32)
+    tot_S2 = np.zeros([FFT_LEN, int(num_s_rank*size)], np.float32)
+    tot_S1[:, 0:num_s_rank] = np.float32(s1)
+    tot_S2[:, 0:num_s_rank] = np.float32(s2)
     for i in range(1, size):  # determine the size of the array to be received from each process
-        tmp_S1 = np.zeros([FFT_LEN, num_s_rank], dtype=np.float16)
-        tmp_S2 = np.zeros([FFT_LEN, num_s_rank], dtype=np.float16)
+        tmp_S1 = np.zeros([FFT_LEN, num_s_rank], np.float32)
+        tmp_S2 = np.zeros([FFT_LEN, num_s_rank], np.float32)
         comm.Recv([tmp_S1, MPI.DOUBLE], source=i, tag=15)  # receive SK results from the process
         comm.Recv([tmp_S2, MPI.DOUBLE], source=i, tag=16)  # receive SK results from the process
-        tot_S1[:, int(i*num_s_rank):int((i+1)*num_s_rank)] = tmp_S1
-        tot_S2[:, int(i*num_s_rank):int((i+1)*num_s_rank)] = tmp_S2
+        tot_S1[:, int(i*num_s_rank):int((i+1)*num_s_rank)] = np.float32(tmp_S1)
+        tot_S2[:, int(i*num_s_rank):int((i+1)*num_s_rank)] = np.float32(tmp_S2)
 
     tag = '_' + args.file[6:10] + '_'  # add last 4 digits of observation code onto the file_name
     pol = args.file[-5:-3]  # polarisation 0x or 0y
