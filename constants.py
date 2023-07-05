@@ -41,9 +41,13 @@ clean_ch = np.abs(frequencies-1450).argmin()
 clean_ch2 = 600
 dirty_ch2 = 105
 
-# SK lower and upper limits. Obtained using sk/sk_thresholds.py script
+# SK lower and upper limits for PFA=0.13499%. Obtained using sk/sk_thresholds.py script
 lower_limit = {512:0.77511, 519:0.776424, 1024:0.83425, 1038:0.83527, 1557:0.86281, 2048:0.87892, 4096:0.91233, 8192:0.93694, 10240:0.94336, 16384:0.95494}
 upper_limit = {512:1.3254, 519:1.32275, 1024:1.21685, 1038:1.2152, 1557:1.17110, 2048:1.1469, 4096:1.10073, 8192:1.06971, 10240:1.06193, 16384:1.04847}
+
+# SK lower and upper limits for PFA=0.067495%. Obtained using sk/sk_thresholds.py script
+lower_limit2 = {512:0.76188, 1024:0.82425, 2048:0.87146, 4096:0.906784, 8192:0.932844, 16384:0.951866}
+upper_limit2 = {512:1.35571, 1024:1.23537, 2048:1.158563, 4096:1.108346, 8192:1.07473, 16384:1.051945}
 
 # first non-zero indices for each file. Obtained using the first_nonzero_indices.{py,sh} scripts. 
 # The output was written to first_nonzero_indices
