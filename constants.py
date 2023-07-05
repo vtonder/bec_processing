@@ -176,7 +176,8 @@ J1644 = {'name':'J1644-4559',
          }
 
 # Dictionary to link code to pulsar
-pulsars = {'1569':J0835,
+pulsars = {'1234':J0835,
+           '1569':J0835,
            '2210':J0437,
            '2762':J0536,
            '3330':J0737,
