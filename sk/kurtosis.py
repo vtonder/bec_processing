@@ -71,8 +71,8 @@ def ms_spectral_kurtosis_cm(S1, S2, M, N = 1, d = 1):
 
     for ch in np.arange(S1.shape[0] - 1):
         for t in np.arange(S1.shape[1] - 1 ):
-            S1[ch,t] = 0.5*(S1[ch, t] + S1[ch, t+1] + S1[ch+1, t] + S1[ch+1, t+1])
-            S2[ch,t] = 0.5*(S2[ch, t] + S2[ch, t+1] + S2[ch+1, t] + S2[ch+1, t+1])
+            S1[ch,t] = 0.25*(S1[ch, t] + S1[ch, t+1] + S1[ch+1, t] + S1[ch+1, t+1])
+            S2[ch,t] = 0.25*(S2[ch, t] + S2[ch, t+1] + S2[ch+1, t] + S2[ch+1, t+1])
 
     SK = ((M*N*d + 1) / (M - 1)) * ((M * S2 / S1 ** 2) - 1)
 
