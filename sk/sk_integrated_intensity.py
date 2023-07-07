@@ -83,9 +83,6 @@ pulsar = pulsars[tag]
 samples_T = pulsar['samples_T']
 int_samples_T = int(np.floor(samples_T))
 
-skx = np.float32(np.load('MSK_M' + str(M) + "_" + tag + "_" + "0x.npy"))
-sky = np.float32(np.load('MSK_M' + str(M) + "_" + tag + "_" + "0y.npy"))
-
 ndp_x = dfx['Data/timestamps'].shape[0] - si_x # number of data points, x pol
 ndp_y = dfy['Data/timestamps'].shape[0] - si_y # number of data points, y pol
 if ndp_x <= ndp_y:
@@ -127,12 +124,12 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
 
     # This code is specifically for J0437 who spins so fast that 1 chunk contains 3.4 pulses
     if prev_start_x != chunk_start_x or prev_stop_x != chunk_stop_x:
-        data_x = dfx['Data/bf_raw'][:, chunk_start_x:chunk_stop_x, :]
+        data_x = dfx['Data/bf_raw'][:, chunk_start_x:chunk_stop_x, :].astype(np.float32)
         prev_start_x = chunk_start_x
         prev_stop_x = chunk_stop_x
 
     if prev_start_y != chunk_start_y or prev_stop_y != chunk_stop_y:
-        data_y = dfy['Data/bf_raw'][:, chunk_start_y:chunk_stop_y, :]
+        data_y = dfy['Data/bf_raw'][:, chunk_start_y:chunk_stop_y, :].astype(np.float32)
         prev_start_y = chunk_start_y
         prev_stop_y = chunk_stop_y
 
@@ -153,5 +150,5 @@ else:
         summed_profile += np.float32(tmp_summed_profile)
 
     summed_profile = np.float32(incoherent_dedisperse(summed_profile, tag))
-    np.save('MSK_intensity_M'+ str(M) + "_" + tag, summed_profile)
+    np.save('itegrated_sk_intensity2_M'+ str(M) + "_" + tag, summed_profile)
     print("processing took: ", time.time() - t1)

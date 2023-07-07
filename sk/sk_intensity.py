@@ -96,8 +96,8 @@ pulsar = pulsars[tag]
 samples_T = pulsar['samples_T']
 int_samples_T = int(np.floor(samples_T))
 
-skx = np.float32(np.load('MSK_M' + str(M) + "_" + tag + "_" + "0x.npy"))
-sky = np.float32(np.load('MSK_M' + str(M) + "_" + tag + "_" + "0y.npy"))
+skx = np.float32(np.load('SK_M' + str(M) + "_" + tag + "_" + "0x.npy"))
+sky = np.float32(np.load('SK_M' + str(M) + "_" + tag + "_" + "0y.npy"))
 
 ndp_x = dfx['Data/timestamps'].shape[0] - si_x # number of data points, x pol
 ndp_y = dfy['Data/timestamps'].shape[0] - si_y # number of data points, y pol
