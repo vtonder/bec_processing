@@ -2,6 +2,8 @@ from mpi4py import MPI
 import h5py
 import numpy as np
 import time
+import sys
+sys.path.append("../")
 from constants import num_ch, start_indices, xy_time_offsets, pulsars, time_chunk_size
 from pulsar_processing.pulsar_functions import incoherent_dedisperse
 import argparse
@@ -21,20 +23,22 @@ def get_pulse_power(data, chunk_start, start_index, pulse_i, samples_T, int_samp
     pulse_start = int(start_index + (pulse_i * samples_T) - chunk_start)
     pulse_stop = pulse_start + int_samples_T
 
-    '''print("pulse_i    : ", pulse_i)
-    print("pulse_start: ", pulse_start)
-    print("pulse_stop : ", pulse_stop)'''
-
     re = data[:, pulse_start:pulse_stop, 0].astype(np.float32)
     im = data[:, pulse_start:pulse_stop, 1].astype(np.float32)
 
     return np.float32(re**2) + np.float32(im**2)
 
 def var_threshold(data, var):
-    threshold = 3 * var
-    for i, dp in enumerate(np.arange(data)):
-        if dp >= threshold:
-            data[i]= np.abs(np.random.normal(0, var, size=1))[0]
+    clean_data_re = np.random.normal(0, var, 1)[0]
+    clean_data_im = np.random.normal(0, var, 1)[0]
+    threshold = 5 * var
+    num_t = np.shape(data)[1]
+    abs_data = np.sqrt(data[:,:,0]**2 + data[:,:,1]**2) 
+    for i in np.arange(num_ch):
+        for j in np.arange(num_t):
+            if abs_data[i, j] >= threshold:
+                data[i, j, 0] = clean_data_re
+                data[i, j, 1] = clean_data_im
 
     return data
 
@@ -102,19 +106,20 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
 
     # This code is specifically for J0437 who spins so fast that 1 chunk contains 3.4 pulses
     if prev_start_x != chunk_start_x or prev_stop_x != chunk_stop_x:
-        data_x = dfx['Data/bf_raw'][:, chunk_start_x:chunk_stop_x, :]
+        data_x = dfx['Data/bf_raw'][:, chunk_start_x:chunk_stop_x, :].astype(np.float32)
         prev_start_x = chunk_start_x
         prev_stop_x = chunk_stop_x
 
     if prev_start_y != chunk_start_y or prev_stop_y != chunk_stop_y:
-        data_y = dfy['Data/bf_raw'][:, chunk_start_y:chunk_stop_y, :]
+        data_y = dfy['Data/bf_raw'][:, chunk_start_y:chunk_stop_y, :].astype(np.float32)
         prev_start_y = chunk_start_y
         prev_stop_y = chunk_stop_y
 
+    data_x = var_threshold(data_x, 14)
+    data_y = var_threshold(data_y, 14)
     sp_x = get_pulse_power(data_x, chunk_start_x, si_x, i, samples_T, int_samples_T)
     sp_y = get_pulse_power(data_y, chunk_start_y, si_y, i, samples_T, int_samples_T)
-    sp_x = var_threshold(sp_x, 14**2)
-    sp_y = var_threshold(sp_y, 14**2)
+
     summed_profile += np.float32(sp_x**2) + np.float32(sp_y**2)
 
 if rank > 0:
