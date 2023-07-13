@@ -43,7 +43,7 @@ labels = ["None", "M = 512", "M = 1024", "M = 2048", "M = 4096", "M = 8192"]
 phi = np.arange(0,1,1/len(profile["intensity_2210.npy"]))
 plt.figure(1, figsize=[22,16])
 for i, p in enumerate(profile.values()):
-    plt.plot(phi, (np.roll(p, num_2_roll))/max(p), label=labels[i])
+    plt.plot(phi, np.roll(p, num_2_roll), label=labels[i])
 plt.grid()
 plt.legend()
 plt.xlim([0,1])
