@@ -7,9 +7,21 @@ from kurtosis import spectral_kurtosis_cm, spectral_kurtosis
 This script investigates the effect of clipping on spectral kurtosis
 '''
 
-font = {'family': 'STIXGeneral',
-        'size': 42}
-plt.rc('font', **font)
+#font = {'family': 'STIXGeneral',
+#        'size': 42}
+#plt.rc('font', **font)
+
+textwidth = 9.6 #128.0 / 25.4
+textheight = 7 #96.0 / 25.4
+plt.rc('font', size=22, family='STIXGeneral')
+plt.rc('pdf', fonttype=42)
+#plt.rc('axes', titlesize=14, labelsize=14)
+plt.rc('axes', titlesize=22, labelsize=22)
+plt.rc(('xtick', 'ytick'), labelsize=22)
+plt.rc('legend', fontsize=22)
+plt.rc('lines', markersize=5)
+plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
+plt.rc('mathtext', fontset='stix')
 
 FFT_LEN = 1024
 M = 1000
@@ -49,13 +61,12 @@ print(clipped_std)
 print(l_clipped_std)
 
 plt.figure(0, figsize=[22,16])
-plt.plot(stds, mean_sk, label="original")
-plt.plot(clipped_std, mean_sk_clipped, label="clipped")
+plt.plot(stds, mean_sk, label="original", linewidth=2)
+plt.plot(clipped_std, mean_sk_clipped, label="clipped", linewidth=2)
 #plt.plot(l_clipped_std, l_sk, label="l clipping")
-plt.grid()
+plt.axhline(0.77, linestyle = '--', linewidth=2, label="thresholds")
+plt.axhline(1.33, linestyle = '--', linewidth=2)
 plt.legend()
-plt.axhline(0.77, linestyle = '--')
-plt.axhline(1.33, linestyle = '--')
 plt.xlim([stds[0], stds[-1]])
 plt.xlabel('$\sigma$')
 plt.ylabel('$ \overline{SK}$')
