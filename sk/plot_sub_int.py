@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-
+import matplotlib.ticker as ticker
 #font = {'family': 'STIXGeneral',
 #        'size': 42}
 #plt.rc('font', **font)
@@ -24,15 +24,21 @@ s1 = np.load("sub_int_SK_intensity_M1024_2210.npy")
 # wrt observation time:
 # 157*9*32*J0437_samples_T*time_resolution*10**-6 = 260 
 # 260 / 60 = 4.3
+num_sub_ints = s1.shape[0]
+num_2_roll = int(s1.shape[2]/2 - list(s1[:,280,:].sum(axis=0)).index(max(list(s1[:,280,:].sum(axis=0)))))
+print("roll by: ", num_2_roll)
 
-plt.figure(0) # , figsize=[22,16])
-plt.imshow(s1[:,280,:],origin="lower",aspect="auto", extent=[0, 1, 0, 4.3])
+plt.figure(0) #, figsize=[22,16])
+plt.imshow(np.roll(s1[:,280,:], num_2_roll), origin="lower", aspect="auto", extent=[0, 1, 0, 4.3])
+func = lambda x, pos: "" if np.isclose(x,0) else x
+plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(func))
 plt.xlabel("pulsar phase")
 plt.ylabel("observation time [min]")
 plt.savefig('/home/vereese/sub_int_sk.eps', bbox_inches='tight')
 
 plt.figure(1) #, figsize=[22,16])
-plt.imshow(s[:,280,:],origin="lower",aspect="auto", extent=[0, 1, 0, 4.3])
+plt.imshow(np.roll(s[:,280,:], num_2_roll), origin="lower", aspect="auto", extent=[0, 1, 0, 4.3])
+plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(func))
 plt.xlabel("pulsar phase")
 plt.ylabel("observation time [min]")
 plt.savefig('/home/vereese/sub_int.eps', bbox_inches='tight')
