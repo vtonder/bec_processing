@@ -7,10 +7,21 @@ from kurtosis import spectral_kurtosis
 from mpmath import hyp2f1, nstr, re, im
 import math
 
-font = {'family': 'STIXGeneral',
-        'size': 42}
-plt.rc('font', **font)
+#font = {'family': 'STIXGeneral',
+#        'size': 42}
+#plt.rc('font', **font)
 
+textwidth = 128.0 / 25.4 # 9.6 #
+textheight = 96.0 / 25.4 # 7
+plt.rc('font', size=10, family='STIXGeneral')
+plt.rc('pdf', fonttype=42)
+#plt.rc('axes', titlesize=14, labelsize=14)
+plt.rc('axes', titlesize=10, labelsize=10)
+plt.rc(('xtick', 'ytick'), labelsize=10)
+plt.rc('legend', fontsize=10)
+plt.rc('lines', markersize=5)
+plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
+plt.rc('mathtext', fontset='stix')
 
 def hypergeo(a,b,c,z):
     res = hyp2f1(a,b,c,z)
@@ -20,7 +31,7 @@ def hypergeo(a,b,c,z):
 
 N = 1
 d = 1
-M = 16384
+M = 512
 
 u1 = 1
 u2 = (4*M**2)/((M-1)*(M+2)*(M+3)) # this is variance
@@ -104,21 +115,21 @@ plt.ylabel("SK PDF")
 plt.xlabel("SK")
 #plt.savefig('/home/vereese/Documents/PhD/URSI2023/paper/pdf', bbox_inches='tight')
 
-plt.figure(1, figsize=[22,16])
-plt.semilogy(x, cdf)
-plt.semilogy(x, cdf2)
-plt.axhline(pfa3, color = 'r')
-plt.axvline(1+sigma3, color = 'g', linestyle = '--')
-plt.axvline(1-sigma3, color = 'g', linestyle = '--')
-plt.axvline(0.77511, color = 'g', linestyle = '-')
-plt.axvline(1.3254, color = 'g', linestyle = '-')
-plt.xlim([0.65, 1.55])
+plt.figure(1) #, figsize=[22,16])
+plt.semilogy(x, cdf, linewidth=2)
+plt.semilogy(x, cdf2, linewidth=2)
+plt.axhline(pfa, color = 'r', linewidth=2)
+plt.axvline(1+sigma3, color = 'g', linewidth=2, linestyle = '--')
+plt.axvline(1-sigma3, color = 'g', linewidth=2, linestyle = '--')
+plt.axvline(0.77511, color = 'g', linewidth=2, linestyle = '-')
+plt.axvline(1.3254, color = 'g', linewidth=2, linestyle = '-')
+plt.xlim([0.65, 1.35])
 plt.ylim([10**-7, 10**1])
 plt.tight_layout()
 plt.ylabel("SK CF and CCF")
 plt.xlabel("SK")
 plt.grid()
-#plt.savefig('/home/vereese/Documents/PhD/URSI2023/paper/cdf', bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/URSI2023/conference_paper/cdf_pres.eps', bbox_inches='tight')
 plt.show()
 
 # Ludwig Code
