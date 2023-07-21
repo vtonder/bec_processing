@@ -20,7 +20,7 @@ def hypergeo(a,b,c,z):
 
 N = 1
 d = 1
-M = 512
+M = 16384
 
 u1 = 1
 u2 = (4*M**2)/((M-1)*(M+2)*(M+3)) # this is variance
@@ -90,6 +90,8 @@ for i, xi in enumerate(x):
 cdf2 = 1 - cdf
 sigma3 = 3*np.sqrt(4/M) # theoretical 3 sigma lines
 pfa = 0.0013499 # probability of a false alarm
+pfa2 = 0.00067495
+pfa3 = 0.0026998
 print("CDF theoretical 3 sigma upper limit: ", 1+sigma3)
 print("CDF theoretical 3 sigma lower limit: ", 1-sigma3)
 
@@ -105,12 +107,12 @@ plt.xlabel("SK")
 plt.figure(1, figsize=[22,16])
 plt.semilogy(x, cdf)
 plt.semilogy(x, cdf2)
-plt.axhline(pfa, color = 'r')
+plt.axhline(pfa3, color = 'r')
 plt.axvline(1+sigma3, color = 'g', linestyle = '--')
 plt.axvline(1-sigma3, color = 'g', linestyle = '--')
 plt.axvline(0.77511, color = 'g', linestyle = '-')
 plt.axvline(1.3254, color = 'g', linestyle = '-')
-plt.xlim([0.65, 1.35])
+plt.xlim([0.65, 1.55])
 plt.ylim([10**-7, 10**1])
 plt.tight_layout()
 plt.ylabel("SK CF and CCF")
