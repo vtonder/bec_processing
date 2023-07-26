@@ -32,6 +32,21 @@ def rfi_mitigation(data, M, data_window_len):
 
     return data
 
+def sigma_mit(data, var):
+    std_re = np.sqrt(np.var(data[600,:,0]))
+    std_im = np.sqrt(np.var(data[600,:,1]))
+
+    threshold = 5 * var
+    num_t = np.shape(data)[1]
+    abs_data = np.sqrt(data[:, :, 0] ** 2 + data[:, :, 1] ** 2)
+    for i in np.arange(num_ch):
+        for j in np.arange(num_t):
+            if abs_data[i, j] >= threshold:
+                data[i, j, 0] = std_re
+                data[i, j, 1] = std_im
+
+    return data
+
 def get_data_window(start_index, pulse_i, samples_T, int_samples_T, tot_ndp):
     start = start_index + (pulse_i * samples_T)
     end = start + int_samples_T
@@ -141,6 +156,9 @@ for h in np.arange(num_sub_int):
 
          #data_x = rfi_mitigation(data_x, M, data_len_x)
          #data_y = rfi_mitigation(data_y, M, data_len_y)
+
+         data_x = sigma_mit(data_x, 14)
+         data_y = sigma_mit(data_y, 14)
 
          sp_x = get_pulse_power(data_x, chunk_start_x, si_x, pulse_i, samples_T, int_samples_T)
          sp_y = get_pulse_power(data_y, chunk_start_y, si_y, pulse_i, samples_T, int_samples_T)
