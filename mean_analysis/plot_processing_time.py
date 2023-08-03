@@ -1,8 +1,16 @@
 from matplotlib import pyplot as plt
 
-font = {'family': 'STIXGeneral',
-        'size': 26}
-plt.rc('font', **font)
+textwidth = 9.6 # 128.0 / 25.4 #
+textheight = 7 # 96.0 / 25.4 # 7
+plt.rc('font', size=12, family='STIXGeneral')
+plt.rc('pdf', fonttype=42)
+#plt.rc('axes', titlesize=14, labelsize=14)
+plt.rc('axes', titlesize=12, labelsize=12)
+plt.rc(('xtick', 'ytick'), labelsize=12)
+plt.rc('legend', fontsize=12)
+plt.rc('lines', markersize=5)
+plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
+plt.rc('mathtext', fontset='stix')
 
 processing_time ={
   '5': 3034.3588042259216,
@@ -18,11 +26,11 @@ processing_time ={
 
 num_proc = [int(i) for i in processing_time.keys()]
 
-plt.figure(0, figsize=[15,12])
+plt.figure(0)
 plt.plot(num_proc, list(processing_time.values()))
 plt.xlim(num_proc[0], num_proc[-1])
 plt.grid()
 plt.xlabel("Number of processors")
 plt.ylabel("Total processing time (s)")
-plt.savefig('/home/vereese/Documents/PhD/CASPER2022/presentation/proctime', bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/proctime', bbox_inches='tight')
 plt.show()
