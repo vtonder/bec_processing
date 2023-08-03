@@ -8,7 +8,7 @@ References:
 [1] Appendix A.1 "The bispectrum and its relationship to phase-amplitude coupling"
 """
 
-font2 = {'family': 'STIXGeneral',
+"""font2 = {'family': 'STIXGeneral',
          'color': 'g',
          'size': 26,
          'fontweight': 'bold'
@@ -17,7 +17,24 @@ font2 = {'family': 'STIXGeneral',
 font = {'family': 'STIXGeneral',
         'size': 26}
 plt.rc('font', **font)
+"""
 
+font2 = {'family': 'STIXGeneral',
+         'color': 'g',
+         'size': 12,
+         'fontweight': 'bold'
+         }
+textwidth = 9.6 # 128.0 / 25.4 #
+textheight = 7 # 96.0 / 25.4 # 7
+plt.rc('font', size=12, family='STIXGeneral')
+plt.rc('pdf', fonttype=42)
+#plt.rc('axes', titlesize=14, labelsize=14)
+plt.rc('axes', titlesize=12, labelsize=12)
+plt.rc(('xtick', 'ytick'), labelsize=12)
+plt.rc('legend', fontsize=12)
+plt.rc('lines', markersize=5)
+plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
+plt.rc('mathtext', fontset='stix')
 
 def sample(bi, w_1, w_2):
     in1 = w_1 + 500
@@ -79,5 +96,5 @@ plt.text(350, -300, '11', fontdict=font2)
 plt.text(350, -100, '12', fontdict=font2)
 plt.xlabel("$f_1$ [Hz]")
 plt.ylabel("$f_2$ [Hz]")
-#plt.savefig('/home/vereese/Documents/PhD/URSI/sym.png', bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/sym.png', bbox_inches='tight')
 plt.show()
