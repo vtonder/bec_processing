@@ -2,13 +2,21 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 DIRECTORY = '/home/vereese/git/phd_data/gps_hos/output_data/'
-URSI_DIR = '/home/vereese/Documents/PhD/URSI2022/'
+URSI_DIR = '/home/vereese/Documents/PhD/ThesisTemplate/Figures/'
 NUM_BITS1 = str(1)
 NUM_BITS2 = str(300)
 
-font = {'family': 'STIXGeneral',
-        'size': 26}
-plt.rc('font', **font)
+textwidth = 9.6 # 128.0 / 25.4 #
+textheight = 7 # 96.0 / 25.4 # 7
+plt.rc('font', size=12, family='STIXGeneral')
+plt.rc('pdf', fonttype=42)
+#plt.rc('axes', titlesize=14, labelsize=14)
+plt.rc('axes', titlesize=12, labelsize=12)
+plt.rc(('xtick', 'ytick'), labelsize=12)
+plt.rc('legend', fontsize=12)
+plt.rc('lines', markersize=5)
+plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
+plt.rc('mathtext', fontset='stix')
 
 py = 10.23
 fft_len = 1024
@@ -45,17 +53,17 @@ for code in gps_data2.keys():
 for i in np.arange(6):
     code = names[int(i)]
     w0,w1 = get_freq(code)
-    plt.figure(i+6, figsize=[10,10])
-    plt.imshow(np.abs(gps_data1[code]), origin='lower', extent=[w0, w1, w0, w1])
+    plt.figure(i+6)
+    plt.imshow(np.abs(gps_data1[code]), aspect='auto', origin='lower', extent=[w0, w1, w0, w1])
     plt.xlabel("$f_1$ [MHz]")
     plt.ylabel("$f_2$ [MHz]")
     #plt.title(code+NUM_BITS1)
     plt.savefig(URSI_DIR+code+'_1bit', bbox_inches='tight')
-    plt.figure(i, figsize=[10,10])
-    plt.imshow(np.abs(gps_data2[code]), origin='lower', extent=[w0, w1, w0, w1])
+    plt.figure(i)
+    plt.imshow(np.abs(gps_data2[code]), aspect='auto', origin='lower', extent=[w0, w1, w0, w1])
     plt.xlabel("$f_1$ [MHz]")
     plt.ylabel("$f_2$ [MHz]")
-    plt.title(code+NUM_BITS2)
-    #plt.savefig(URSI_DIR+code+'_300bit', bbox_inches='tight')
+    #plt.title(code+NUM_BITS2)
+    plt.savefig(URSI_DIR+code+'_300bit', bbox_inches='tight')
 
 plt.show()
