@@ -2,9 +2,17 @@ import numpy as np
 from hos import Bispectrum
 from matplotlib import pyplot as plt
 
-font = {'family': 'STIXGeneral',
-        'size': 26}
-plt.rc('font', **font)
+textwidth = 9.6 # 128.0 / 25.4 #
+textheight = 7 # 96.0 / 25.4 # 7
+plt.rc('font', size=12, family='STIXGeneral')
+plt.rc('pdf', fonttype=42)
+#plt.rc('axes', titlesize=14, labelsize=14)
+plt.rc('axes', titlesize=12, labelsize=12)
+plt.rc(('xtick', 'ytick'), labelsize=12)
+plt.rc('legend', fontsize=12)
+plt.rc('lines', markersize=5)
+plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
+plt.rc('mathtext', fontset='stix')
 
 fft_size = 2048
 N = 100 * fft_size
@@ -27,7 +35,7 @@ bup_ps = b_up.calc_power_spectrum()
 
 # b.plot_full_bispectrum(i=1)
 
-plt.figure(0, figsize=[15,12])
+plt.figure(0)
 plt.plot(pulse_train[0:102], label='pulse train')
 plt.plot(pulse_train_up[0:102], label=r'$\uparrow$ pulse train')
 plt.xlim(0,100)
@@ -35,10 +43,11 @@ plt.ylabel("Polar NRZ")
 plt.xlabel("time samples n")
 plt.legend()
 plt.grid()
-#plt.savefig('/home/vereese/Documents/PhD/CASPER2022/presentation/pulse_trains', bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/pulse_trains', bbox_inches='tight')
 
 k = np.arange(-1024,1024)
-plt.figure(1, figsize=[15,12])
+#k = np.arange(-512,512)
+plt.figure(1)
 plt.plot(k, b_ps,  label='pulse train')
 plt.plot(k, bup_ps, label=r'$\uparrow$ pulse train')
 plt.xlim(-1024,1024)
@@ -46,19 +55,19 @@ plt.ylabel("PSD of line code")
 plt.xlabel("frequency samples k")
 plt.legend()
 plt.grid()
-#plt.savefig('/home/vereese/Documents/PhD/CASPER2022/presentation/psd_pt', bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/psd_pt', bbox_inches='tight')
 
-plt.figure(2, figsize=[12,12])
+plt.figure(2)
 plt.imshow(np.abs(b.full_bispec), aspect='auto', origin='lower',extent=([-1024, 1024, -1024, 1024]))
 plt.xlabel("frequency samples k")
 plt.ylabel("frequency samples k")
-#plt.savefig('/home/vereese/Documents/PhD/CASPER2022/presentation/bispec_pt', bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/bispec_pt', bbox_inches='tight')
 
-plt.figure(3, figsize=[12,12])
+plt.figure(3)
 plt.imshow(np.abs(b_up.full_bispec), aspect='auto', origin='lower',extent=([-1024, 1024, -1024, 1024]))
 plt.xlabel("frequency samples k")
 plt.ylabel("frequency samples k")
-#plt.savefig('/home/vereese/Documents/PhD/CASPER2022/presentation/bispec_pt_up', bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/bispec_pt_up', bbox_inches='tight')
 
 plt.show()
 

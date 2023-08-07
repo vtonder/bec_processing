@@ -1,4 +1,4 @@
-import h5py
+
 import numpy as np
 from hos import Bispectrum
 import time
@@ -7,10 +7,23 @@ sys.path.append('..')
 from constants import h1_ch, gps_l1_ch, gps_l2_ch, gal_e6_ch
 from matplotlib import pyplot as plt
 
+textwidth = 9.6 # 128.0 / 25.4 #
+textheight = 7 # 96.0 / 25.4 # 7
+plt.rc('font', size=12, family='STIXGeneral')
+plt.rc('pdf', fonttype=42)
+#plt.rc('axes', titlesize=14, labelsize=14)
+plt.rc('axes', titlesize=12, labelsize=12)
+plt.rc(('xtick', 'ytick'), labelsize=12)
+plt.rc('legend', fontsize=12)
+plt.rc('lines', markersize=5)
+plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
+plt.rc('mathtext', fontset='stix')
+
 ANALYSE = False
 PLOT = True
 
 if ANALYSE:
+    import h5py
     t1 = time.time()
     vela_y = h5py.File('/net/com08/data6/vereese/1604641569_wide_tied_array_channelised_voltage_0y.h5', 'r')
     #data = vela_y['Data/bf_raw'][...]
@@ -41,14 +54,16 @@ if PLOT:
     DIR='/home/vereese/git/phd_data/meerkat_hos/'
     data = {'gps_l1_bispec.npy':[], 'gps_l2_bispec.npy': [], 'gal_e6_bispec.npy': [], 'gal_5b_bispec_0y.npy': [],
             'h1_bispec_0y.npy':[], 'vela_bispec.npy':[], 'clean_bispec.npy':[], 'dirty_bispec.npy':[], 'clean2_bispec_0y.npy':[], 'dirty2_bispec_0y.npy':[]}
-    #data = {'h1_bispec.npy':[]}
+    names = ['gps_l1_bispec', 'gps_l2_bispec', 'gal_e6_bispec', 'gal_5b_bispec_0',
+            'h1_bispec_0y', 'vela_bispec', 'clean_bispec', 'dirty_bispec', 'clean2_bispec_0y', 'dirty2_bispec_0y']
 
     for i,fn in enumerate(data.keys()):
         data[fn] = np.load(DIR+fn)
         plt.figure(i)
-        plt.imshow(np.abs(data[fn]), aspect='auto', origin='lower')
+        plt.imshow(np.abs(data[fn]), aspect='auto', origin='lower', extent=[-512, 512, -512, 512])
+        plt.savefig("/home/vereese/Documents/PhD/ThesisTemplate/Figures/"+names[i])
         #plt.imshow(np.angle(data[fn]), aspect='auto', origin='lower')
-        plt.title(fn)
+        #plt.title(fn)
 
     plt.show()
 
