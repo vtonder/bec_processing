@@ -24,25 +24,22 @@ def median_smoothing(I, window_len=21):
 
 def rfi_mit(I, diff):
     global int_samples_T
-    #I_flagged = np.zeros(I.shape)
     for phi in np.arange(int_samples_T):
         data = I[:, phi]
         filtered_data = [d for d in data if d != 0]
-        std = np.std(filtered_data) #stds[phi]
+        std = np.std(filtered_data)
         I[:, phi] = [0 if diff[ch, phi] >= 3 * std else I[ch, phi] for ch in np.arange(num_ch)]
 
     return I
 
-diff = median_smoothing(I, 31)
-for i in np.arange(5):
+diff = median_smoothing(I, 21)
+for i in np.arange(6):
     I = rfi_mit(I, diff)
 
-
+np.save("median_smoothed_I6.npy", I)
 print("processing time took: ", time.time()-t1)
-#mini = np.min(I_median.flatten())
-#maxi = np.max(I_median.flatten())
-plt.figure(0)
-plt.imshow(I, origin="lower", aspect="auto")#,vmin=mini,vmax=maxi)
 
+plt.figure(0)
+plt.imshow(I, origin="lower", aspect="auto")
 plt.show()
 
