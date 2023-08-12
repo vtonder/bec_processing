@@ -17,7 +17,7 @@ def median_smoothing(I, window_len=21):
     I_median[num_ch-wl_2:, :] = I[num_ch-wl_2:, :]
     for ch in np.arange(wl_2, num_ch - wl_2):
         window = I[ch - wl_2:ch + wl_2+1, :]
-        I_median[ch, :] = np.median(window)
+        I_median[ch, :] = np.median(window, axis=0)
     diff = np.abs(I - I_median)
 
     return diff
@@ -34,17 +34,9 @@ def rfi_mit(I, diff):
     return I
 
 diff = median_smoothing(I, 31)
-stds = np.std(I, axis=0)
-I = rfi_mit(I, diff)
+for i in np.arange(5):
+    I = rfi_mit(I, diff)
 
-#diff = median_smoothing(I,11)
-I = rfi_mit(I, diff)
-
-#diff = median_smoothing(I,11)
-I = rfi_mit(I, diff)
-
-#diff = median_smoothing(I,11)
-I = rfi_mit(I, diff)
 
 print("processing time took: ", time.time()-t1)
 #mini = np.min(I_median.flatten())
