@@ -82,5 +82,5 @@ else:
     tag = '_' + args.file[6:10] + '_'  # add last 4 digits of observation code onto the file_name
     pol = args.file[-5:-3]  # polarisation 0x or 0y
 
-    np.save('SK_M' + str(M) + tag + pol, tot_SK)
+    np.save('sk_M' + str(M) + tag + pol, tot_SK)
     print("procesing took: ", time.time() - t1)
