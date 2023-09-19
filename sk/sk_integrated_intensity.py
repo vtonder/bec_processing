@@ -9,7 +9,7 @@ from pulsar_processing.pulsar_functions import incoherent_dedisperse
 import argparse
 from kurtosis import spectral_kurtosis_cm
 
-def rfi_mitigation(data, M, data_window_len):
+def rfi_mitigation(data, M, data_window_len, flags):
     std_re = np.sqrt(np.var(data[600,:,0]))
     std_im = np.sqrt(np.var(data[600,:,1]))
 
@@ -27,10 +27,11 @@ def rfi_mitigation(data, M, data_window_len):
 
         for ch, val in enumerate(sk):
             if val < low or val > up:
-                data[ch, idx_start:idx_stop, 0] = np.random.normal(0,std_re,1)[0]
-                data[ch, idx_start:idx_stop, 1] = np.random.normal(0,std_im,1)[0]
+                flags[ch, idx_start:idx_stop] = np.float32(np.ones(M))
+                data[ch, idx_start:idx_stop, 0] = np.random.normal(0, std_re, M)
+                data[ch, idx_start:idx_stop, 1] = np.random.normal(0, std_im, M)
 
-    return data
+    return data, flags
 
 def get_data_window(start_index, pulse_i, samples_T, int_samples_T, tot_ndp):
     start = start_index + (pulse_i * samples_T)
@@ -43,14 +44,17 @@ def get_data_window(start_index, pulse_i, samples_T, int_samples_T, tot_ndp):
 
     return chunk_start, chunk_stop
 
-def get_pulse_power(data, chunk_start, start_index, pulse_i, samples_T, int_samples_T):
+def get_pulse_power(data, chunk_start, start_index, pulse_i, samples_T, int_samples_T, flags):
     pulse_start = int(start_index + (pulse_i * samples_T) - chunk_start)
     pulse_stop = pulse_start + int_samples_T
 
     re = data[:, pulse_start:pulse_stop, 0].astype(np.float32)
     im = data[:, pulse_start:pulse_stop, 1].astype(np.float32)
+    pf = flags[:, pulse_start:pulse_stop].astype(np.float32)
 
-    return np.float32(re**2) + np.float32(im**2)
+    sp = np.float32(re**2) + np.float32(im**2)
+
+    return sp, pf
 
 # get number of processors and processor rank
 comm = MPI.COMM_WORLD
@@ -74,6 +78,8 @@ si_y = start_indices[fy] + xy_time_offsets[fy]
 tot_ndp_x = dfx['Data/timestamps'].shape[0] # total number of data points of x polarisation
 tot_ndp_y = dfy['Data/timestamps'].shape[0]
 
+ind = np.load("max_pulses.npy")
+
 M = int(args.M)
 low = lower_limit[M]
 up = upper_limit[M]
@@ -93,6 +99,7 @@ else:
 num_pulses = ndp / samples_T  # number of pulses per observation
 np_rank = int(np.floor(num_pulses / size)) # number of pulses per rank
 summed_profile = np.zeros([num_ch, int_samples_T], dtype=np.float32)
+summed_flags = np.zeros([num_ch, int_samples_T], dtype=np.float32)
 
 if rank == 0:
     t1 = time.time()
@@ -114,6 +121,10 @@ prev_start_x, prev_stop_x = 0, 0
 prev_start_y, prev_stop_y = 0, 0
 
 for i in np.arange(rank*np_rank, (rank+1)*np_rank):
+    # only sum non brightest pulses
+    if i not in ind: 
+        continue
+
     chunk_start_x, chunk_stop_x = get_data_window(si_x, i, samples_T, int_samples_T, tot_ndp_x)
     chunk_start_y, chunk_stop_y = get_data_window(si_y, i, samples_T, int_samples_T, tot_ndp_y)
     data_len_x = chunk_stop_x - chunk_start_x
@@ -133,22 +144,36 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
         prev_start_y = chunk_start_y
         prev_stop_y = chunk_stop_y
 
-    data_x = rfi_mitigation(data_x, M, data_len_x)
-    data_y = rfi_mitigation(data_y, M, data_len_y)
+    flags_x = np.zeros([num_ch, data_len_x], dtype=np.float32)
+    flags_y = np.zeros([num_ch, data_len_y], dtype=np.float32)
 
-    sp_x = get_pulse_power(data_x, chunk_start_x, si_x, i, samples_T, int_samples_T)
-    sp_y = get_pulse_power(data_y, chunk_start_y, si_y, i, samples_T, int_samples_T)
+    #data_x, flags_x = rfi_mitigation(data_x, M, data_len_x, flags_x)
+    #data_y, flags_y = rfi_mitigation(data_y, M, data_len_y, flags_y)
 
+    # sp: single_pulse , pf: pulse_flags
+    sp_x, pf_x = get_pulse_power(data_x, chunk_start_x, si_x, i, samples_T, int_samples_T, flags_x)
+    sp_y, pf_y = get_pulse_power(data_y, chunk_start_y, si_y, i, samples_T, int_samples_T, flags_y)
+
+    summed_flags += np.float32(pf_x + pf_y)
     summed_profile += np.float32(sp_x**2) + np.float32(sp_y**2)
 
 if rank > 0:
     comm.Send([summed_profile, MPI.DOUBLE], dest=0, tag=15)  # send results to process 0
+    comm.Send([summed_flags, MPI.DOUBLE], dest=0, tag=16)  # send results to process 0
 else:
     for i in range(1, size):
         tmp_summed_profile = np.zeros([num_ch, int_samples_T], dtype=np.float32)
+        tmp_summed_flags = np.zeros([num_ch, int_samples_T], dtype=np.float32)
+
         comm.Recv([tmp_summed_profile, MPI.DOUBLE], source=i, tag=15)
+        comm.Recv([tmp_summed_flags, MPI.DOUBLE], source=i, tag=16)
+
         summed_profile += np.float32(tmp_summed_profile)
+        summed_flags += np.float32(tmp_summed_flags)
+
 
     summed_profile = np.float32(incoherent_dedisperse(summed_profile, tag))
-    np.save('itegrated_sk_intensity2_M'+ str(M) + "_" + tag, summed_profile)
+    np.save('itegrated_sk_bright_intensity' + "_" + tag, summed_profile)
+    np.save('sk_bright_summed_flags' + "_" + tag, summed_flags)
+
     print("processing took: ", time.time() - t1)
