@@ -99,7 +99,7 @@ def cc_spectral_kurtosis_cm(x1, x2, M, FFT_LEN, N = 1, d = 1):
 
 if __name__ == "__main__":
     mean = 0
-    std = 2
+    std = 1
     FFT_LEN = 1024
     M = 512 # number of averages to take PSD over
     N = FFT_LEN * M
@@ -126,19 +126,26 @@ if __name__ == "__main__":
     wgn_re = np.random.normal(mean, std, size=N)
     wgn_im = np.random.normal(mean, std, size=N)
 
-    x =  wgn_re + wgn_im
-    x =  x + pulse_train
+    x =  wgn_re #+ wgn_im
+    x =  x #+ s #pulse_train
     x = x.reshape(M, FFT_LEN)
     XF = np.fft.fft(x, axis=1)
 
-    sk = spectral_kurtosis(XF, M, FFT_LEN, reshape=False, fft=False, normalise=False)
+    sk = spectral_kurtosis(x, M, FFT_LEN, reshape=False, fft=True, normalise=False)
     print(np.mean(sk))
     plt.figure(0)
     plt.plot(x.flatten())
 
     plt.figure(1)
-    plt.plot(f, sk[0:int(FFT_LEN/2)])
+    plt.plot(f[1:], sk[1:int(FFT_LEN/2)], linewidth=2)
+    plt.xlim([f[1], f[-1]])
+    plt.axhline(0.77511, linestyle = '--', linewidth=2, label="thresholds")
+    plt.axhline(1.3254, linestyle = '--', linewidth=2)
+    plt.ylim([0.65,1.35])
     plt.grid()
+    plt.xlabel("frequency [Hz]")
+    plt.ylabel('$\overline{SK}$')
+    plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/skest1.eps', bbox_inches='tight')
     plt.show()
 
     '''x = x.reshape(FFT_LEN, M)
