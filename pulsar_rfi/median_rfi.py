@@ -4,9 +4,10 @@ import sys
 sys.path.append("../")
 from constants import num_ch, pulsars
 import time
+import scipy
 
 t1 = time.time()
-I = np.load("/home/vereese/git/phd_data/intensity_2210.npy")/128**4
+I = np.load("/home/vereese/git/phd_data/intensity_2210.npy")
 int_samples_T = I.shape[1]
 pulsar = pulsars['2210']
 
@@ -22,24 +23,36 @@ def median_smoothing(I, window_len=21):
 
     return diff
 
-def rfi_mit(I, diff):
+def rfi_mit(I, diff, sf):
     global int_samples_T
     for phi in np.arange(int_samples_T):
         data = I[:, phi]
         filtered_data = [d for d in data if d != 0]
         std = np.std(filtered_data)
-        I[:, phi] = [0 if diff[ch, phi] >= 3 * std else I[ch, phi] for ch in np.arange(num_ch)]
+        sf[:, phi] = [1 if diff[ch, phi] >= 4 * std else 0 for ch in np.arange(num_ch)]
+        I[:, phi] = [0 if diff[ch, phi] >= 4 * std else I[ch, phi] for ch in np.arange(num_ch)]
 
-    return I
+    return I, sf
 
-diff = median_smoothing(I, 21)
-for i in np.arange(6):
-    I = rfi_mit(I, diff)
+sf = np.zeros(I.shape)
+#diff = median_smoothing(I, 21)
+I_median = scipy.ndimage.median_filter(I,[21,1], mode="wrap")
+diff = I - I_median
 
-np.save("median_smoothed_I6.npy", I)
+for i in np.arange(4):
+    sf_tmp = np.zeros(I.shape)
+    I, sf_tmp = rfi_mit(I, diff, sf_tmp)
+    sf = sf + sf_tmp
+
+np.save("median_smoothed_I4_custom.npy", I)
+np.save("sf_median_custom", sf)
 print("processing time took: ", time.time()-t1)
 
 plt.figure(0)
 plt.imshow(I, origin="lower", aspect="auto")
+
+plt.figure(1)
+plt.plot((sf.sum(axis=1)*100)/(int_samples_T*4))
+
 plt.show()
 
