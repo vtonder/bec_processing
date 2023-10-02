@@ -30,7 +30,7 @@ gal_5b = 1207.14
 gal_e6 = 1278.75
 
 # center frequencies of each 1024 subbands
-frequencies = np.arange(856 + (freq_resolution / 2), 1712 + (freq_resolution / 2), freq_resolution)
+frequencies = np.arange(856, 1712, freq_resolution)
 h1_ch = np.abs(frequencies-h1).argmin()
 gps_l1_ch = np.abs(frequencies-gps_l1).argmin()
 gps_l2_ch = np.abs(frequencies-gps_l2).argmin()
