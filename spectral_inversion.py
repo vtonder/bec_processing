@@ -1,6 +1,18 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+textwidth = 9.6 # 128.0 / 25.4 #
+textheight = 7 # 96.0 / 25.4 # 7
+plt.rc('font', size=12, family='STIXGeneral')
+plt.rc('pdf', fonttype=42)
+#plt.rc('axes', titlesize=14, labelsize=14)
+plt.rc('axes', titlesize=12, labelsize=12)
+plt.rc(('xtick', 'ytick'), labelsize=12)
+plt.rc('legend', fontsize=12)
+plt.rc('lines', markersize=5)
+plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
+plt.rc('mathtext', fontset='stix')
+
 # frequency units Hz
 f1 = np.arange(1,6)*10.0
 w1 = 2*np.pi*f1
@@ -24,9 +36,11 @@ plt.xlabel('time s')
 plt.grid()
 
 plt.figure(1)
-plt.plot(f,np.fft.fftshift(np.fft.fft(x)), label='original')
-plt.plot(f,np.fft.fftshift(np.fft.fft(xi)), label='inverted')
-plt.xlabel('frequency Hz')
+plt.plot(f,np.fft.fftshift(np.fft.fft(x)), label='original', linewidth=2)
+plt.plot(f,np.fft.fftshift(np.fft.fft(xi)), label='inverted', linewidth=2)
+plt.xlabel('frequency [Hz]')
+plt.ylabel('X(n)')
 plt.legend()
-plt.grid()
+plt.xlim([-50, 49])
+plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/spec_inver.eps', bbox_inches='tight')
 plt.show()
