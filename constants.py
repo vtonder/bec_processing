@@ -61,6 +61,10 @@ upper_limit4 = {512:1.234469, 1024:1.160085, 2048:1.110166, 4096:1.053102, 8192:
 lower_limit5 = {512:0.802819, 1024:0.855226, 2048:0.894684, 4096:0.923978, 8192:0.945496, 16384:0.960966}
 upper_limit5 = {512:1.266733, 1024:1.180529, 2048:1.123473, 4096:1.085193, 8192:1.059247, 16384:1.041324}
 
+# SK lower and upper limits for PFA=5%. Obtained using sk/sk_thresholds.py script
+lower_limit6 = {512:0.8665, 1024:0.9032, 2048:0.902, 4096:0.95, 8192:0.9646, 16384:0.975}
+upper_limit6 = {512:1.1539, 1024:1.1075, 2048:1.0751, 4096:1.053, 8192:1.0368, 16384:1.0257}
+
 # first non-zero indices for each file. Obtained using the first_nonzero_indices.{py,sh} scripts. 
 # The output was written to first_nonzero_indices
 first_nonzero_indices = {
