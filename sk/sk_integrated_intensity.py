@@ -4,14 +4,13 @@ import numpy as np
 import time
 import sys
 sys.path.append("../")
-from constants import num_ch, start_indices, pulsars, xy_time_offsets, time_chunk_size, upper_limit, lower_limit
+from constants import num_ch, start_indices, pulsars, xy_time_offsets, time_chunk_size, sk_max_limit, upper_limit7, lower_limit7
 from pulsar_processing.pulsar_functions import incoherent_dedisperse
 import argparse
 from kurtosis import spectral_kurtosis_cm
 
-def rfi_mitigation(data, M, data_window_len, flags):
-    std_re = np.sqrt(np.var(data[600,:,0]))
-    std_im = np.sqrt(np.var(data[600,:,1]))
+
+def rfi_mitigation(data, M, data_window_len, std, flags):
 
     for idx in np.arange(0, data_window_len, M):
         idx_start = int(idx)
@@ -25,11 +24,28 @@ def rfi_mitigation(data, M, data_window_len, flags):
             print("idx_stop: ", idx_stop)
             idx_stop = ndp - 1
 
+        #low_mask = (sk < low)
+        #up_mask = (sk > up)
+        #data_mask = low_mask | up_mask
+        #dm = np.tile(data_mask,(M,1)).transpose()
+        #random_re = np.random.normal(0, std, M*data_mask.shape[0]).reshape([data_mask.shape[0], M])
+        #random_im = np.random.normal(0, std, M*data_mask.shape[0]).reshape([data_mask.shape[0], M])
+        #data[:, idx_start:idx_stop, 0] = np.where(dm, random_re, data[:, idx_start:idx_stop, 0])
+        #data[:, idx_start:idx_stop, 1] = np.where(dm, random_im, data[:, idx_start:idx_stop, 1])
+
+        
         for ch, val in enumerate(sk):
+            #if ch <= 260 or ch >= 330:
             if val < low or val > up:
                 flags[ch, idx_start:idx_stop] = np.float32(np.ones(M))
-                data[ch, idx_start:idx_stop, 0] = np.random.normal(0, std_re, M)
-                data[ch, idx_start:idx_stop, 1] = np.random.normal(0, std_im, M)
+                data[ch, idx_start:idx_stop, 0] = np.random.normal(0, std, M)
+                data[ch, idx_start:idx_stop, 1] = np.random.normal(0, std, M)
+            #else:
+            #    if val < low or val > up_sig4:
+            #        flags[ch, idx_start:idx_stop] = np.float32(np.ones(M))
+            #        data[ch, idx_start:idx_stop, 0] = np.random.normal(0, std, M)
+            #        data[ch, idx_start:idx_stop, 1] = np.random.normal(0, std, M)
+
 
     return data, flags
 
@@ -78,11 +94,13 @@ si_y = start_indices[fy] + xy_time_offsets[fy]
 tot_ndp_x = dfx['Data/timestamps'].shape[0] # total number of data points of x polarisation
 tot_ndp_y = dfy['Data/timestamps'].shape[0]
 
-ind = np.load("max_pulses.npy")
+#ind = np.load("max_pulses.npy")
 
 M = int(args.M)
-low = lower_limit[M]
-up = upper_limit[M]
+low = lower_limit7[M]
+up = sk_max_limit[M]
+#up_sig4 = upper_limit7[M]
+
 
 tag = args.tag
 pulsar = pulsars[tag]
@@ -122,8 +140,8 @@ prev_start_y, prev_stop_y = 0, 0
 
 for i in np.arange(rank*np_rank, (rank+1)*np_rank):
     # only sum non brightest pulses
-    if i not in ind: 
-        continue
+    #if i not in ind: 
+    #    continue
 
     chunk_start_x, chunk_stop_x = get_data_window(si_x, i, samples_T, int_samples_T, tot_ndp_x)
     chunk_start_y, chunk_stop_y = get_data_window(si_y, i, samples_T, int_samples_T, tot_ndp_y)
@@ -147,15 +165,16 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
     flags_x = np.zeros([num_ch, data_len_x], dtype=np.float32)
     flags_y = np.zeros([num_ch, data_len_y], dtype=np.float32)
 
-    #data_x, flags_x = rfi_mitigation(data_x, M, data_len_x, flags_x)
-    #data_y, flags_y = rfi_mitigation(data_y, M, data_len_y, flags_y)
+    # standard deviation of 14 was measured , see ../mean_analysis/plot_all_var.py
+    data_x, flags_x = rfi_mitigation(data_x, M, data_len_x, 14, flags_x)
+    data_y, flags_y = rfi_mitigation(data_y, M, data_len_y, 14, flags_y)
 
     # sp: single_pulse , pf: pulse_flags
     sp_x, pf_x = get_pulse_power(data_x, chunk_start_x, si_x, i, samples_T, int_samples_T, flags_x)
     sp_y, pf_y = get_pulse_power(data_y, chunk_start_y, si_y, i, samples_T, int_samples_T, flags_y)
 
     summed_flags += np.float32(pf_x + pf_y)
-    summed_profile += np.float32(sp_x**2) + np.float32(sp_y**2)
+    summed_profile += sp_x + sp_y
 
 if rank > 0:
     comm.Send([summed_profile, MPI.DOUBLE], dest=0, tag=15)  # send results to process 0
@@ -173,7 +192,7 @@ else:
 
 
     summed_profile = np.float32(incoherent_dedisperse(summed_profile, tag))
-    np.save('itegrated_sk_bright_intensity' + "_" + tag, summed_profile)
-    np.save('sk_bright_summed_flags' + "_" + tag, summed_flags)
+    np.save('sk_intensity_sig4skmaxlim_M'+ str(M) + "_" + tag, summed_profile)
+    np.save('sk_sig4skmaxlim_summed_flags_M'+ str(M)  + "_" + tag, summed_flags)
 
     print("processing took: ", time.time() - t1)

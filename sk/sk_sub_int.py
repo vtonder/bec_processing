@@ -10,9 +10,6 @@ import argparse
 from kurtosis import spectral_kurtosis_cm
 
 def rfi_mitigation(data, M, data_window_len):
-    std_re = np.sqrt(np.var(data[600,:,0]))
-    std_im = np.sqrt(np.var(data[600,:,1]))
-
     for idx in np.arange(0, data_window_len, M):
         idx_start = int(idx)
         idx_stop = int(idx_start + M)
@@ -26,24 +23,33 @@ def rfi_mitigation(data, M, data_window_len):
             idx_stop = ndp - 1
 
         for ch, val in enumerate(sk):
-            if val <= low or val >= up:
-                data[ch, idx_start:idx_stop, 0] = np.random.normal(0,std_re,1)[0]
-                data[ch, idx_start:idx_stop, 1] = np.random.normal(0,std_im,1)[0]
+            if val <= low: #or val >= up:
+                data[ch, idx_start:idx_stop, 0] = np.random.normal(0, 14, M)
+                data[ch, idx_start:idx_stop, 1] = np.random.normal(0, 14, M)
 
     return data
 
-def sigma_mit(data, var):
-    std_re = np.sqrt(np.var(data[600,:,0]))
-    std_im = np.sqrt(np.var(data[600,:,1]))
+def sigma_mit(data, std):
+    threshold = 5 * std 
+    abs_data = np.sqrt(data[:,:,0]**2 + data[:,:,1]**2) 
+    indices = np.where(abs_data >= threshold, True, False)
+    ind = np.zeros(np.shape(data), dtype='bool')
+    ind[:, :, 0] = indices
+    ind[:, :, 1] = indices
 
-    threshold = 5 * var
-    num_t = np.shape(data)[1]
-    abs_data = np.sqrt(data[:, :, 0] ** 2 + data[:, :, 1] ** 2)
-    for i in np.arange(num_ch):
-        for j in np.arange(num_t):
-            if abs_data[i, j] >= threshold:
-                data[i, j, 0] = std_re
-                data[i, j, 1] = std_im
+    data[ind] = np.random.normal(0, std, sum(sum(sum(ind))))
+
+    #clean_data_re = np.random.normal(0, var, M)
+    #clean_data_im = np.random.normal(0, var, M)
+    #threshold = 5 * var
+    #num_t = np.shape(data)[1]
+    #abs_data = np.sqrt(data[:,:,0]**2 + data[:,:,1]**2) 
+    #for i in np.arange(num_ch):
+    #    for j in np.arange(0, num_t, M):
+    #        abs_data_mean = np.mean(abs_data[i, j:j+M])
+    #        if abs_data_mean >= threshold:
+    #            data[i, j:j+M, 0] = clean_data_re[:]
+    #            data[i, j:j+M, 1] = clean_data_im[:]
 
     return data
 
@@ -154,15 +160,15 @@ for h in np.arange(num_sub_int):
              prev_start_y = chunk_start_y
              prev_stop_y = chunk_stop_y
 
-         #data_x = rfi_mitigation(data_x, M, data_len_x)
-         #data_y = rfi_mitigation(data_y, M, data_len_y)
+         data_x = rfi_mitigation(data_x, M, data_len_x)
+         data_y = rfi_mitigation(data_y, M, data_len_y)
 
-         data_x = sigma_mit(data_x, 14)
-         data_y = sigma_mit(data_y, 14)
+         #data_x = sigma_mit(data_x, 14)
+         #data_y = sigma_mit(data_y, 14)
 
          sp_x = get_pulse_power(data_x, chunk_start_x, si_x, pulse_i, samples_T, int_samples_T)
          sp_y = get_pulse_power(data_y, chunk_start_y, si_y, pulse_i, samples_T, int_samples_T)
-         sp = np.float32(sp_x**2) + np.float32(sp_y**2)
+         sp = sp_x + sp_y
          summed_profile[h, :, :] += incoherent_dedisperse(sp, tag)
 
 if rank > 0:
@@ -175,5 +181,5 @@ else:
         comm.Recv([tmp_summed_profile, MPI.DOUBLE], source=i, tag=15)
         tot_sub_int_profile[num_sub_int*i:num_sub_int*(i+1), :, :] = np.float32(tmp_summed_profile)
 
-    np.save("sub_int_intensity_" + tag, tot_sub_int_profile)
+    np.save("sub_int_intensity_sk_low_M" + str(M) + "_" + tag, tot_sub_int_profile)
     print("processing took: ", time.time() - t1)
