@@ -51,6 +51,8 @@ si_y = start_indices[fy] + xy_time_offsets[fy]
 tot_ndp_x = dfx['Data/timestamps'].shape[0] # total number of data points of x polarisation
 tot_ndp_y = dfy['Data/timestamps'].shape[0]
 
+#ind = np.load("sk/max_pulses.npy")
+
 tag = args.tag
 pulsar = pulsars[tag]
 samples_T = pulsar['samples_T']
@@ -86,6 +88,10 @@ if rank == 0:
 prev_start_x, prev_stop_x = 0, 0
 prev_start_y, prev_stop_y = 0, 0
 for i in np.arange(rank*np_rank, (rank+1)*np_rank):
+    # only sum non brightest pulses
+    #if i in ind: 
+    #    continue
+
     chunk_start_x, chunk_stop_x = get_data_window(si_x, i, samples_T, int_samples_T, tot_ndp_x)
     chunk_start_y, chunk_stop_y = get_data_window(si_y, i, samples_T, int_samples_T, tot_ndp_y)
 
@@ -106,7 +112,7 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
     sp_x = get_pulse_power(data_x, chunk_start_x, si_x, i, samples_T, int_samples_T)
     sp_y = get_pulse_power(data_y, chunk_start_y, si_y, i, samples_T, int_samples_T)
 
-    summed_profile += np.float32(sp_x**2) + np.float32(sp_y**2)
+    summed_profile += np.float32(sp_x + sp_y)
 
 if rank > 0:
     comm.Send([summed_profile, MPI.DOUBLE], dest=0, tag=15)  # send results to process 0
