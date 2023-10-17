@@ -70,23 +70,12 @@ def s1_s2(s, FFT_LEN):
 #multiscale column major SK implementation for use with filterbank data
 def ms_spectral_kurtosis_cm(S1, S2, M, N = 1, d = 1, m=1, n=1):
 
-    kernel = np.ones((m, n), dtype=int)
-    pad_s1 = np.pad(S1, ((m-1,m-1),(n-1,n-1)), "constant")
-    pad_s2 = np.pad(S2, ((m-1,m-1),(n-1,n-1)), "constant")
-    ns1 = signal.convolve2d(pad_s1, kernel, mode="valid")[(m-1):,(n-1):]
-    ns2 = signal.convolve2d(pad_s2, kernel, mode="valid")[(m-1):,(n-1):]
-    
-    """for ch in np.arange(S1.shape[0] - 1):
-        for t in np.arange(S1.shape[1] - 1):
-            sum_S1 = 0
-            sum_S2 = 0
-            for i in np.arange(m):
-                for j in np.arange(n):
-                    sum_s1 = S1[ch+i, t+j]
-                    sum_s2 = S2[ch+i, t+j]
-            S1[ch,t] = sum_s1
-            S2[ch,t] = sum_s2"""
+    M = M*n*m
+    kernel = np.ones((n, m))
 
+    ns1 = signal.convolve2d(S1, kernel, mode="valid")
+    ns2 = signal.convolve2d(S2, kernel, mode="valid")
+    
     SK = ((M*N*d + 1) / (M - 1)) * ((M * ns2 / ns1 ** 2) - 1)
 
     return SK
