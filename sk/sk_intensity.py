@@ -4,19 +4,20 @@ import numpy as np
 import time
 import sys
 sys.path.append("../")
-from constants import num_ch, start_indices, pulsars, xy_time_offsets, time_chunk_size, upper_limit, lower_limit
+from constants import num_ch, start_indices, pulsars, xy_time_offsets, time_chunk_size, sk_max_limit, upper_limit7, lower_limit7
 from pulsar_processing.pulsar_functions import incoherent_dedisperse
 import argparse
 
-def rfi_mitigation(data, sk_flags, sk_sum_flags, sk, M, data_window_len, start_index, chunk_start):
-    clean_data =  data[600, 0:M, 0] # TODO: need an improved scheme ie generate Gaussian noise with same variance
+#def rfi_mitigation(data, sk_sum_flags, sk, M, data_window_len, start_index, chunk_start):
+def rfi_mitigation(data, sk, M, data_window_len, start_index, chunk_start):
+
     for idx in np.arange(0, data_window_len, M):
         idx_start = int(idx)
         idx_stop = int(idx_start + M)
 
         sk_sum_idx = int(chunk_start+idx_start-start_index)
         sk_idx = int(sk_sum_idx/M)
-
+          
         if sk_sum_idx < 0:
             sk_sum_idx = 0
 
@@ -24,9 +25,9 @@ def rfi_mitigation(data, sk_flags, sk_sum_flags, sk, M, data_window_len, start_i
             print("reached end of sk_idx")
             break
 
-        if sk_sum_idx + M >= sk_sum_flags.shape[1]:
-            print("reached end of sk_sum_flags")
-            break
+        #if sk_sum_idx + M > sk_sum_flags.shape[1]:
+        #    print("reached end of sk_sum_flags")
+        #    break
 
         if idx_stop >= ndp:
             print("shortening range because otherwise it will read from memory that doesn't exist")
@@ -35,15 +36,15 @@ def rfi_mitigation(data, sk_flags, sk_sum_flags, sk, M, data_window_len, start_i
             idx_stop = ndp - 1
 
         for ch, val in enumerate(sk[:, sk_idx]):
-            if val < low or val > up:
-                sk_flags[ch, sk_idx] = 1
+            if val < low: # or val > up:
+                #sk_sum_flags[ch, sk_sum_idx:sk_sum_idx+M] = np.ones(M, dtype=np.float16)
+                #sk_flags[ch, sk_idx] = 1
                 # TODO: verify that indices are correct
-                sk_sum_flags[ch, sk_sum_idx:sk_sum_idx+M] = np.ones(M, dtype=np.float16)
 
-                data[ch, idx_start:idx_stop, 0] = clean_data
-                data[ch, idx_start:idx_stop, 1] = clean_data
+                data[ch, idx_start:idx_stop, 0] = np.random.normal(0, 14, M) #clean_data
+                data[ch, idx_start:idx_stop, 1] = np.random.normal(0, 14, M) #cclean_data
 
-    return data, sk_flags, sk_sum_flags
+    return data #, sk_sum_flags
 
 def get_data_window(start_index, pulse_i, samples_T, int_samples_T, tot_ndp):
     start = start_index + (pulse_i * samples_T)
@@ -56,14 +57,14 @@ def get_data_window(start_index, pulse_i, samples_T, int_samples_T, tot_ndp):
 
     return chunk_start, chunk_stop
 
-def get_pulse_power(data, chunk_start, start_index, pulse_i, samples_T, int_samples_T, summed_flags):
+def get_pulse_power(data, chunk_start, start_index, pulse_i, samples_T, int_samples_T): #, summed_flags):
     pulse_start = int(start_index + (pulse_i * samples_T) - chunk_start)
     pulse_stop = pulse_start + int_samples_T
 
     re = data[:, pulse_start:pulse_stop, 0].astype(np.float32)
     im = data[:, pulse_start:pulse_stop, 1].astype(np.float32)
 
-    return np.float32(re**2) + np.float32(im**2) , summed_flags[:, pulse_start:pulse_stop]
+    return np.float32(re**2) + np.float32(im**2) #, summed_flags[:, pulse_start:pulse_stop]
 
 # get number of processors and processor rank
 comm = MPI.COMM_WORLD
@@ -72,7 +73,10 @@ rank = comm.Get_rank()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("tag", help="observation tag to process. search path: /net/com08/data6/vereese/")
-parser.add_argument("-m", dest="M", help="Number of spectra to accumulate in SK calculation", default=512)
+parser.add_argument("-M", dest="M", help="Number of spectra to accumulate in SK calculation", default=512)
+parser.add_argument("-m", dest="m", help="Number of time samples to add up in MSK", default=1)
+parser.add_argument("-n", dest="n", help="Number of ch to add up in MSK", default=1)
+
 args = parser.parse_args()
 
 fx = '160464' + args.tag + '_wide_tied_array_channelised_voltage_0x.h5'
@@ -88,16 +92,19 @@ tot_ndp_x = dfx['Data/timestamps'].shape[0] # total number of data points of x p
 tot_ndp_y = dfy['Data/timestamps'].shape[0]
 
 M = int(args.M)
-low = lower_limit[M]
-up = upper_limit[M]
+m = int(args.m)
+n = int(args.n)
+
+low = lower_limit7[int(m*n*M)]
+up = sk_max_limit[int(m*n*M)]#upper_limit7[int(m*n*M)]
 
 tag = args.tag
 pulsar = pulsars[tag]
 samples_T = pulsar['samples_T']
 int_samples_T = int(np.floor(samples_T))
 
-skx = np.float32(np.load('SK_M' + str(M) + "_" + tag + "_" + "0x.npy"))
-sky = np.float32(np.load('SK_M' + str(M) + "_" + tag + "_" + "0y.npy"))
+skx = np.float32(np.load('MSK_M' + str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_0x.npy"))
+sky = np.float32(np.load('MSK_M' + str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_0y.npy"))
 
 ndp_x = dfx['Data/timestamps'].shape[0] - si_x # number of data points, x pol
 ndp_y = dfy['Data/timestamps'].shape[0] - si_y # number of data points, y pol
@@ -109,11 +116,11 @@ else:
 num_pulses = ndp / samples_T  # number of pulses per observation
 np_rank = int(np.floor(num_pulses / size)) # number of pulses per rank
 summed_profile = np.zeros([num_ch, int_samples_T], dtype=np.float32)
-skx_flags = np.zeros(skx.shape, dtype=np.float16)
-sky_flags = np.zeros(sky.shape, dtype=np.float16)
-sk_sum_flags_x = np.zeros([num_ch, int(ndp_x)], dtype=np.float16)
-sk_sum_flags_y = np.zeros([num_ch, int(ndp_y)], dtype=np.float16)
-summed_flags = np.zeros([num_ch, int_samples_T], dtype=np.float16)
+#skx_flags = np.zeros(skx.shape, dtype=np.float16)
+#sky_flags = np.zeros(sky.shape, dtype=np.float16)
+#sk_sum_flags_x = np.zeros([num_ch, int(ndp_x)], dtype=np.float16)
+#sk_sum_flags_y = np.zeros([num_ch, int(ndp_y)], dtype=np.float16)
+#summed_flags = np.zeros([num_ch, int_samples_T], dtype=np.float16)
 
 if rank == 0:
     t1 = time.time()
@@ -151,40 +158,41 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
         data_y = dfy['Data/bf_raw'][:, chunk_start_y:chunk_stop_y, :]
         prev_start_y = chunk_start_y
         prev_stop_y = chunk_stop_y
-    data_x, skx_flags, sk_sum_flags_x = rfi_mitigation(data_x, skx_flags, sk_sum_flags_x, skx, M, data_len_x,
-                                                    si_x, chunk_start_x)
-    data_y, sky_flags, sk_sum_flags_y = rfi_mitigation(data_y, sky_flags, sk_sum_flags_y, sky, M, data_len_y,
-                                                    si_y, chunk_start_y)
-    sp_x, flags_x = get_pulse_power(data_x, chunk_start_x, si_x, i, samples_T, int_samples_T, sk_sum_flags_x)
-    sp_y, flags_y = get_pulse_power(data_y, chunk_start_y, si_y, i, samples_T, int_samples_T, sk_sum_flags_y)
+    #data_x, skx_flags, sk_sum_flags_x = rfi_mitigation(data_x, skx_flags, sk_sum_flags_x, skx, M, data_len_x,
+    #                                                si_x, chunk_start_x)
+    data_x = rfi_mitigation(data_x, skx, M, data_len_x, si_x, chunk_start_x)
+    data_y = rfi_mitigation(data_y, sky, M, data_len_y, si_y, chunk_start_y)
 
-    summed_flags += np.float16(flags_x) + np.float16(flags_y)
-    summed_profile += np.float32(sp_x**2) + np.float32(sp_y**2)
+    sp_x = get_pulse_power(data_x, chunk_start_x, si_x, i, samples_T, int_samples_T)
+    sp_y = get_pulse_power(data_y, chunk_start_y, si_y, i, samples_T, int_samples_T)
+
+    #summed_flags += np.float16(flags_x) + np.float16(flags_y)
+    summed_profile += sp_x + sp_y
 
 if rank > 0:
     comm.Send([summed_profile, MPI.DOUBLE], dest=0, tag=15)  # send results to process 0
-    comm.Send([skx_flags, MPI.DOUBLE], dest=0, tag=16)  # send results to process 0
-    comm.Send([sky_flags, MPI.DOUBLE], dest=0, tag=17)  # send results to process 0
-    comm.Send([summed_flags, MPI.DOUBLE], dest=0, tag=18)  # send results to process 0
+    #comm.Send([skx_flags, MPI.DOUBLE], dest=0, tag=16)  # send results to process 0
+    #comm.Send([sky_flags, MPI.DOUBLE], dest=0, tag=17)  # send results to process 0
+    #comm.Send([summed_flags, MPI.DOUBLE], dest=0, tag=18)  # send results to process 0
 else:
 
     for i in range(1, size):
         tmp_summed_profile = np.zeros([num_ch, int_samples_T], dtype=np.float32)
-        tmp_skx_flags = np.zeros(skx.shape, dtype=np.float16)
-        tmp_sky_flags = np.zeros(sky.shape, dtype=np.float16)
-        tmp_sk_sum_flags = np.zeros([num_ch, int_samples_T], dtype=np.float16)
+        #tmp_skx_flags = np.zeros(skx.shape, dtype=np.float16)
+        #tmp_sky_flags = np.zeros(sky.shape, dtype=np.float16)
+        #tmp_sk_sum_flags = np.zeros([num_ch, int_samples_T], dtype=np.float16)
         comm.Recv([tmp_summed_profile, MPI.DOUBLE], source=i, tag=15)
-        comm.Recv([tmp_skx_flags, MPI.DOUBLE], source=i, tag=16)
-        comm.Recv([tmp_sky_flags, MPI.DOUBLE], source=i, tag=17)
-        comm.Recv([tmp_sk_sum_flags, MPI.DOUBLE], source=i, tag=18)
+        #comm.Recv([tmp_skx_flags, MPI.DOUBLE], source=i, tag=16)
+        #comm.Recv([tmp_sky_flags, MPI.DOUBLE], source=i, tag=17)
+        #comm.Recv([tmp_sk_sum_flags, MPI.DOUBLE], source=i, tag=18)
         summed_profile += np.float32(tmp_summed_profile)
-        skx_flags += tmp_skx_flags
-        sky_flags += tmp_sky_flags
-        summed_flags += np.float16(tmp_sk_sum_flags)
+        #skx_flags += tmp_skx_flags
+        #sky_flags += tmp_sky_flags
+        #summed_flags += np.float16(tmp_sk_sum_flags)
 
     summed_profile = np.float32(incoherent_dedisperse(summed_profile, tag))
-    np.save('MSK_intensity_M'+ str(M) + "_" + tag, summed_profile)
-    np.save('MSKX_flags_' + str(M) + "_" + tag, skx_flags)
-    np.save('MSKY_flags_' + str(M) + "_" + tag, sky_flags)
-    np.save('MSK_summed_flags' + str(M) + "_" + tag, summed_flags)
+    np.save('MSK_intensity_low_sig4skmax_M'+ str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag, summed_profile)
+    #np.save('MSKX_flags_' + str(M) + "_" + tag, skx_flags)
+    #np.save('MSKY_flags_' + str(M) + "_" + tag, sky_flags)
+    #np.save('MSK_summed_flags_sig4_M' + str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag, summed_flags)
     print("processing took: ", time.time() - t1)
