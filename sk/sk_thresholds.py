@@ -11,14 +11,14 @@ import math
 #        'size': 42}
 #plt.rc('font', **font)
 
-textwidth = 128.0 / 25.4 # 9.6 #
-textheight = 96.0 / 25.4 # 7
-plt.rc('font', size=10, family='STIXGeneral')
+textwidth = 9.6 # 128.0 / 25.4 #
+textheight = 7 #96.0 / 25.4 # 7
+plt.rc('font', size=12, family='STIXGeneral')
 plt.rc('pdf', fonttype=42)
 #plt.rc('axes', titlesize=14, labelsize=14)
-plt.rc('axes', titlesize=10, labelsize=10)
-plt.rc(('xtick', 'ytick'), labelsize=10)
-plt.rc('legend', fontsize=10)
+plt.rc('axes', titlesize=12, labelsize=12)
+plt.rc(('xtick', 'ytick'), labelsize=12)
+plt.rc('legend', fontsize=12)
 plt.rc('lines', markersize=5)
 plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
 plt.rc('mathtext', fontset='stix')
@@ -59,10 +59,11 @@ else:
 l = u1 - 0.25*(r-2)*np.sqrt(u2*b1)
 
 xmode = l - (a*v)/(2*m)
-x = np.arange(0,2,0.01)
+x = np.arange(0,2,0.001)
 # Pearson type IV PDF
 A = (- np.log(a) - 0.5 * np.log(np.pi)) + (loggamma(m+1j*(v/2)) + loggamma(m-1j*(v/2)) - loggamma(m-0.5) - loggamma(m))
 p4 = np.exp(A - m*np.log(1 + ((x-l)/a)**2) - v*np.arctan((x-l)/a))
+p44 = np.exp(A - m*np.log(1 + ((l-x)/a)**2) + v*np.arctan((l-x)/a))
 
 #result, error = quad(lambda x: (np.exp(A - m*np.log(1 + ((x-l)/a)**2) - v*np.arctan((x-l)/a))), 0.6, 1.8)
 
@@ -73,10 +74,10 @@ print("l: ", l)
 print("a: ", a)
 
 #P1 of CDF
-h1 = np.asarray([hypergeo(1, m+1j * v/2, 2 * m, 2 / (1-1j * ((xi - l) / a))) for xi in x])
-h11 = np.asarray([hypergeo(1, m-1j * v/2, 2 * m, 2 / (1-1j * ((xi + l) / a))) for xi in x])
+h1 = np.asarray([hypergeo(1, m+1j * v/2, 2 * m, 2 / (1 - 1j*((xi - l) / a))) for xi in x])
+h11 = np.asarray([hypergeo(1, m-1j * v/2, 2 * m, 2 / (1 - 1j*((l - xi) / a))) for xi in x])
 p1 = (a / (2*m - 1)) * (1j - ((x - l) / a)) * p4 * h1
-p11 = (a / (2*m - 1)) * (1j - ((x + l) / a)) * p4 * h11
+p11 = (a / (2*m - 1)) * (1j - ((l - x) / a)) * p44 * h11
 
 # P2 of CDF
 h2 = np.asarray([hypergeo(1, 2 - 2 * m, 2 - m + (1j * v / 2), (1 + 1j * ((xi - l) / a)) / 2) for xi in x])
@@ -100,36 +101,45 @@ for i, xi in enumerate(x):
 
 cdf2 = 1 - cdf
 sigma3 = 3*np.sqrt(4/M) # theoretical 3 sigma lines
-pfa = 0.0013499 # probability of a false alarm
+pfa = 0.0013499 # probability of a false alarm = 0.267%
 pfa2 = 0.00067495
 pfa3 = 0.0026998
+pfa4 = 0.01 # 2% PFA 1% to both sides
+pfa5 = 0.005
+pfa6 = 0.05
+pfa7 = 3.1671241833008956e-05
 print("CDF theoretical 3 sigma upper limit: ", 1+sigma3)
 print("CDF theoretical 3 sigma lower limit: ", 1-sigma3)
+low_idx = np.abs(pfa7 - cdf).argmin()
+up_idx = np.abs(pfa7 - cdf2).argmin()
+print("low: ", cdf[low_idx], x[low_idx])
+print("up : ", cdf2[up_idx], x[up_idx])
 
-plt.figure(0, figsize=[22,16])
-plt.semilogy(x, p4)
+plt.figure(0)
+plt.semilogy(x, p4, linewidth=2)
+#plt.plot(p4, linewidth=2)
 plt.grid()
-plt.xlim([0.8, 1.2])
-plt.ylim([10**-1, 10**1])
+#plt.xlim([0.8, 1.2])
+#plt.ylim([10**-1, 10**1])
 plt.ylabel("SK PDF")
 plt.xlabel("SK")
-#plt.savefig('/home/vereese/Documents/PhD/URSI2023/paper/pdf', bbox_inches='tight')
+#plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/pdf.eps', bbox_inches='tight')
 
 plt.figure(1) #, figsize=[22,16])
 plt.semilogy(x, cdf, linewidth=2)
 plt.semilogy(x, cdf2, linewidth=2)
-plt.axhline(pfa, color = 'r', linewidth=2)
+plt.axhline(pfa7, color = 'r', linewidth=2)
 plt.axvline(1+sigma3, color = 'g', linewidth=2, linestyle = '--')
 plt.axvline(1-sigma3, color = 'g', linewidth=2, linestyle = '--')
 plt.axvline(0.77511, color = 'g', linewidth=2, linestyle = '-')
 plt.axvline(1.3254, color = 'g', linewidth=2, linestyle = '-')
-plt.xlim([0.65, 1.35])
+#plt.xlim([0.65, 1.35])
 plt.ylim([10**-7, 10**1])
 plt.tight_layout()
-plt.ylabel("SK CF and CCF")
+plt.ylabel("SK CDF and CCDF")
 plt.xlabel("SK")
 plt.grid()
-plt.savefig('/home/vereese/Documents/PhD/URSI2023/conference_paper/cdf_pres.eps', bbox_inches='tight')
+#plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/cdf.eps', bbox_inches='tight')
 plt.show()
 
 # Ludwig Code
