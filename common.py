@@ -1,6 +1,12 @@
 import numpy as np
-from constants import time_chunk_size
+from constants import time_chunk_size, num_ch
 
+# conduct per frequency channel mean compensation on Intensity data
+def mean_compensation(data):
+    for i in np.arange(num_ch):
+        data[i,:] = data[i,:] - np.mean(data[i,:])
+
+    return data
 def non_zero_data(data, std):
     indices = np.where(data == 0, True, False)
     data[indices] = np.random.normal(0, std, np.sum(indices))
