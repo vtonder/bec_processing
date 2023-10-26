@@ -4,7 +4,7 @@ import numpy as np
 import time
 import sys
 sys.path.append("../")
-from constants import num_ch, start_indices, pulsars, xy_time_offsets, time_chunk_size, upper_limit, lower_limit
+from constants import num_ch, start_indices, pulsars, xy_time_offsets, time_chunk_size, upper_limit4, lower_limit4
 from pulsar_processing.pulsar_functions import incoherent_dedisperse
 import argparse
 from kurtosis import spectral_kurtosis_cm
@@ -87,8 +87,8 @@ tot_ndp_y = dfy['Data/timestamps'].shape[0]
 ind = np.load("max_pulses.npy")
 
 M = int(args.M)
-low = lower_limit[M]
-up = upper_limit[512]
+low = lower_limit4[M]
+up = upper_limit4[512]
 
 tag = args.tag
 pulsar = pulsars[tag]
@@ -128,8 +128,8 @@ prev_start_y, prev_stop_y = 0, 0
 
 for i in np.arange(rank*np_rank, (rank+1)*np_rank):
     # only sum non brightest pulses
-    if i not in ind: 
-        continue
+    #if i not in ind: 
+    #    continue
 
     chunk_start_x, chunk_stop_x = get_data_window(si_x, i, samples_T, int_samples_T, tot_ndp_x)
     chunk_start_y, chunk_stop_y = get_data_window(si_y, i, samples_T, int_samples_T, tot_ndp_y)
@@ -163,7 +163,7 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
     sp_y, pf_y = get_pulse_power(data_y, chunk_start_y, si_y, i, samples_T, int_samples_T, flags_y)
 
     summed_flags += np.float32(pf_x + pf_y)
-    summed_profile += np.float32(sp_x**2) + np.float32(sp_y**2)
+    summed_profile += sp_x + sp_y
 
 if rank > 0:
     comm.Send([summed_profile, MPI.DOUBLE], dest=0, tag=15)  # send results to process 0
@@ -181,7 +181,7 @@ else:
 
 
     summed_profile = np.float32(incoherent_dedisperse(summed_profile, tag))
-    np.save('itegrated_sk_intensity_diff_M' + str(M) + "_" + tag, summed_profile)
-    np.save('sk_summed_flags_diff_M' + str(M) + "_" + tag, summed_flags)
+    np.save('sk_intensity_pfa2_diff_M' + str(M) + "_" + tag, summed_profile)
+    np.save('sk_pfa2_summed_flags_diff_M' + str(M) + "_" + tag, summed_flags)
 
     print("processing took: ", time.time() - t1)
