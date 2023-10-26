@@ -8,26 +8,16 @@ from constants import num_ch, start_indices, pulsars, xy_time_offsets, time_chun
 from pulsar_processing.pulsar_functions import incoherent_dedisperse
 import argparse
 
-#def rfi_mitigation(data, sk_sum_flags, sk, M, data_window_len, start_index, chunk_start):
-def rfi_mitigation(data, sk_flags, sk, M, data_window_len, start_index, chunk_start):
+def rfi_mitigation(data, sk_flags, sk, M, data_window_len, first_non_zero_idx, chunk_start):
 
     for idx in np.arange(0, data_window_len, M):
         idx_start = int(idx)
         idx_stop = int(idx_start + M)
 
-        sk_sum_idx = int(chunk_start+idx_start-start_index)
-        sk_idx = int(sk_sum_idx/M)
-          
-        if sk_sum_idx < 0:
-            sk_sum_idx = 0
-
+        sk_idx = int((chunk_start+idx_start-first_non_zero_idx)/M)
         if sk_idx >= sk.shape[1]:
             print("reached end of sk_idx")
             break
-
-        #if sk_sum_idx + M > sk_sum_flags.shape[1]:
-        #    print("reached end of sk_sum_flags")
-        #    break
 
         if idx_stop >= ndp:
             print("shortening range because otherwise it will read from memory that doesn't exist")
@@ -47,10 +37,7 @@ def rfi_mitigation(data, sk_flags, sk, M, data_window_len, start_index, chunk_st
                 rj = 0
 
             if (sk[ri:(ch+1), rj:(sk_idx+1)] < low).any():
-                #sk_sum_flags[ch, sk_sum_idx:sk_sum_idx+M] = np.ones(M, dtype=np.float16)
                 sk_flags[ch, sk_idx] = np.uint8(1)
-                # TODO: verify that indices are correct
-                    
                 data[ch, idx_start:idx_stop, :] = np.random.normal(0, 14, (M, 2)) #clean_data
 
     return data , sk_flags
@@ -105,7 +92,7 @@ m = int(args.m)
 n = int(args.n)
 
 low = lower_limit7[int(m*n*M)]
-up = sk_max_limit[int(m*n*M)]#upper_limit7[int(m*n*M)]
+up = upper_limit7[int(m*n*M)]
 
 tag = args.tag
 pulsar = pulsars[tag]
@@ -127,9 +114,6 @@ np_rank = int(np.floor(num_pulses / size)) # number of pulses per rank
 summed_profile = np.zeros([num_ch, int_samples_T], dtype=np.float32)
 skx_flags = np.zeros(skx.shape, dtype=np.uint8)
 sky_flags = np.zeros(sky.shape, dtype=np.uint8)
-#sk_sum_flags_x = np.zeros([num_ch, int(ndp_x)], dtype=np.float16)
-#sk_sum_flags_y = np.zeros([num_ch, int(ndp_y)], dtype=np.float16)
-#summed_flags = np.zeros([num_ch, int_samples_T], dtype=np.float16)
 
 if rank == 0:
     t1 = time.time()
@@ -167,41 +151,33 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
         data_y = dfy['Data/bf_raw'][:, chunk_start_y:chunk_stop_y, :]
         prev_start_y = chunk_start_y
         prev_stop_y = chunk_stop_y
-    #data_x, skx_flags, sk_sum_flags_x = rfi_mitigation(data_x, skx_flags, sk_sum_flags_x, skx, M, data_len_x,
-    #                                                si_x, chunk_start_x)
-    data_x, skx_flags = rfi_mitigation(data_x, skx_flags, skx, M, data_len_x, si_x, chunk_start_x)
-    data_y, sky_flags = rfi_mitigation(data_y, sky_flags, sky, M, data_len_y, si_y, chunk_start_y)
+
+    data_x, skx_flags = rfi_mitigation(data_x, skx_flags, skx, M, data_len_x, start_indices[fx], chunk_start_x)
+    data_y, sky_flags = rfi_mitigation(data_y, sky_flags, sky, M, data_len_y, start_indices[fy], chunk_start_y)
 
     sp_x = get_pulse_power(data_x, chunk_start_x, si_x, i, samples_T, int_samples_T)
     sp_y = get_pulse_power(data_y, chunk_start_y, si_y, i, samples_T, int_samples_T)
 
-    #summed_flags += np.float16(flags_x) + np.float16(flags_y)
     summed_profile += sp_x + sp_y
 
 if rank > 0:
     comm.Send([summed_profile, MPI.DOUBLE], dest=0, tag=15)  # send results to process 0
     comm.Send([skx_flags, MPI.DOUBLE], dest=0, tag=16)  # send results to process 0
     comm.Send([sky_flags, MPI.DOUBLE], dest=0, tag=17)  # send results to process 0
-    #comm.Send([summed_flags, MPI.DOUBLE], dest=0, tag=18)  # send results to process 0
 else:
-
     for i in range(1, size):
         tmp_summed_profile = np.zeros([num_ch, int_samples_T], dtype=np.float32)
         tmp_skx_flags = np.zeros(skx.shape, dtype=np.uint8)
         tmp_sky_flags = np.zeros(sky.shape, dtype=np.uint8)
-        #tmp_sk_sum_flags = np.zeros([num_ch, int_samples_T], dtype=np.float16)
         comm.Recv([tmp_summed_profile, MPI.DOUBLE], source=i, tag=15)
         comm.Recv([tmp_skx_flags, MPI.DOUBLE], source=i, tag=16)
         comm.Recv([tmp_sky_flags, MPI.DOUBLE], source=i, tag=17)
-        #comm.Recv([tmp_sk_sum_flags, MPI.DOUBLE], source=i, tag=18)
         summed_profile += np.float32(tmp_summed_profile)
         skx_flags += np.uint8(tmp_skx_flags)
         sky_flags += np.uint8(tmp_sky_flags)
-        #summed_flags += np.float16(tmp_sk_sum_flags)
 
     summed_profile = np.float32(incoherent_dedisperse(summed_profile, tag))
     np.save('VMSK_intensity_low_sig4_M'+ str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag, summed_profile)
     np.save('VMSKX_flags_M' + str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag, skx_flags)
     np.save('VMSKY_flags_M' + str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag, sky_flags)
-    #np.save('MSK_summed_flags_sig4_M' + str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag, summed_flags)
     print("processing took: ", time.time() - t1)
