@@ -69,13 +69,13 @@ upper_limit6 = {64:1.415, 128:1.3161, 256:1.22, 512:1.1539, 1024:1.1075, 2048:1.
 lower_limit7 = {64:0.36388, 128:0.492, 256:0.61376, 512:0.71165, 1024:0.78655, 2048:0.843165, 4096:0.88567, 8192:0.917254, 16384:0.94037, 32768:0.95748, 65536:0.96955}
 upper_limit7 = {64:3.11, 128:2.291, 256:1.784, 512:1.48684, 1024:1.3122, 2048:1.206, 4096:1.138913, 8192:1.09502, 16384:1.06563, 32768:1.04558, 65536:1.031847}
 
-# Used SK histograms, predicted PDF to look at clean data channels
-sk_limit = {64:5, 128:4.2, 256:3.5, 512:3.2, 1024:2.5, 2048:2, 4096:1.9, 8192:1.3, 16384:1.2}
-# Use sk values and looked for max and median values in all clean channels
-sk_max_limit = {64:10.4, 128:8.3, 256:10, 512:8.4, 1024:6.3, 2048:4.1, 4096:4.3, 8192:3.9, 16384:3}
-med_sk_limit = {64:5, 128:4.12, 256:3.791, 512:3.244, 1024:2.576, 2048:1.991, 4096:1.564, 8192:1.301, 16384:1.159}
-
-
+# Used SK histograms and predicted PDF to analyse SK upper limit within clean data channels
+# Use sk values and looked for max value of max sk values in all clean channels
+upper_limit8 = {64:10.4, 128:8.3, 256:10, 512:8.4, 1024:6.3, 2048:4.1, 4096:4.3, 8192:3.9, 16384:3}
+# median of max sk values of all clean channels 
+upper_limit9 = {64:5, 128:4.12, 256:3.791, 512:3.244, 1024:2.576, 2048:1.991, 4096:1.564, 8192:1.301, 16384:1.159}
+# sampled a view clean channels
+upper_limit10 = {64:5, 128:4.2, 256:3.5, 512:3.2, 1024:2.5, 2048:2, 4096:1.9, 8192:1.3, 16384:1.2}
 
 # first non-zero indices for each file. Obtained using the first_nonzero_indices.{py,sh} scripts. 
 # The output was written to first_nonzero_indices
