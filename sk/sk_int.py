@@ -152,7 +152,7 @@ for i in np.arange(num_pulses):
     sp_y, flags_y = get_pulse_power(data_y, chunk_start_y, si_y, i, samples_T, int_samples_T, sk_sum_flags_y)
 
     summed_flags += np.float16(flags_x) + np.float16(flags_y)
-    summed_profile += np.float32(sp_x**2) + np.float32(sp_y**2)
+    summed_profile += sp_x + sp_y
 
 
 summed_profile = np.float32(incoherent_dedisperse(summed_profile, tag))
