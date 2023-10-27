@@ -42,6 +42,9 @@ def get_up_limit(up_key, M):
     if up_key == 7:
         from constants import upper_limit7 as u
         up_prefix = "u4sig"
+    elif up_key == 8:
+        from constants import upper_limit8 as u
+        up_prefix = "uskmax"
     elif up_key == 0:
         from constants import upper_limit as u
         up_prefix = "u3sig"

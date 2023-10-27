@@ -8,6 +8,30 @@ from constants import num_ch, start_indices, pulsars, xy_time_offsets, time_chun
 from pulsar_processing.pulsar_functions import incoherent_dedisperse
 import argparse
 
+
+"""
+Test voting MSK 
+
+Script: dummy_vmsk_intensity.py
+Input: dummy_sk.npy 
+Output: produces dummy_VMSKX_flags_M.npy
+
+Run: mpiexec -n 32 python dummy_vmsk_intensity.py 2210 -M256 -m 1 -n 2
+
+Made all sk 1’s
+Calculated where one should make dummy sk 0 and made these 0
+Dimension: ch by time,in samples of M
+These sk’s were zero’d 
+(array([ 10     , 100    , 200    , 300    , 400    , 550    , 650    , 750]),
+ array([53568, 53663, 53573, 53600, 53600, 53600, 53600, 53660]))
+
+First non zero index for x pol for 2210 : 12288000
+First chunk with x y offset compensated for: 26001408
+M = 256
+(26001408-12288000)/256
+53568.0
+"""
+
 def rfi_mitigation(data, sk_flags, sk, M, data_window_len, start_index, chunk_start, pol):
 
     for idx in np.arange(0, data_window_len, M):

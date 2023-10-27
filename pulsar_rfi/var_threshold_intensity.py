@@ -19,28 +19,39 @@ def get_data_window(start_index, pulse_i, samples_T, int_samples_T, tot_ndp):
 
     return chunk_start, chunk_stop
 
-def get_pulse_power(data, chunk_start, start_index, pulse_i, samples_T, int_samples_T):
+def get_pulse_power(data, chunk_start, start_index, pulse_i, samples_T, int_samples_T, flags):
     pulse_start = int(start_index + (pulse_i * samples_T) - chunk_start)
     pulse_stop = pulse_start + int_samples_T
 
     re = data[:, pulse_start:pulse_stop, 0].astype(np.float32)
     im = data[:, pulse_start:pulse_stop, 1].astype(np.float32)
+    
+    pf = flags[:, pulse_start:pulse_stop].astype(np.float32)
+    sp = np.float32(re**2) + np.float32(im**2)
 
-    return np.float32(re**2) + np.float32(im**2)
+    return sp, pf 
 
-def var_threshold(data, var):
-    clean_data_re = np.random.normal(0, var, 1)[0]
-    clean_data_im = np.random.normal(0, var, 1)[0]
-    threshold = 5 * var
-    num_t = np.shape(data)[1]
+def var_threshold(data, std, M, flags):
+    threshold = 4 * std 
+    #num_t = np.shape(data)[1]
     abs_data = np.sqrt(data[:,:,0]**2 + data[:,:,1]**2) 
-    for i in np.arange(num_ch):
-        for j in np.arange(num_t):
-            if abs_data[i, j] >= threshold:
-                data[i, j, 0] = clean_data_re
-                data[i, j, 1] = clean_data_im
+    indices = np.where(abs_data >= threshold, True, False)
+    ind = np.zeros(np.shape(data), dtype='bool')
+    ind[:, :, 0] = indices
+    ind[:, :, 1] = indices
 
-    return data
+    flags[indices] = 1
+    data[ind] = np.random.normal(0, std, sum(sum(sum(ind))))
+
+    ''''for i in np.arange(num_ch):
+        for j in np.arange(0, num_t, M):
+            abs_data_mean = np.mean(abs_data[i, j:j+M])
+            if abs_data_mean >= threshold:
+                flags[i, j:j+M] = np.ones(M)
+                data[i, j:j+M, 0] = np.random.normal(0, var, M)
+                data[i, j:j+M, 1] = np.random.normal(0, var, M)'''
+
+    return data, flags
 
 # get number of processors and processor rank
 comm = MPI.COMM_WORLD
@@ -49,6 +60,8 @@ rank = comm.Get_rank()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("tag", help="observation tag to process. search path: /net/com08/data6/vereese/")
+parser.add_argument("-m", dest="M", help="Number of spectra to accumulate in SK calculation", default=512)
+
 args = parser.parse_args()
 
 fx = '160464' + args.tag + '_wide_tied_array_channelised_voltage_0x.h5'
@@ -63,6 +76,9 @@ si_y = start_indices[fy] + xy_time_offsets[fy]
 tot_ndp_x = dfx['Data/timestamps'].shape[0] # total number of data points of x polarisation
 tot_ndp_y = dfy['Data/timestamps'].shape[0]
 
+ind = np.load("max_pulses.npy")
+
+M = int(args.M)
 tag = args.tag
 pulsar = pulsars[tag]
 samples_T = pulsar['samples_T']
@@ -78,6 +94,7 @@ else:
 num_pulses = ndp / samples_T  # number of pulses per observation
 np_rank = int(np.floor(num_pulses / size)) # number of pulses per rank
 summed_profile = np.zeros([num_ch, int_samples_T], dtype=np.float32)
+summed_flags = np.zeros([num_ch, int_samples_T], dtype=np.float32)
 
 if rank == 0:
     t1 = time.time()
@@ -98,6 +115,10 @@ if rank == 0:
 prev_start_x, prev_stop_x = 0, 0
 prev_start_y, prev_stop_y = 0, 0
 for i in np.arange(rank*np_rank, (rank+1)*np_rank):
+    # only sum brightest pulses
+    #if i not in ind: 
+    #    continue
+
     chunk_start_x, chunk_stop_x = get_data_window(si_x, i, samples_T, int_samples_T, tot_ndp_x)
     chunk_start_y, chunk_stop_y = get_data_window(si_y, i, samples_T, int_samples_T, tot_ndp_y)
 
@@ -115,22 +136,35 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
         prev_start_y = chunk_start_y
         prev_stop_y = chunk_stop_y
 
-    data_x = var_threshold(data_x, 14)
-    data_y = var_threshold(data_y, 14)
-    sp_x = get_pulse_power(data_x, chunk_start_x, si_x, i, samples_T, int_samples_T)
-    sp_y = get_pulse_power(data_y, chunk_start_y, si_y, i, samples_T, int_samples_T)
+    flags_x = np.zeros([num_ch, int(chunk_stop_x - chunk_start_x)], dtype=np.float32)
+    flags_y = np.zeros([num_ch, int(chunk_stop_y - chunk_start_y)], dtype=np.float32)
 
-    summed_profile += np.float32(sp_x**2) + np.float32(sp_y**2)
+    data_x, flags_x  = var_threshold(data_x, 14, M, flags_x)
+    data_y, flags_y  = var_threshold(data_y, 14, M, flags_y)
+    sp_x, pf_x = get_pulse_power(data_x, chunk_start_x, si_x, i, samples_T, int_samples_T, flags_x)
+    sp_y, pf_y = get_pulse_power(data_y, chunk_start_y, si_y, i, samples_T, int_samples_T, flags_y)
+
+    summed_flags += np.float32(pf_x + pf_y)
+    summed_profile += sp_x + sp_y
 
 if rank > 0:
     comm.Send([summed_profile, MPI.DOUBLE], dest=0, tag=15)  # send results to process 0
+    comm.Send([summed_flags, MPI.DOUBLE], dest=0, tag=16)  # send results to process 0
 else:
     for i in range(1, size):
         tmp_summed_profile = np.zeros([num_ch, int_samples_T], dtype=np.float32)
+        tmp_summed_flags = np.zeros([num_ch, int_samples_T], dtype=np.float32)
+
         comm.Recv([tmp_summed_profile, MPI.DOUBLE], source=i, tag=15)
+        comm.Recv([tmp_summed_flags, MPI.DOUBLE], source=i, tag=16)
+
         summed_profile += np.float32(tmp_summed_profile)
+        summed_flags += np.float32(tmp_summed_flags)
+
 
     summed_profile = np.float32(incoherent_dedisperse(summed_profile, tag))
-    np.save('var_threshold_intensity' + "_" + tag, summed_profile)
+    np.save('var_threshold_4sig_intensity_' + tag, summed_profile)
+    np.save('vt_4sig_summed_flags_' + tag, np.float32(summed_flags))
+
     print("processing took: ", time.time() - t1)
 

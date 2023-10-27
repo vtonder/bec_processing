@@ -16,7 +16,7 @@ rank = comm.Get_rank()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("file", help="observation file to process. search path: /net/com08/data6/vereese/")
-parser.add_argument("-m", dest="M", help="Number of spectra to accumulate in SK calculation", default=512)
+parser.add_argument("-M", dest="M", help="Number of spectra to accumulate in SK calculation", default=512)
 args = parser.parse_args()
 
 M = int(args.M)
