@@ -44,7 +44,7 @@ def rfi_mitigation(data, M, data_window_len, std, flags, check_thres):
             #if ch <= 260 or ch >= 330:
             if check_thres(val):
                 flags[ch, idx_start:idx_stop] = np.float32(np.ones(M))
-                data[ch, idx_start:idx_stop, :] = 0 #np.random.normal(0, std, (M, 2))
+                data[ch, idx_start:idx_stop, :] = np.random.normal(0, std[ch], (M, 2))
             #else:
             #    if val < low or val > up_sig4:
             #        flags[ch, idx_start:idx_stop] = np.float32(np.ones(M))
@@ -83,6 +83,9 @@ fy = '160464' + args.tag + '_wide_tied_array_channelised_voltage_0y.h5'
 
 dfx = h5py.File('/net/com08/data6/vereese/' + fx, 'r')
 dfy = h5py.File('/net/com08/data6/vereese/' + fy, 'r')
+
+std_x = np.load('/net/com08/data6/vereese/phd_data/mean_analysis/' + args.tag + '/std_0x_1024.npy')
+std_y = np.load('/net/com08/data6/vereese/phd_data/mean_analysis/' + args.tag + '/std_0y_1024.npy')
 
 si_x = start_indices[fx] + xy_time_offsets[fx] # start index of x polarisation
 si_y = start_indices[fy] + xy_time_offsets[fy]
@@ -172,17 +175,17 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
         prev_start_x = chunk_start_x
         prev_stop_x = chunk_stop_x
         # place noise instead of 0's where packets were dropped
-        #data_x = non_zero_data(data_x, 14)
-        data_x, flags_x = rfi_mitigation(data_x, M, data_len_x, 14, flags_x, check_threshold)
+        # re and im parts have same std
+        data_x = non_zero_data(data_x, std_x[:,0])
+        data_x, flags_x = rfi_mitigation(data_x, M, data_len_x, std_x[:,0], flags_x, check_threshold)
 
 
     if prev_start_y != chunk_start_y or prev_stop_y != chunk_stop_y:
         data_y = dfy['Data/bf_raw'][:, chunk_start_y:chunk_stop_y, :].astype(np.float32)
         prev_start_y = chunk_start_y
         prev_stop_y = chunk_stop_y
-        # standard deviation of 14 was measured , see ../mean_analysis/plot_all_var.py
-        #data_y = non_zero_data(data_y, 14)
-        data_y, flags_y = rfi_mitigation(data_y, M, data_len_y, 14, flags_y, check_threshold)
+        data_y = non_zero_data(data_y, std_y[:,0])
+        data_y, flags_y = rfi_mitigation(data_y, M, data_len_y, std_y[:,0], flags_y, check_threshold)
 
     # sp: single_pulse , pf: pulse_flags
     sp_x, pf_x = get_pulse_power(data_x, chunk_start_x, si_x, i, samples_T, int_samples_T, flags_x)

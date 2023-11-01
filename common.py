@@ -9,7 +9,8 @@ def mean_compensation(data):
     return data
 def non_zero_data(data, std):
     indices = np.where(data == 0, True, False)
-    data[indices] = np.random.normal(0, std, np.sum(indices))
+    for ch in np.arange(num_ch):
+        data[indices[ch,:]] = np.random.normal(0, std[ch], np.sum(indices[ch,:]))
 
     return data
 
