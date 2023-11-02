@@ -24,33 +24,3 @@ def get_data_window(start_index, pulse_i, samples_T, int_samples_T, tot_ndp):
         return -1, -1
 
     return chunk_start, chunk_stop
-
-# returns SK lower limit based on given key and M value. keys map to those in constants file
-def get_low_limit(low_key, M):
-    if low_key == 7:
-        from constants import lower_limit7 as l
-        low_prefix = "l4sig"
-    elif low_key == 0:
-        from constants import lower_limit as l
-        low_prefix = "l3sig"
-    else:
-        print("LOWER KEY ERROR: Only 0 (3 sigma) and 7 (4 sigma) now supported.")
-    
-    return l[M], low_prefix
-
-# returns SK upper limit based on given key and M value. keys map to those in constants file
-def get_up_limit(up_key, M):
-    if up_key == 7:
-        from constants import upper_limit7 as u
-        up_prefix = "u4sig"
-    elif up_key == 8:
-        from constants import upper_limit8 as u
-        up_prefix = "uskmax"
-    elif up_key == 0:
-        from constants import upper_limit as u
-        up_prefix = "u3sig"
-    else:
-        print("UPPER KEY ERROR: Only 0 (3 sigma) and 7 (4 sigma) now supported.")
-   
-    return u[M], up_prefix
-
