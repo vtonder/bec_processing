@@ -25,7 +25,7 @@ print("len dc: ", len(duty_cycles))
 print("len msklen: ", msklen )
 duty_samples = (duty_cycles / 100) * M
 wgn = np.random.normal(0, 1, size=M) + 1j*np.random.normal(0, 1, size=M)
-snrs = [1,2, 5,10,50]
+snrs = [1, 2, 5, 10, 50]
 SK = [[], [], [], [], []]
 S1 = []
 S2 = []

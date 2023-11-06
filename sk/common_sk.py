@@ -1,6 +1,7 @@
 import numpy as np
 import sys
 sys.path.append("../")
+from constants import num_ch
 from kurtosis import spectral_kurtosis_cm
 
 # returns SK lower limit based on given key and M value. keys map to those in constants file
@@ -32,14 +33,14 @@ def get_up_limit(up_key, M):
 
     return u[M], up_prefix
 
-def rfi_mitigation(data, M, data_window_len, std, check_thres, sk_flags, summed_flags, ndp, chunk_start, first_non_zero_idx, calc_sk=None):
+def rfi_mitigation(data, M, data_window_len, std, check_thres, sk_flags, summed_flags, ndp, chunk_start, first_non_zero_idx, have_sk=None):
     for idx in np.arange(0, data_window_len, M):
         idx_start = int(idx)
         idx_stop = int(idx_start + M)
         sk_idx = int((chunk_start + idx_start - first_non_zero_idx) / M)
 
-        if calc_sk:
-            sk = calc_sk[:, sk_idx]
+        if have_sk:
+            sk = have_sk[:, sk_idx]
         else:
             sk = spectral_kurtosis_cm(data[:, idx_start:idx_stop, 0] + 1j * data[:, idx_start:idx_stop, 1], M, 2*num_ch)
 

@@ -58,6 +58,15 @@ def spectral_kurtosis_cm(s, M, FFT_LEN, N = 1, d = 1):
 
     return SK
 
+# column major SK implementation for use with filterbank data
+# when power (periodogram) is given to function
+def spectral_kurtosis_cm_perio(perio, M, N = 1, d = 1):
+    S1 = perio.sum(axis=1)
+    S2 = np.sum(perio ** 2, axis=1)
+
+    SK = ((M*N*d + 1) / (M - 1)) * ((M * S2 / S1 ** 2) - 1)
+
+    return SK
 
 def s1_s2(s, FFT_LEN):
     perio = np.abs(s) ** 2 / FFT_LEN  # FFT has already been taken
@@ -68,7 +77,7 @@ def s1_s2(s, FFT_LEN):
     return S1, S2
 
 #multiscale column major SK implementation for use with filterbank data
-def ms_spectral_kurtosis_cm(S1, S2, M, N = 1, d = 1, m=1, n=1):
+def ms_spectral_kurtosis_cm(S1, S2, M, N = 1, d = 1, m = 1, n = 1):
 
     M = M*n*m
     kernel = np.ones((n, m))
@@ -128,9 +137,15 @@ if __name__ == "__main__":
     wgn_re = np.random.normal(mean, std, size=N)
     wgn_im = np.random.normal(mean, std, size=N)
 
-    x =  wgn_re #+ wgn_im
-    x =  x #+ s #pulse_train
+    x =  wgn_re #+ 1j*wgn_im
+    x =  x + s #pulse_train
     x = x.reshape(M, FFT_LEN)
+
+    # NOTE: Adding 0s to the data raises the SK. Therefore, if you have dropped packets then you'll increase your SK
+    #x[0:100,:] = 0
+    print("N: ", N," x.shape: ", x.shape)
+    print("% 0s:", 100*np.sum(np.where(x == 0, True, False))/N)
+
     XF = np.fft.fft(x, axis=1)
 
     sk = spectral_kurtosis(x, M, FFT_LEN, reshape=False, fft=True, normalise=False)
@@ -143,7 +158,7 @@ if __name__ == "__main__":
     plt.xlim([f[1], f[-1]])
     plt.axhline(0.77511, linestyle = '--', linewidth=2, label="thresholds")
     plt.axhline(1.3254, linestyle = '--', linewidth=2)
-    plt.ylim([0.65,1.35])
+    #plt.ylim([0.65, 1.35])
     plt.grid()
     plt.xlabel("frequency [Hz]")
     plt.ylabel('$\overline{SK}$')

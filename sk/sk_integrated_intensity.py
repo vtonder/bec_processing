@@ -34,8 +34,8 @@ rank = comm.Get_rank()
 parser = argparse.ArgumentParser()
 parser.add_argument("tag", help="observation tag to process. search path: /net/com08/data6/vereese/")
 parser.add_argument("-M", dest="M", help="Number of spectra to accumulate in SK calculation", default=512)
-parser.add_argument("-l", dest="low", help="Key for lower threshold to use. Keys are defined constants file. Only 0 (3 sigma) and 7 (4 sigma) now supported.")
-parser.add_argument("-u", dest="up", help="Key for upper threshold to use. Keys are defined constants file. Only 0 (3 sigma), 7 (4 sigma), 8 (sk max) now supported.")
+parser.add_argument("-l", dest="low", help="Key for lower threshold to use. Keys are defined constants file. Only 0 (3 sigma) and 7 (4 sigma) now supported.", default=7)
+parser.add_argument("-u", dest="up", help="Key for upper threshold to use. Keys are defined constants file. Only 0 (3 sigma), 7 (4 sigma), 8 (sk max) now supported.", default=7)
 parser.add_argument("-f", dest="file_prefix", help="prefix to the output files", default="sk")
 
 args = parser.parse_args()
@@ -106,6 +106,7 @@ if rank == 0:
     print("num_data_points y pol : ", ndp_y)
     print("num_pulses            : ", num_pulses)
     print("num pulses per rank   : ", np_rank)
+    print("np per rank * size    : ", size*num_pulses)
     print("summed_profile shape  : ", summed_profile.shape)
     if args.low:
         print("lower SK limit    : ", low)
@@ -179,9 +180,9 @@ else:
         sky_flags += np.uint8(tmp_sky_flags)
 
     summed_profile = np.float32(incoherent_dedisperse(summed_profile, tag))
-    np.save(args.file_prefix + '_intensity_' + low_prefix + up_prefix + '_M'+ str(M) + "_" + tag, summed_profile)
-    np.save(args.file_prefix + '_summed_flags_' + low_prefix + up_prefix + '_M'+ str(M)  + "_" + tag, summed_flags)
-    np.save(args.file_prefix + '_skx_flags_' + low_prefix + up_prefix + '_M'+ str(M)  + "_" + tag, skx_flags)
-    np.save(args.file_prefix + '_sky_flags_' + low_prefix + up_prefix + '_M'+ str(M)  + "_" + tag, sky_flags)
+    np.save(args.file_prefix + '_intensity_' + low_prefix + up_prefix + '_M'+ str(M) + "_" + tag + "_p" + str(np_rank*size), summed_profile)
+    np.save(args.file_prefix + '_summed_flags_' + low_prefix + up_prefix + '_M'+ str(M) + "_" + tag + "_p" + str(np_rank*size), summed_flags)
+    np.save(args.file_prefix + '_skx_flags_' + low_prefix + up_prefix + '_M'+ str(M) + "_" + tag + "_p" + str(np_rank*size), skx_flags)
+    np.save(args.file_prefix + '_sky_flags_' + low_prefix + up_prefix + '_M'+ str(M) + "_" + tag + "_p" + str(np_rank*size), sky_flags)
 
     print("processing took: ", time.time() - t1)
