@@ -6,6 +6,7 @@ from scipy.integrate import quad
 from kurtosis import spectral_kurtosis
 from mpmath import hyp2f1, nstr, re, im
 import math
+from investigate_sk import sk_cdf, sk_pdf
 
 #font = {'family': 'STIXGeneral',
 #        'size': 42}
@@ -31,7 +32,7 @@ def hypergeo(a,b,c,z):
 
 N = 1
 d = 1
-M = 512
+M = 65536
 
 u1 = 1
 u2 = (4*M**2)/((M-1)*(M+2)*(M+3)) # this is variance
@@ -59,7 +60,7 @@ else:
 l = u1 - 0.25*(r-2)*np.sqrt(u2*b1)
 
 xmode = l - (a*v)/(2*m)
-x = np.arange(0,2,0.001)
+x = np.arange(0,2,0.01)
 # Pearson type IV PDF
 A = (- np.log(a) - 0.5 * np.log(np.pi)) + (loggamma(m+1j*(v/2)) + loggamma(m-1j*(v/2)) - loggamma(m-0.5) - loggamma(m))
 p4 = np.exp(A - m*np.log(1 + ((x-l)/a)**2) - v*np.arctan((x-l)/a))
@@ -100,6 +101,14 @@ for i, xi in enumerate(x):
         cdf[i] = p2[i]
 
 cdf2 = 1 - cdf
+
+#lud_pdf = sk_pdf(M, x)
+#lud_cdf = sk_cdf(M, x)
+#lud_ccdf = 1 - lud_cdf
+
+#print("CHECK CDF: ", np.sum(lud_cdf != cdf))
+#print("CHECK PDF: ", np.sum(lud_pdf != p4))
+
 sigma3 = 3*np.sqrt(4/M) # theoretical 3 sigma lines
 pfa = 0.0013499 # probability of a false alarm = 0.267%
 pfa2 = 0.00067495
@@ -116,18 +125,22 @@ print("low: ", cdf[low_idx], x[low_idx])
 print("up : ", cdf2[up_idx], x[up_idx])
 
 plt.figure(0)
-plt.semilogy(x, p4, linewidth=2)
+plt.semilogy(x, p4, linewidth=2, label = "V")
+#plt.semilogy(x, lud_pdf, linewidth=2, label = "L")
 #plt.plot(p4, linewidth=2)
 plt.grid()
 #plt.xlim([0.8, 1.2])
 #plt.ylim([10**-1, 10**1])
 plt.ylabel("SK PDF")
 plt.xlabel("SK")
+plt.legend()
 #plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/pdf.eps', bbox_inches='tight')
 
 plt.figure(1) #, figsize=[22,16])
-plt.semilogy(x, cdf, linewidth=2)
-plt.semilogy(x, cdf2, linewidth=2)
+#plt.semilogy(x, lud_cdf, linewidth=2, label = "L")
+#plt.semilogy(x, lud_ccdf, linewidth=2, label = "L")
+plt.semilogy(x, cdf, linewidth=2, label = "V")
+plt.semilogy(x, cdf2, linewidth=2, label = "V")
 plt.axhline(pfa7, color = 'r', linewidth=2)
 plt.axvline(1+sigma3, color = 'g', linewidth=2, linestyle = '--')
 plt.axvline(1-sigma3, color = 'g', linewidth=2, linestyle = '--')
@@ -139,6 +152,7 @@ plt.tight_layout()
 plt.ylabel("SK CDF and CCDF")
 plt.xlabel("SK")
 plt.grid()
+plt.legend()
 #plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/cdf.eps', bbox_inches='tight')
 plt.show()
 
