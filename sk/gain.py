@@ -13,14 +13,15 @@ Becomes a Gaussian Mixture Model (GMM) because
 Effect of mixture Gaussian noise on SK  
 '''
 
-def add_gain(p, perc):
+def add_gain(p, perc, frac):
     p2 = p
-    p2[:, :int(M / 2)] *= (100+perc)/100  # byvoorbeeld -> dit lig drywing met 0.5% die helfte van tyd
+    p2[:, :int(M*frac)] *= (100 + perc)/100  # byvoorbeeld -> dit lig drywing met 0.5% die helfte van tyd
     return p2
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-M", dest="M", help="Number of spectra to accumulate in SK calculation", default=2048)
 parser.add_argument("-n", dest="n", help="Number of SKs to calculate", default=100000)
+parser.add_argument("-f", dest="frac", help="Number of SKs to calculate", default=0.5)
 parser.add_argument("-l", dest="low", help="Key for lower threshold to use. Keys are defined constants file. Only 0 (3 sigma) and 7 (4 sigma) now supported.", default=7)
 parser.add_argument("-u", dest="up", help="Key for upper threshold to use. Keys are defined constants file. Only 0 (3 sigma), 7 (4 sigma), 8 (sk max) now supported.", default=7)
 parser.add_argument("-p", dest="plot", help="Plot or save the data", default=False)
@@ -28,7 +29,8 @@ args = parser.parse_args()
 
 M = int(args.M)
 num_sk = int(args.n)
-highest_gain = 10 
+frac = float(args.frac)
+highest_gain = 8
 step_size = 0.5
 N = num_sk * M
 
@@ -53,7 +55,7 @@ perc_gain = np.arange(0, highest_gain, step_size)
 sk_gain = []
 
 for g in perc_gain:
-    p2 = add_gain(p1, g)
+    p2 = add_gain(p1, g, frac)
 
     # wgn2_re = np.random.normal(mean, std2, size=N)
     # wgn2_im = np.random.normal(mean, std2, size=N)
@@ -78,14 +80,14 @@ if args.plot:
     ax.plot(perc_gain, perc_flagged, 'o')
     ax.set_ylabel("% RFI flagged")
     ax.set_xlabel("% Gain added")
-    ax.set_title("PFA = 0.27% , M = " + str(M))
+    ax.set_title("PFA = " + low_prefix + up_prefix + " , M = " + str(M))
 
     ncol = 2
-    nrow = int(len(perc_gain)/ncol)
+    nrow = int(len(perc_gain) / ncol)
     fig1, axs = plt.subplots(nrow, ncol, sharex=True, sharey=True)
     axs = axs.flatten()
 
-    for i in np.arange(nrow*ncol):
+    for i in np.arange(nrow * ncol):
         axs[i].hist(sk_gain[i], 100, density=True, log=True, stacked=True)
         axs[i].set_title(str(perc_gain[i]) + " % gain added")
         axs[i].plot(sk_values, theoretical_sk_pdf)
@@ -100,5 +102,4 @@ else:
     perc = np.asarray([perc_gain, perc_flagged])
     print("% gain       : ", perc_gain)
     print("% RFI flagged: ", perc_flagged)
-    np.save("gain_rfi_"+ low_prefix + up_prefix + "_M" + str(M) + "_d" + str(N), perc)
-
+    np.save("gain_" + str(args.frac) + "_rfi_"+ low_prefix + up_prefix + "_M" + str(M) + "_d" + str(N), perc)
