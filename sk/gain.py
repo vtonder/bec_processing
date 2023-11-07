@@ -26,14 +26,14 @@ parser.add_argument("-u", dest="up", help="Key for upper threshold to use. Keys 
 parser.add_argument("-p", dest="plot", help="Plot or save the data", default=False)
 args = parser.parse_args()
 
-M = args.M
-num_sk = args.n
-highest_gain = 5
+M = int(args.M)
+num_sk = int(args.n)
+highest_gain = 10 
 step_size = 0.5
 N = num_sk * M
 
-low, low_prefix = get_low_limit(args.low, M)
-up, up_prefix = get_up_limit(args.up, M)
+low, low_prefix = get_low_limit(int(args.low), M)
+up, up_prefix = get_up_limit(int(args.up), M)
 
 t1 = time.time()
 sk_values = np.arange(0, 2, 0.01)
@@ -101,3 +101,4 @@ else:
     print("% gain       : ", perc_gain)
     print("% RFI flagged: ", perc_flagged)
     np.save("gain_rfi_"+ low_prefix + up_prefix + "_M" + str(M) + "_d" + str(N), perc)
+
