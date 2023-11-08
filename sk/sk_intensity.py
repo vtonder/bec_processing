@@ -4,17 +4,33 @@ import numpy as np
 import time
 import sys
 sys.path.append("../")
-from constants import num_ch, start_indices, pulsars, xy_time_offsets, time_chunk_size, sk_max_limit, upper_limit7, lower_limit7
+from constants import num_ch, start_indices, pulsars, xy_time_offsets
 from pulsar_processing.pulsar_functions import incoherent_dedisperse
+from common import get_data_window
 import argparse
+from common_sk import get_low_limit, get_up_limit
+def check_low(val):
+    global low
 
-def rfi_mitigation(data, sk_flags, sk, M, data_window_len, first_non_zero_idx, chunk_start):
+    return val < low
+
+def check_up(val):
+    global up
+
+    return val > up
+
+def check_low_up(val):
+    global low
+    global up
+
+    return val < low or val > up
+
+def rfi_mitigation(data, sk_flags, sk, M, data_window_len, first_non_zero_idx, chunk_start, check_thres):
 
     for idx in np.arange(0, data_window_len, M):
         idx_start = int(idx)
         idx_stop = int(idx_start + M)
-
-        sk_idx = int((chunk_start+idx_start-first_non_zero_idx)/M)
+        sk_idx = int((chunk_start + idx_start - first_non_zero_idx) / M)
 
         if sk_idx >= sk.shape[1]:
             print("reached end of sk_idx")
@@ -27,31 +43,20 @@ def rfi_mitigation(data, sk_flags, sk, M, data_window_len, first_non_zero_idx, c
             idx_stop = ndp - 1
 
         for ch, val in enumerate(sk[:, sk_idx]):
-            if val < low: #  or val > up:
+            if check_thres(val):
                 sk_flags[ch, sk_idx] = np.uint8(1)
                 data[ch, idx_start:idx_stop, :] = np.random.normal(0, 14, (M, 2)) #clean_data
 
     return data , sk_flags
 
-def get_data_window(start_index, pulse_i, samples_T, int_samples_T, tot_ndp):
-    start = start_index + (pulse_i * samples_T)
-    end = start + int_samples_T
-    chunk_start = int(np.floor(start / time_chunk_size) * time_chunk_size)
-    chunk_stop = int(np.ceil(end / time_chunk_size) * time_chunk_size)
-
-    if chunk_stop >= tot_ndp:
-        return -1, -1
-
-    return chunk_start, chunk_stop
-
-def get_pulse_power(data, chunk_start, start_index, pulse_i, samples_T, int_samples_T): #, summed_flags):
+def get_pulse_power(data, chunk_start, start_index, pulse_i, samples_T, int_samples_T):
     pulse_start = int(start_index + (pulse_i * samples_T) - chunk_start)
     pulse_stop = pulse_start + int_samples_T
 
     re = data[:, pulse_start:pulse_stop, 0].astype(np.float32)
     im = data[:, pulse_start:pulse_stop, 1].astype(np.float32)
 
-    return np.float32(re**2) + np.float32(im**2) #, summed_flags[:, pulse_start:pulse_stop]
+    return np.float32(re**2) + np.float32(im**2)
 
 # get number of processors and processor rank
 comm = MPI.COMM_WORLD
@@ -63,7 +68,9 @@ parser.add_argument("tag", help="observation tag to process. search path: /net/c
 parser.add_argument("-M", dest="M", help="Number of spectra to accumulate in SK calculation", default=512)
 parser.add_argument("-m", dest="m", help="Number of time samples to add up in MSK", default=1)
 parser.add_argument("-n", dest="n", help="Number of ch to add up in MSK", default=1)
-
+parser.add_argument("-l", dest="low", help="Key for lower threshold to use. Keys are defined constants file. Only 0 (3 sigma) and 7 (4 sigma) now supported.", default=7)
+parser.add_argument("-u", dest="up", help="Key for upper threshold to use. Keys are defined constants file. Only 0 (3 sigma), 7 (4 sigma), 8 (sk max) now supported.", default=7)
+parser.add_argument("-f", dest="file_prefix", help="prefix to the output files", default="msk")
 args = parser.parse_args()
 
 fx = '160464' + args.tag + '_wide_tied_array_channelised_voltage_0x.h5'
@@ -82,16 +89,29 @@ M = int(args.M)
 m = int(args.m)
 n = int(args.n)
 
-low = lower_limit7[int(m*n*M)]
-up = upper_limit7[int(m*n*M)]
+if args.low and args.up:
+    low, low_prefix = get_low_limit(int(args.low), M)
+    up, up_prefix = get_up_limit(int(args.up), M)
+    check_threshold = check_low_up
+elif args.low:
+    low, low_prefix = get_low_limit(int(args.low), M)
+    up_prefix = ""
+    check_threshold = check_low
+elif args.up:
+    up, up_prefix = get_up_limit(int(args.up), M)
+    low_prefix = ""
+    check_threshold = check_up
+else:
+    print("Give me limits")
+    exit()
 
 tag = args.tag
 pulsar = pulsars[tag]
 samples_T = pulsar['samples_T']
 int_samples_T = int(np.floor(samples_T))
 
-skx = np.float32(np.load('MSK_M' + str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_0x.npy"))
-sky = np.float32(np.load('MSK_M' + str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_0y.npy"))
+skx = np.float32(np.load(args.file_prefix + '_M' + str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_0x.npy"))
+sky = np.float32(np.load(args.file_prefix + '_M' + str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_0y.npy"))
 
 ndp_x = dfx['Data/timestamps'].shape[0] - si_x # number of data points, x pol
 ndp_y = dfy['Data/timestamps'].shape[0] - si_y # number of data points, y pol
@@ -137,14 +157,13 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
         data_x = dfx['Data/bf_raw'][:, chunk_start_x:chunk_stop_x, :]
         prev_start_x = chunk_start_x
         prev_stop_x = chunk_stop_x
-
+        data_x, skx_flags = rfi_mitigation(data_x, skx_flags, skx, M, data_len_x, start_indices[fx], chunk_start_x,
+                                           check_threshold)
     if prev_start_y != chunk_start_y or prev_stop_y != chunk_stop_y:
         data_y = dfy['Data/bf_raw'][:, chunk_start_y:chunk_stop_y, :]
         prev_start_y = chunk_start_y
         prev_stop_y = chunk_stop_y
-
-    data_x, skx_flags = rfi_mitigation(data_x, skx_flags, skx, M, data_len_x, start_indices[fx], chunk_start_x)
-    data_y, sky_flags = rfi_mitigation(data_y, sky_flags, sky, M, data_len_y, start_indices[fy], chunk_start_y)
+        data_y, sky_flags = rfi_mitigation(data_y, sky_flags, sky, M, data_len_y, start_indices[fy], chunk_start_y, check_threshold)
 
     sp_x = get_pulse_power(data_x, chunk_start_x, si_x, i, samples_T, int_samples_T)
     sp_y = get_pulse_power(data_y, chunk_start_y, si_y, i, samples_T, int_samples_T)
@@ -168,7 +187,7 @@ else:
         sky_flags += np.uint8(tmp_sky_flags)
 
     summed_profile = np.float32(incoherent_dedisperse(summed_profile, tag))
-    np.save('MSK_intensity_low_sig4_M'+ str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag, summed_profile)
-    np.save('MSKX_flags_low_sig4_M' + str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag, skx_flags)
-    np.save('MSKY_flags_low_sig4_M' + str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag, sky_flags)
+    np.save(args.file_prefix + '_intensity_' + low_prefix + up_prefix + '_M'+ str(M) + "_" + tag + "_p" + str(np_rank*size), summed_profile)
+    np.save(args.file_prefix + '_skx_flags_' + low_prefix + up_prefix + '_M'+ str(M) + "_" + tag + "_p" + str(np_rank*size), skx_flags)
+    np.save(args.file_prefix + '_sky_flags_' + low_prefix + up_prefix + '_M'+ str(M) + "_" + tag + "_p" + str(np_rank*size), sky_flags)
     print("processing took: ", time.time() - t1)
