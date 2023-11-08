@@ -187,7 +187,7 @@ else:
         sky_flags += np.uint8(tmp_sky_flags)
 
     summed_profile = np.float32(incoherent_dedisperse(summed_profile, tag))
-    np.save(args.file_prefix + '_intensity_' + low_prefix + up_prefix + '_M'+ str(M) + "_" + tag + "_p" + str(np_rank*size), summed_profile)
-    np.save(args.file_prefix + '_skx_flags_' + low_prefix + up_prefix + '_M'+ str(M) + "_" + tag + "_p" + str(np_rank*size), skx_flags)
-    np.save(args.file_prefix + '_sky_flags_' + low_prefix + up_prefix + '_M'+ str(M) + "_" + tag + "_p" + str(np_rank*size), sky_flags)
+    np.save(args.file_prefix + '_intensity_' + low_prefix + up_prefix + '_M'+ str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_p" + str(np_rank*size), summed_profile)
+    np.save(args.file_prefix + '_xpol_flags_' + low_prefix + up_prefix + '_M'+ str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_p" + str(np_rank*size), skx_flags)
+    np.save(args.file_prefix + '_ypol_flags_' + low_prefix + up_prefix + '_M'+ str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_p" + str(np_rank*size), sky_flags)
     print("processing took: ", time.time() - t1)
