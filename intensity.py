@@ -111,7 +111,7 @@ else:
         num_nz += np.float32(tmp_num_nz)
 
     summed_profile = np.float32(incoherent_dedisperse(summed_profile, tag))
-    np.save("intensity_" + tag, summed_profile)
-    np.save("num_nz_" + tag, summed_profile)
+    np.save("intensity_" + tag + "_p" + str(np_rank*size), summed_profile)
+    np.save("num_nz_" + tag + "_p" + str(np_rank*size), num_nz)
     print("processing took: ", time.time() - t1)
 
