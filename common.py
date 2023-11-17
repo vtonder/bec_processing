@@ -1,5 +1,5 @@
 import numpy as np
-from constants import time_chunk_size, num_ch
+from constants import time_chunk_size, num_ch, frequencies
 
 # conduct per frequency channel mean compensation on Intensity data
 def mean_compensation(data):
@@ -24,3 +24,8 @@ def get_data_window(start_index, pulse_i, samples_T, int_samples_T, tot_ndp):
         return -1, -1
 
     return chunk_start, chunk_stop
+
+def get_freq_ch(freq):
+    freq_ch = np.abs(frequencies - freq).argmin()
+
+    return freq_ch
