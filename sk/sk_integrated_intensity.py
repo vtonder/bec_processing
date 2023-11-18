@@ -140,14 +140,14 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
         prev_stop_x = chunk_stop_x
         # place noise instead of 0's where packets were dropped
         # re and im parts have same std
-        data_x = non_zero_data(data_x, std_x[:,0])
+        #data_x = non_zero_data(data_x, std_x[:,0])
         data_x, skx_flags, summed_flags_x = rfi_mitigation(data_x, M, data_len_x, std_x[:, 0], check_threshold, skx_flags, summed_flags_x, ndp_x, chunk_start_x, start_indices[fx])
 
     if prev_start_y != chunk_start_y or prev_stop_y != chunk_stop_y:
         data_y = dfy['Data/bf_raw'][:, chunk_start_y:chunk_stop_y, :].astype(np.float32)
         prev_start_y = chunk_start_y
         prev_stop_y = chunk_stop_y
-        data_y = non_zero_data(data_y, std_y[:,0])
+        #data_y = non_zero_data(data_y, std_y[:,0])
         data_y, sky_flags, summed_flags_y = rfi_mitigation(data_y, M, data_len_y, std_y[:, 0], check_threshold, sky_flags, summed_flags_y, ndp_y, chunk_start_y, start_indices[fy])
 
     # sp: single_pulse , pf: pulse_flags
@@ -182,7 +182,7 @@ else:
     summed_profile = np.float32(incoherent_dedisperse(summed_profile, tag))
     np.save(args.file_prefix + '_intensity_' + low_prefix + up_prefix + '_M'+ str(M) + "_" + tag + "_p" + str(np_rank*size), summed_profile)
     np.save(args.file_prefix + '_summed_flags_' + low_prefix + up_prefix + '_M'+ str(M) + "_" + tag + "_p" + str(np_rank*size), summed_flags)
-    np.save(args.file_prefix + '_skx_flags_' + low_prefix + up_prefix + '_M'+ str(M) + "_" + tag + "_p" + str(np_rank*size), skx_flags)
-    np.save(args.file_prefix + '_sky_flags_' + low_prefix + up_prefix + '_M'+ str(M) + "_" + tag + "_p" + str(np_rank*size), sky_flags)
+    np.save(args.file_prefix + '_xpol_flags_' + low_prefix + up_prefix + '_M'+ str(M) + "_" + tag + "_p" + str(np_rank*size), skx_flags)
+    np.save(args.file_prefix + '_ypol_flags_' + low_prefix + up_prefix + '_M'+ str(M) + "_" + tag + "_p" + str(np_rank*size), sky_flags)
 
     print("processing took: ", time.time() - t1)

@@ -207,6 +207,17 @@ J1644 = {'name':'J1644-4559',
          'dm':J1644_dm
          }
 
+gsm_freq = 1733.333
+gsm_T = 1.0/gsm_freq
+gsm_samples_T = gsm_T*10**6 / time_resolution
+gsm_dm = 0 
+gsm = {'name':'GSM',
+         'freq':gsm_freq,
+         'T':gsm_T,
+         'samples_T':gsm_samples_T,
+         'dm':gsm_dm
+         }
+
 # Dictionary to link code to pulsar
 pulsars = {'1234':J0835,
            '1569':J0835,
