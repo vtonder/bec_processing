@@ -8,19 +8,29 @@ def mean_compensation(data):
 
     return data
 
-def non_zero_data(data, std):
-    print("Data    shape: ", data.shape)
-    print("std shape    : ", std.shape)
+def non_zero_data_per_ch(data, std):
+    """
+    Replace dropped packets with Gaussian noise with std calculated per frequency channel
+
+    data: 1 chunk of data
+    std: an array of 1024 std's per ch
+    """
     for ch in np.arange(num_ch):
         indices = np.where(data[ch] == 0, True, False)
         data[ch, indices] = np.random.normal(0, std[ch], np.sum(indices))
 
     return data
 
-def num_zero_data(data):
-    for ch in np.arange(num_ch):
-        indices = np.where(data[ch] == 0, True, False)
-        data[ch, indices] = np.random.normal(0, std[ch], np.sum(indices))
+def non_zero_data(data, std):
+    """
+    Replace dropped packets with Gaussian noise with std across all frequency channels
+
+    data: 1 chunk of data
+    std: scalar 
+    """
+
+    indices = np.where(data == 0, True, False)
+    data[indices] = np.random.normal(0, std, np.sum(indices))
 
     return data
 
