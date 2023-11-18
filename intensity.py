@@ -5,30 +5,7 @@ import time
 from constants import num_ch, start_indices, xy_time_offsets, pulsars, time_chunk_size
 from pulsar_processing.pulsar_functions import incoherent_dedisperse
 import argparse
-
-def get_data_window(start_index, pulse_i, samples_T, int_samples_T, tot_ndp):
-    start = start_index + (pulse_i * samples_T)
-    end = start + int_samples_T
-    chunk_start = int(np.floor(start / time_chunk_size) * time_chunk_size)
-    chunk_stop = int(np.ceil(end / time_chunk_size) * time_chunk_size)
-
-    if chunk_stop >= tot_ndp:
-        return -1, -1
-
-    return chunk_start, chunk_stop
-
-def get_pulse_power(data, chunk_start, start_index, pulse_i, samples_T, int_samples_T):
-    pulse_start = int(start_index + (pulse_i * samples_T) - chunk_start)
-    pulse_stop = pulse_start + int_samples_T
-
-    '''print("pulse_i    : ", pulse_i)
-    print("pulse_start: ", pulse_start)
-    print("pulse_stop : ", pulse_stop)'''
-
-    re = data[:, pulse_start:pulse_stop, 0].astype(np.float32)
-    im = data[:, pulse_start:pulse_stop, 1].astype(np.float32)
-
-    return np.float32(re**2) + np.float32(im**2)
+from common import get_data_window, get_pulse_window, get_pulse_power 
 
 # get number of processors and processor rank
 comm = MPI.COMM_WORLD
@@ -68,6 +45,7 @@ else:
 num_pulses = ndp / samples_T  # number of pulses per observation
 np_rank = int(np.floor(num_pulses / size)) # number of pulses per rank
 summed_profile = np.zeros([num_ch, int_samples_T], dtype=np.float32)
+num_nz = np.zeros([num_ch, int_samples_T], dtype=np.float32)
 
 if rank == 0:
     t1 = time.time()
@@ -109,20 +87,31 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
         prev_start_y = chunk_start_y
         prev_stop_y = chunk_stop_y
 
-    sp_x = get_pulse_power(data_x, chunk_start_x, si_x, i, samples_T, int_samples_T)
-    sp_y = get_pulse_power(data_y, chunk_start_y, si_y, i, samples_T, int_samples_T)
+    pulse_start_x, pulse_stop_x = get_pulse_window(chunk_start_x, si_x, i, samples_T, int_samples_T)
+    pulse_start_y, pulse_stop_y = get_pulse_window(chunk_start_y, si_y, i, samples_T, int_samples_T)
+
+    sp_x = get_pulse_power(data_x, pulse_start_x, pulse_stop_x)
+    sp_y = get_pulse_power(data_y, pulse_start_y, pulse_stop_y)
 
     summed_profile += np.float32(sp_x + sp_y)
+    num_nz += np.where(sp_x > 0, 1, 0) + np.where(sp_y > 0, 1, 0)
 
 if rank > 0:
     comm.Send([summed_profile, MPI.DOUBLE], dest=0, tag=15)  # send results to process 0
+    comm.Send([num_nz, MPI.DOUBLE], dest=0, tag=16)
 else:
     for i in range(1, size):
         tmp_summed_profile = np.zeros([num_ch, int_samples_T], dtype=np.float32)
+        tmp_num_nz = np.zeros([num_ch, int_samples_T], dtype=np.float32)
+
         comm.Recv([tmp_summed_profile, MPI.DOUBLE], source=i, tag=15)
+        comm.Recv([tmp_num_nz, MPI.DOUBLE], source=i, tag=16)
+
         summed_profile += np.float32(tmp_summed_profile)
+        num_nz += np.float32(tmp_num_nz)
 
     summed_profile = np.float32(incoherent_dedisperse(summed_profile, tag))
-    np.save('intensity' + "_" + tag, summed_profile)
+    np.save("intensity_" + tag, summed_profile)
+    np.save("num_nz_" + tag, summed_profile)
     print("processing took: ", time.time() - t1)
 

@@ -12,6 +12,9 @@ def get_low_limit(low_key, M):
     elif low_key == 0:
         from constants import lower_limit as l
         low_prefix = "l3sig"
+    elif low_key == 4:
+        from constants import lower_limit4 as l
+        low_prefix = "l1pfa"
     else:
         print("LOWER KEY ERROR: Only 0 (3 sigma) and 7 (4 sigma) now supported.")
 
@@ -28,6 +31,9 @@ def get_up_limit(up_key, M):
     elif up_key == 0:
         from constants import upper_limit as u
         up_prefix = "u3sig"
+    elif up_key == 4:
+        from constants import upper_limit4 as u
+        up_prefix = "u1pfa"
     else:
         print("UPPER KEY ERROR: Only 0 (3 sigma), 7 (4 sigma), 8 (sk max) now supported.")
 
@@ -58,13 +64,3 @@ def rfi_mitigation(data, M, data_window_len, std, check_thres, sk_flags, summed_
 
     return data, sk_flags, summed_flags
 
-def get_pulse_power(data, chunk_start, start_index, pulse_i, samples_T, int_samples_T, summed_flags):
-    pulse_start = int(start_index + (pulse_i * samples_T) - chunk_start)
-    pulse_stop = pulse_start + int_samples_T
-
-    pulse = data[:, pulse_start:pulse_stop, :].astype(np.float32)
-    pf = summed_flags[:, pulse_start:pulse_stop].astype(np.float32)
-
-    sp = np.sum(pulse**2, axis=2)
-
-    return sp, pf

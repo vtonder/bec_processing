@@ -7,10 +7,20 @@ def mean_compensation(data):
         data[i,:] = data[i,:] - np.mean(data[i,:])
 
     return data
+
 def non_zero_data(data, std):
-    indices = np.where(data == 0, True, False)
+    print("Data    shape: ", data.shape)
+    print("std shape    : ", std.shape)
     for ch in np.arange(num_ch):
-        data[indices[ch,:]] = np.random.normal(0, std[ch], np.sum(indices[ch,:]))
+        indices = np.where(data[ch] == 0, True, False)
+        data[ch, indices] = np.random.normal(0, std[ch], np.sum(indices))
+
+    return data
+
+def num_zero_data(data):
+    for ch in np.arange(num_ch):
+        indices = np.where(data[ch] == 0, True, False)
+        data[ch, indices] = np.random.normal(0, std[ch], np.sum(indices))
 
     return data
 
@@ -29,3 +39,24 @@ def get_freq_ch(freq):
     freq_ch = np.abs(frequencies - freq).argmin()
 
     return freq_ch
+
+def get_pulse_window(chunk_start, start_index, pulse_i, samples_T, int_samples_T):
+    pulse_start = int(start_index + (pulse_i * samples_T) - chunk_start)
+    pulse_stop = pulse_start + int_samples_T
+
+    return pulse_start, pulse_stop
+
+def get_pulse_power(data, pulse_start, pulse_stop):
+    pulse = data[:, pulse_start:pulse_stop, :].astype(np.float32)
+    sp = np.sum(pulse**2, axis=2)
+
+    return sp
+
+def get_pulse_flags(summed_flags, pulse_start, pulse_stop):
+    """
+    pf: pulse_flages
+    """
+    pf = summed_flags[:, pulse_start:pulse_stop].astype(np.float32)
+
+    return pf
+
