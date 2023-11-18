@@ -40,6 +40,9 @@ dirty_ch = np.abs(frequencies-1210).argmin()
 clean_ch = np.abs(frequencies-1450).argmin()
 clean_ch2 = 600
 dirty_ch2 = 105
+dme_ch = np.asarray([208, 221, 235, 249])
+dme_ch = np.append(dme_ch, np.arange(275,285))
+dme_ch = np.append(dme_ch, np.asarray([295, 296, 300, 306,307,308, 319, 322, 325, 334, 335, 336, 340]))
 
 # SK lower and upper limits for PFA=0.13499%. Obtained using sk/sk_thresholds.py script
 lower_limit = {64:0.4921, 128:0.602, 256:0.698, 512:0.77511, 519:0.776424, 1024:0.83425, 1038:0.83527, 1557:0.86281, 2048:0.87892, 4096:0.91233, 8192:0.93694, 10240:0.94336, 16384:0.95494}
