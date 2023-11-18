@@ -8,22 +8,23 @@ from investigate_sk import sk_pdf
 import time
 import argparse
 '''
-This script investigates the effect of fluctuating gain in noise on sk
-Becomes a Gaussian Mixture Model (GMM) because 
-Effect of mixture Gaussian noise on SK  
+This script investigates the effect of fluctuating gain in noise across the band on the SK estimator
+The fluctuating gain results in the noise distribution to becomes a Gaussian Mixture Model (GMM)   
 '''
 
 def add_gain(p, perc, frac):
-    p2 = p
-    p2[:, :int(M*frac)] *= (100 + perc)/100  # byvoorbeeld -> dit lig drywing met 0.5% die helfte van tyd
+    # Need to make a copy because python is pass by reference not value
+    p2 = np.copy(p)
+    p2[:, :int(M*frac)] *= (100 + perc)/100  # byvoorbeeld -> dit lig drywing met perc% die frac van tyd
+
     return p2
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-M", dest="M", help="Number of spectra to accumulate in SK calculation", default=2048)
 parser.add_argument("-n", dest="n", help="Number of SKs to calculate", default=100000)
 parser.add_argument("-f", dest="frac", help="Number of SKs to calculate", default=0.5)
-parser.add_argument("-l", dest="low", help="Key for lower threshold to use. Keys are defined constants file. Only 0 (3 sigma) and 7 (4 sigma) now supported.", default=7)
-parser.add_argument("-u", dest="up", help="Key for upper threshold to use. Keys are defined constants file. Only 0 (3 sigma), 7 (4 sigma), 8 (sk max) now supported.", default=7)
+parser.add_argument("-l", dest="low", help="Key for lower threshold to use. Keys are defined constants file. Only 0 (3 sigma) and 7 (4 sigma) now supported.", default = 7)
+parser.add_argument("-u", dest="up", help="Key for upper threshold to use. Keys are defined constants file. Only 0 (3 sigma), 7 (4 sigma), 8 (sk max) now supported.", default = 7)
 parser.add_argument("-p", dest="plot", help="Plot or save the data", default=False)
 args = parser.parse_args()
 
@@ -40,11 +41,9 @@ up, up_prefix = get_up_limit(int(args.up), M)
 t1 = time.time()
 sk_values = np.arange(0, 2, 0.01)
 theoretical_sk_pdf = sk_pdf(M, sk_values)
-#pdf_M512 = np.load("/home/vereese/git/phd_data/sk_analysis/2210/pdf_M512.npy")
 
 # Ludwig code
 x = np.random.randn(num_sk, M) + 1j * np.random.randn(num_sk, M)
-#p1 = x * x.conj()
 p1 = np.abs(x) ** 2
 #wgn_re = np.random.normal(mean, std, size=N)
 #wgn_im = np.random.normal(mean, std, size=N)
@@ -74,7 +73,7 @@ for g in perc_gain:
     perc_flagged.append(pf)
 
 print("Done processing: ", time.time()-t1)
-#data, sk_flags, sf = rfi_mitigation(data, M, data_window_len, std, check_thres, sk_flags, summed_flags, ndp, chunk_start, first_non_zero_idx):
+
 if args.plot:
     fig, ax = plt.subplots()
     ax.plot(perc_gain, perc_flagged, 'o')
