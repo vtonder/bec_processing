@@ -4,7 +4,7 @@ import numpy as np
 import time
 import sys
 sys.path.append("../")
-from constants import num_ch, start_indices, pulsars, xy_time_offsets
+from constants import num_ch, start_indices, pulsars, xy_time_offsets, dme_ch
 from pulsar_processing.pulsar_functions import incoherent_dedisperse
 from common import get_data_window, get_pulse_window, get_pulse_power, get_pulse_flags
 import argparse
@@ -26,7 +26,7 @@ def check_low_up(val):
 
     return val < low or val > up
 
-def rfi_mitigation(data, sk_flags, sf, sk, M, data_window_len, first_non_zero_idx, chunk_start, check_thres):
+def rfi_mitigation(data, sk_flags, sf, sk, M, data_window_len, first_non_zero_idx, chunk_start, check_thres_array):
 
     for idx in np.arange(0, data_window_len, M):
         idx_start = int(idx)
@@ -44,10 +44,11 @@ def rfi_mitigation(data, sk_flags, sf, sk, M, data_window_len, first_non_zero_id
             idx_stop = ndp - 1
 
         for ch, val in enumerate(sk[:, sk_idx]):
-            if check_thres(val):
+            if check_thres_array[ch](val):
                 sk_flags[ch, sk_idx] = np.uint8(1)
                 sf[ch, idx_start:idx_stop] = 1
-                data[ch, idx_start:idx_stop, :] = 0 # np.random.normal(0, 14, (M, 2)) #clean_data
+                # Use to replace with noise: np.random.normal(0, 14, (M, 2)) but now 0 to try and mimic what pulsar timing experts do
+                data[ch, idx_start:idx_stop, :] = 0 
 
     return data, sk_flags, sf
 
@@ -61,9 +62,12 @@ parser.add_argument("tag", help="observation tag to process. search path: /net/c
 parser.add_argument("-M", dest="M", help="Number of spectra to accumulate in SK calculation", default=512)
 parser.add_argument("-m", dest="m", help="Number of time samples to add up in MSK", default=1)
 parser.add_argument("-n", dest="n", help="Number of ch to add up in MSK", default=1)
-parser.add_argument("-l", dest="low", help="Key for lower threshold to use. Keys are defined constants file. 0 (3 sigma), 4 (1 % PFA), 7 (4 sigma)", default=None)
-parser.add_argument("-u", dest="up", help="Key for upper threshold to use. Keys are defined constants file. 0 (3 sigma), 4 (1 % PFA), 7 (4 sigma), 8 (sk max)", default=None)
+parser.add_argument("-l", dest="low", help="Key for lower threshold to use. Keys are defined constants file. 0 (3 sigma), 4 (1 % PFA), 7 (4 sigma)", default = None)
+parser.add_argument("-u", dest="up", help="Key for upper threshold to use. Keys are defined constants file. 0 (3 sigma), 4 (1 % PFA), 7 (4 sigma), 8 (sk max)", default = None)
 parser.add_argument("-f", dest="file_prefix", help="prefix to the output files", default="msk")
+parser.add_argument("-d", dest = "dp", help="how dropped packets were handled. g : replaced by Gaussian noise ; z : left as 0s ", default = "z")
+parser.add_argument("-a", dest = "dme", help="Apply lower thresholds across the band and upper thresholds only to DME freq ch's. ", default = False)
+
 args = parser.parse_args()
 
 fx = '160464' + args.tag + '_wide_tied_array_channelised_voltage_0x.h5'
@@ -85,26 +89,32 @@ n = int(args.n)
 if args.low and args.up:
     low, low_prefix = get_low_limit(int(args.low), M)
     up, up_prefix = get_up_limit(int(args.up), M)
-    check_threshold = check_low_up
+    check_thres_arr = num_ch * [check_low_up]
 elif args.low:
     low, low_prefix = get_low_limit(int(args.low), M)
     up_prefix = ""
-    check_threshold = check_low
+    check_thres_arr = num_ch * [check_low]
 elif args.up:
     up, up_prefix = get_up_limit(int(args.up), M)
     low_prefix = ""
-    check_threshold = check_up
+    check_thres_arr = num_ch * [check_up]
 else:
     print("Give me limits")
     exit()
+
+# For DME experiment where lower thresholds are applied accross the band and upper thresholds are only applied to DME frequency channels
+if args.dme:
+    check_thres_arr = num_ch * [check_low]
+    for ch in dme_ch:
+        check_thres_arr[ch] = check_low_up
 
 tag = args.tag
 pulsar = pulsars[tag]
 samples_T = pulsar['samples_T']
 int_samples_T = int(np.floor(samples_T))
 
-skx = np.float32(np.load(args.file_prefix + '_M' + str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_0x.npy"))
-sky = np.float32(np.load(args.file_prefix + '_M' + str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_0y.npy"))
+skx = np.float32(np.load(args.file_prefix + '_' + args.dp + '_M' + str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_0x.npy"))
+sky = np.float32(np.load(args.file_prefix + '_' + args.dp + '_M' + str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_0y.npy"))
 
 ndp_x = dfx['Data/timestamps'].shape[0] - si_x # number of data points, x pol
 ndp_y = dfy['Data/timestamps'].shape[0] - si_y # number of data points, y pol
@@ -159,12 +169,12 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
         data_x = dfx['Data/bf_raw'][:, chunk_start_x:chunk_stop_x, :]
         prev_start_x = chunk_start_x
         prev_stop_x = chunk_stop_x
-        data_x, skx_flags, sf_x = rfi_mitigation(data_x, skx_flags, sf_x, skx, M, data_len_x, start_indices[fx], chunk_start_x, check_threshold)
+        data_x, skx_flags, sf_x = rfi_mitigation(data_x, skx_flags, sf_x, skx, M, data_len_x, start_indices[fx], chunk_start_x, check_thres_arr)
     if prev_start_y != chunk_start_y or prev_stop_y != chunk_stop_y:
         data_y = dfy['Data/bf_raw'][:, chunk_start_y:chunk_stop_y, :]
         prev_start_y = chunk_start_y
         prev_stop_y = chunk_stop_y
-        data_y, sky_flags, sf_y = rfi_mitigation(data_y, sky_flags, sf_y, sky, M, data_len_y, start_indices[fy], chunk_start_y, check_threshold)
+        data_y, sky_flags, sf_y = rfi_mitigation(data_y, sky_flags, sf_y, sky, M, data_len_y, start_indices[fy], chunk_start_y, check_thres_arr)
 
     pulse_start_x, pulse_stop_x = get_pulse_window(chunk_start_x, si_x, i, samples_T, int_samples_T)
     pulse_start_y, pulse_stop_y = get_pulse_window(chunk_start_y, si_y, i, samples_T, int_samples_T)
@@ -209,10 +219,18 @@ else:
         sky_flags += np.uint8(tmp_sky_flags)
 
     summed_profile = np.float32(incoherent_dedisperse(summed_profile, tag))
-    np.save(args.file_prefix + '_intensity_'    + low_prefix + up_prefix + '_M'+ str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_p" + str(np_rank*size), summed_profile)
-    np.save(args.file_prefix + '_summed_flags_' + low_prefix + up_prefix + '_M'+ str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_p" + str(np_rank*size), summed_flags)
-    np.save(args.file_prefix + '_xpol_flags_'   + low_prefix + up_prefix + '_M'+ str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_p" + str(np_rank*size), skx_flags)
-    np.save(args.file_prefix + '_ypol_flags_'   + low_prefix + up_prefix + '_M'+ str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_p" + str(np_rank*size), sky_flags)
-    np.save(args.file_prefix + '_num_nz_'   + low_prefix + up_prefix + '_M'+ str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_p" + str(np_rank*size), num_nz)
+    if args.dme:
+        np.save(args.file_prefix + '_dme_intensity_'    + low_prefix + up_prefix + '_M'+ str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_p" + str(np_rank*size), summed_profile)
+        np.save(args.file_prefix + '_dme_summed_flags_' + low_prefix + up_prefix + '_M'+ str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_p" + str(np_rank*size), summed_flags)
+        np.save(args.file_prefix + '_dme_xpol_flags_'   + low_prefix + up_prefix + '_M'+ str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_p" + str(np_rank*size), skx_flags)
+        np.save(args.file_prefix + '_dme_ypol_flags_'   + low_prefix + up_prefix + '_M'+ str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_p" + str(np_rank*size), sky_flags)
+        np.save(args.file_prefix + '_dme_num_nz_'   + low_prefix + up_prefix + '_M'+ str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_p" + str(np_rank*size), num_nz)
+    else:
+        np.save(args.file_prefix + '_intensity_'    + low_prefix + up_prefix + '_M'+ str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_p" + str(np_rank*size), summed_profile)
+        np.save(args.file_prefix + '_summed_flags_' + low_prefix + up_prefix + '_M'+ str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_p" + str(np_rank*size), summed_flags)
+        np.save(args.file_prefix + '_xpol_flags_'   + low_prefix + up_prefix + '_M'+ str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_p" + str(np_rank*size), skx_flags)
+        np.save(args.file_prefix + '_ypol_flags_'   + low_prefix + up_prefix + '_M'+ str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_p" + str(np_rank*size), sky_flags)
+        np.save(args.file_prefix + '_num_nz_'   + low_prefix + up_prefix + '_M'+ str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_p" + str(np_rank*size), num_nz)
+
     print("processing took: ", time.time() - t1)
 

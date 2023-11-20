@@ -8,9 +8,9 @@ def mean_compensation(data):
 
     return data
 
-def non_zero_data_per_ch(data, std):
+def sub_0_noise_per_ch(data, std):
     """
-    Replace dropped packets with Gaussian noise with std calculated per frequency channel
+    Substitute 0s in data with Gaussian noise with 0 mean and std standard deviation per frequency channel
 
     data: 1 chunk of data
     std: an array of 1024 std's per ch
@@ -21,9 +21,9 @@ def non_zero_data_per_ch(data, std):
 
     return data
 
-def non_zero_data(data, std):
+def sub_0_noise(data, std):
     """
-    Replace dropped packets with Gaussian noise with std across all frequency channels
+    Substitute 0s in data with Gaussian noise with 0 mean and std standard deviation across all frequency channels
 
     data: 1 chunk of data
     std: scalar 
