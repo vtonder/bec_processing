@@ -70,3 +70,37 @@ def get_pulse_flags(summed_flags, pulse_start, pulse_stop):
 
     return pf
 
+def get_low_limit(low_key, M):
+    if low_key == 7:
+        from constants import lower_limit7 as l
+        low_prefix = "l4sig"
+    elif low_key == 0:
+        from constants import lower_limit as l
+        low_prefix = "l3sig"
+    elif low_key == 4:
+        from constants import lower_limit4 as l
+        low_prefix = "l1pfa"
+    else:
+        print("LOWER KEY ERROR: Only 0 (3 sigma) and 7 (4 sigma) now supported.")
+
+    return l[M], low_prefix
+
+# returns SK upper limit based on given key and M value. keys map to those in constants file
+def get_up_limit(up_key, M):
+    if up_key == 7:
+        from constants import upper_limit7 as u
+        up_prefix = "u4sig"
+    elif up_key == 8:
+        from constants import upper_limit8 as u
+        up_prefix = "uskmax"
+    elif up_key == 0:
+        from constants import upper_limit as u
+        up_prefix = "u3sig"
+    elif up_key == 4:
+        from constants import upper_limit4 as u
+        up_prefix = "u1pfa"
+    else:
+        print("UPPER KEY ERROR: Only 0 (3 sigma), 7 (4 sigma), 8 (sk max) now supported.")
+
+    return u[M], up_prefix
+
