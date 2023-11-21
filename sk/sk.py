@@ -29,5 +29,5 @@ S2 = np.float32(np.load("S2_" + args.dp + "_M" + str(M) + tag + pol + ".npy"))
 # MSK reduces to SK when m = n = 1 
 sk = np.float32(ms_spectral_kurtosis_cm(S1, S2, M, m = m, n = n))
 
-np.save(args.file_prefix + args.dp + '_M' + str(M) + "_m" + str(m) + "_n" + str(n) + tag + pol, sk)
+np.save(args.file_prefix + '_' + args.dp + '_M' + str(M) + "_m" + str(m) + "_n" + str(n) + tag + pol, sk)
 print("procesing took: ", time.time() - t1)
