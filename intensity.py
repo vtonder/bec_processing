@@ -5,7 +5,7 @@ import time
 from constants import num_ch, start_indices, xy_time_offsets, pulsars, time_chunk_size
 from pulsar_processing.pulsar_functions import incoherent_dedisperse
 import argparse
-from common import get_data_window, get_pulse_window, get_pulse_power 
+from common import get_data_window, get_pulse_window, get_pulse_power, sub_0_noise 
 
 # get number of processors and processor rank
 comm = MPI.COMM_WORLD
@@ -14,6 +14,8 @@ rank = comm.Get_rank()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("tag", help="observation tag to process. search path: /net/com08/data6/vereese/")
+parser.add_argument("-s", dest="std", help="Replace dropped packets with Gaussian noise with std set using this parameter", default=None)
+
 args = parser.parse_args()
 
 fx = '160464' + args.tag + '_wide_tied_array_channelised_voltage_0x.h5'
@@ -81,11 +83,16 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
         data_x = dfx['Data/bf_raw'][:, chunk_start_x:chunk_stop_x, :]
         prev_start_x = chunk_start_x
         prev_stop_x = chunk_stop_x
+        # If standard deviation is given then replace dropped packets with Gaussian noise
+        if args.std:
+            data_x = sub_0_noise(data_x, int(args.std))
 
     if prev_start_y != chunk_start_y or prev_stop_y != chunk_stop_y:
         data_y = dfy['Data/bf_raw'][:, chunk_start_y:chunk_stop_y, :]
         prev_start_y = chunk_start_y
         prev_stop_y = chunk_stop_y
+        if args.std:
+            data_y = sub_0_noise(data_y, int(args.std))
 
     pulse_start_x, pulse_stop_x = get_pulse_window(chunk_start_x, si_x, i, samples_T, int_samples_T)
     pulse_start_y, pulse_stop_y = get_pulse_window(chunk_start_y, si_y, i, samples_T, int_samples_T)
@@ -110,8 +117,13 @@ else:
         summed_profile += np.float32(tmp_summed_profile)
         num_nz += np.float32(tmp_num_nz)
 
+    if args.std:
+        dp = 'g' # handled dropped packets (dp) by replacing it with Gaussian (g) noise
+    else:
+        dp = 'z' # leave dropped packets (dp) as zeros (z)
+
     summed_profile = np.float32(incoherent_dedisperse(summed_profile, tag))
-    np.save("intensity_" + tag + "_p" + str(np_rank*size), summed_profile)
-    np.save("num_nz_" + tag + "_p" + str(np_rank*size), num_nz)
+    np.save("intensity_" + dp + "_"  + tag + "_p" + str(np_rank*size), summed_profile)
+    np.save("num_nz_" + dp + "_"  + tag + "_p" + str(np_rank*size), num_nz)
     print("processing took: ", time.time() - t1)
 
