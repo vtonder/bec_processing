@@ -15,9 +15,9 @@ size = comm.Get_size()
 rank = comm.Get_rank()
 
 parser = argparse.ArgumentParser()
-parser.add_argument("file", help="observation file to process. search path: /net/com08/data6/vereese/")
-parser.add_argument("-M", dest="M", help="Number of spectra to accumulate in SK calculation", default=512)
-parser.add_argument("-s", dest="std", help="Replace dropped packets with Gaussian noise with std set using this parameter", default=None)
+parser.add_argument("file", help = "observation file to process. search path: /net/com08/data6/vereese/")
+parser.add_argument("-M", dest = "M", help="Number of spectra to accumulate in SK calculation", default = 512)
+parser.add_argument("-s", dest = "std", help="Replace dropped packets with Gaussian noise with std set using this parameter", default = None)
 
 args = parser.parse_args()
 M = int(args.M)
