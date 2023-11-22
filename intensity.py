@@ -114,7 +114,7 @@ rank = comm.Get_rank()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("tag", help = "observation tag to process. search path: /net/com08/data6/vereese/")
-parser.add_argument("-r", dest = "rfi_mit", help = "RFI mitigation to conduct. options = sk msk vmsk pt, default = None", default = None)
+parser.add_argument("-r", dest = "rfi", help = "RFI mitigation to conduct. options = sk msk vmsk pt, default = None", default = None)
 parser.add_argument("-M", dest = "M", help = "Number of spectra to accumulate in SK calculation. Use with -r sk or msk or vmsk.", default = 512)
 parser.add_argument("-m", dest = "m", help = "Number of time samples to add up in MSK. Use with -r sk or msk or vmsk.", default = 1)
 parser.add_argument("-n", dest = "n", help = "Number of ch to add up in MSK. Use with -r sk or msk or vmsk.", default = 1)
@@ -221,7 +221,7 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
     # This code is specifically for J0437 who spins so fast that 1 chunk contains 3.4 pulses
     # Also, reading takes long
     if prev_start_x != chunk_start_x or prev_stop_x != chunk_stop_x:
-        data_x = dfx['Data/bf_raw'][:, chunk_start_x:chunk_stop_x, :]
+        data_x = dfx['Data/bf_raw'][:, chunk_start_x:chunk_stop_x, :].astype(np.float32)
         prev_start_x = chunk_start_x
         prev_stop_x = chunk_stop_x
         if args.rfi:
@@ -233,7 +233,7 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
                 data_x, sf_x = pt_mit(data_x, int(args.std), sf_x)
 
     if prev_start_y != chunk_start_y or prev_stop_y != chunk_stop_y:
-        data_y = dfy['Data/bf_raw'][:, chunk_start_y:chunk_stop_y, :]
+        data_y = dfy['Data/bf_raw'][:, chunk_start_y:chunk_stop_y, :].astype(np.float32)
         prev_start_y = chunk_start_y
         prev_stop_y = chunk_stop_y
         if args.rfi:
@@ -291,27 +291,27 @@ else:
             y_flags += np.uint8(tmp_sky_flags)
 
     summed_profile = np.float32(incoherent_dedisperse(summed_profile, tag))
-    np = str(np_rank * size) # actual number of pulses folded together
+    nps = str(np_rank * size) # actual number of pulses folded together
     if args.rfi:
         if args.dme:
-            np.save(rfi + '_dme_intensity_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + np, summed_profile)
-            np.save(rfi + '_dme_summed_flags_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + np, summed_flags)
-            np.save(rfi + '_dme_xpol_flags_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + np, x_flags)
-            np.save(rfi + '_dme_ypol_flags_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + np, y_flags)
-            np.save(rfi + '_dme_num_nz_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + np, num_nz)
+            np.save(rfi + '_dme_intensity_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, summed_profile)
+            np.save(rfi + '_dme_summed_flags_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, summed_flags)
+            np.save(rfi + '_dme_xpol_flags_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, x_flags)
+            np.save(rfi + '_dme_ypol_flags_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, y_flags)
+            np.save(rfi + '_dme_num_nz_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, num_nz)
         elif rfi == "sk" or rfi == "msk" or rfi == "vmsk":
-            np.save(rfi + '_intensity_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + np, summed_profile)
-            np.save(rfi + '_summed_flags_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + np, summed_flags)
-            np.save(rfi + '_xpol_flags_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + np, x_flags)
-            np.save(rfi + '_ypol_flags_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + np, y_flags)
-            np.save(rfi + '_num_nz_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + np, num_nz)
+            np.save(rfi + '_intensity_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, summed_profile)
+            np.save(rfi + '_summed_flags_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, summed_flags)
+            np.save(rfi + '_xpol_flags_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, x_flags)
+            np.save(rfi + '_ypol_flags_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, y_flags)
+            np.save(rfi + '_num_nz_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, num_nz)
         elif rfi == "pt":
-            np.save(rfi + '_intensity_' + dp + tag + '_p' + np, summed_profile)
-            np.save(rfi + '_summed_flags_' + dp + tag + '_p' + np, summed_flags)
-            np.save(rfi + '_num_nz_' + dp + tag + '_p' + np, num_nz)
+            np.save(rfi + '_intensity_' + dp + tag + '_p' + nps, summed_profile)
+            np.save(rfi + '_summed_flags_' + dp + tag + '_p' + nps, summed_flags)
+            np.save(rfi + '_num_nz_' + dp + tag + '_p' + nps, num_nz)
     else:
-        np.save("intensity_" + dp + "_"  + tag + "_p" + np, summed_profile)
-        np.save("num_nz_" + dp + "_"  + tag + "_p" + np, num_nz)
+        np.save("intensity_" + dp + "_"  + tag + "_p" + nps, summed_profile)
+        np.save("num_nz_" + dp + "_"  + tag + "_p" + nps, num_nz)
 
     print("processing took: ", time.time() - t1)
 
