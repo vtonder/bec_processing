@@ -294,24 +294,24 @@ else:
     nps = str(np_rank * size) # actual number of pulses folded together
     if args.rfi:
         if args.dme:
-            np.save(rfi + '_dme_intensity_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, summed_profile)
-            np.save(rfi + '_dme_summed_flags_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, summed_flags)
-            np.save(rfi + '_dme_xpol_flags_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, x_flags)
-            np.save(rfi + '_dme_ypol_flags_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, y_flags)
-            np.save(rfi + '_dme_num_nz_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, num_nz)
+            np.save(rfi + '_dme_intensity_' + dp + '_' + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, summed_profile)
+            np.save(rfi + '_dme_summed_flags_' + dp + '_' + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, summed_flags)
+            np.save(rfi + '_dme_xpol_flags_' + dp + '_' + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, x_flags)
+            np.save(rfi + '_dme_ypol_flags_' + dp + '_' + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, y_flags)
+            np.save(rfi + '_dme_num_nz_' + dp + '_' + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, num_nz)
         elif rfi == "sk" or rfi == "msk" or rfi == "vmsk":
-            np.save(rfi + '_intensity_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, summed_profile)
-            np.save(rfi + '_summed_flags_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, summed_flags)
-            np.save(rfi + '_xpol_flags_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, x_flags)
-            np.save(rfi + '_ypol_flags_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, y_flags)
-            np.save(rfi + '_num_nz_' + dp + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, num_nz)
+            np.save(rfi + '_intensity_' + dp + '_'+ low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, summed_profile)
+            np.save(rfi + '_summed_flags_' + dp + '_' + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, summed_flags)
+            np.save(rfi + '_xpol_flags_' + dp + '_' + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, x_flags)
+            np.save(rfi + '_ypol_flags_' + dp + '_' + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, y_flags)
+            np.save(rfi + '_num_nz_' + dp + '_' + low_prefix + up_prefix + '_M'+ str(M) + '_m' + str(m) + '_n' + str(n) + '_' + tag + '_p' + nps, num_nz)
         elif rfi == "pt":
-            np.save(rfi + '_intensity_' + dp + tag + '_p' + nps, summed_profile)
-            np.save(rfi + '_summed_flags_' + dp + tag + '_p' + nps, summed_flags)
-            np.save(rfi + '_num_nz_' + dp + tag + '_p' + nps, num_nz)
+            np.save(rfi + '_intensity_' + dp + '_' + tag + '_p' + nps, summed_profile)
+            np.save(rfi + '_summed_flags_' + dp + '_' + tag + '_p' + nps, summed_flags)
+            np.save(rfi + '_num_nz_' + dp + '_' + tag + '_p' + nps, num_nz)
     else:
-        np.save("intensity_" + dp + "_"  + tag + "_p" + nps, summed_profile)
-        np.save("num_nz_" + dp + "_"  + tag + "_p" + nps, num_nz)
+        np.save('intensity_' + dp + '_'  + tag + '_p' + nps, summed_profile)
+        np.save('num_nz_' + dp + '_'  + tag + '_p' + nps, num_nz)
 
     print("processing took: ", time.time() - t1)
 

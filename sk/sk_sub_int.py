@@ -24,8 +24,8 @@ def rfi_mitigation(data, M, data_window_len):
 
         for ch, val in enumerate(sk):
             if val <= low: #or val >= up:
-                data[ch, idx_start:idx_stop, 0] = np.random.normal(0, 14, M)
-                data[ch, idx_start:idx_stop, 1] = np.random.normal(0, 14, M)
+                data[ch, idx_start:idx_stop, 0] = 0 #np.random.normal(0, 14, M)
+                data[ch, idx_start:idx_stop, 1] = 0 #np.random.normal(0, 14, M)
 
     return data
 
@@ -79,7 +79,7 @@ rank = comm.Get_rank()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("tag", help="observation tag to process. search path: /net/com08/data6/vereese/")
-parser.add_argument("-m", dest="M", help="Number of spectra to accumulate in SK calculation", default=512)
+parser.add_argument("-M", dest="M", help="Number of spectra to accumulate in SK calculation", default=512)
 args = parser.parse_args()
 
 fx = '160464' + args.tag + '_wide_tied_array_channelised_voltage_0x.h5'
@@ -113,8 +113,8 @@ else:
 num_pulses = ndp / samples_T  # number of pulses per observation
 np_rank = int(np.floor(num_pulses / size)) # number of pulses per rank
 num_samples_rank = np_rank * samples_T #number of samples per rank
-np_sub_int = 157 # number of pulses per sub integration
-num_sub_int = int(np_rank / np_sub_int)  # tested that 9 divides into np_rank
+np_sub_int = 157 # number of pulses per sub integration 45216/32/157 = 9
+num_sub_int = int(np_rank / np_sub_int)  # tested that 9 divides into np_rank. number of sub integrations per processor
 sk_flags_x = np.zeros([num_ch, int(num_samples_rank/M)], dtype=np.int8)
 sk_flags_y = np.zeros([num_ch, int(num_samples_rank/M)], dtype=np.int8)
 summed_profile = np.zeros([num_sub_int, num_ch, int_samples_T], dtype=np.float32)
@@ -154,14 +154,14 @@ for h in np.arange(num_sub_int):
              data_x = dfx['Data/bf_raw'][:, chunk_start_x:chunk_stop_x, :].astype(np.float32)
              prev_start_x = chunk_start_x
              prev_stop_x = chunk_stop_x
+             data_x = rfi_mitigation(data_x, M, data_len_x)
+
 
          if prev_start_y != chunk_start_y or prev_stop_y != chunk_stop_y:
              data_y = dfy['Data/bf_raw'][:, chunk_start_y:chunk_stop_y, :].astype(np.float32)
              prev_start_y = chunk_start_y
              prev_stop_y = chunk_stop_y
-
-         data_x = rfi_mitigation(data_x, M, data_len_x)
-         data_y = rfi_mitigation(data_y, M, data_len_y)
+             data_y = rfi_mitigation(data_y, M, data_len_y)
 
          #data_x = sigma_mit(data_x, 14)
          #data_y = sigma_mit(data_y, 14)
@@ -181,5 +181,5 @@ else:
         comm.Recv([tmp_summed_profile, MPI.DOUBLE], source=i, tag=15)
         tot_sub_int_profile[num_sub_int*i:num_sub_int*(i+1), :, :] = np.float32(tmp_summed_profile)
 
-    np.save("sub_int_intensity_sk_low_M" + str(M) + "_" + tag, tot_sub_int_profile)
+    np.save("sub_int_intensity_z_sk_low_M" + str(M) + "_" + tag, tot_sub_int_profile)
     print("processing took: ", time.time() - t1)
