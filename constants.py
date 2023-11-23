@@ -20,7 +20,7 @@ freq_chunk_size = 1024
 time_chunk_size = 16384
 re_im_chunk_size = 2
 #(1284e6-856e6)/freq_resolution - to get frequency bin
-dispersion_constant = 4.148808e3 # constant for calculating dispersion delay as applied to ms TODO double check if this is correct?
+dispersion_constant = 4.148808e3 # constant for calculating dispersion delay unit [MHz^2 cm^3 s / pc]
 
 # Popular frequencies in MHz
 h1 = 1420.4
@@ -131,16 +131,12 @@ for fn, si in start_indices.items():
 # Pulsar information is obtained from:
 # https://www.atnf.csiro.au/people/joh414/glast/database/summary.html
 # Vela
-vela_freq = 11.185075 # from Alex's admin.txt
-#11.185084597305504  # unit Hz 11.185053620637202  #11.185031494489326 #11.18500936838522
-#vela_freq = 11.1946499395 #11.184900190310714 #11.18512 #11.18512 #11.195 # 11.1946499395
-#vela_freq = 11.184893175250126
-#vela_freq = 11.184168797246667
+vela_freq = 11.185053620637202 # corrected for pulse period as commmented below
 #tot_obs=(vela_samples_T*time_resolution*22*11) 22 vela pulses , 22 is chosen randomly, that gave 11 subintegrations
 #deltaT=(time_resolution*17500) # 17500 is a rough estimate from the plot
-# vela_true_period = vela_T*(1+delaT/tot_obs)
-vela_dm = 67.97 # from ATNF catalog. units: parsec/cm^3
-# vela_dm = 68.0247344970703 <-> where is this from?
+#vela_true_period = vela_T*(1+delaT/tot_obs)
+vela_dm = 67.97 # from ATNF v1.64 catalog. units: parsec/cm^3
+#vela_dm = 68.02473 # did not yield better results from https://pulsars.org.au/fold/meertime/J0835-4510/
 vela_T = 1.0 / vela_freq  # vela period unit s
 vela_samples_T = vela_T*10**6 / time_resolution  # samples per vela period
 J0835 = {'name':'Vela',
@@ -152,7 +148,7 @@ J0835 = {'name':'Vela',
 
 # J0437-4715
 J0437_freq = 173.69148 # this is as measured by Alex and ATNF = 173.6879458121843
-J0437_T = 1.0/J0437_freq
+J0437_T = 1.0 / J0437_freq
 J0437_samples_T = J0437_T*10**6 / time_resolution
 J0437_dm = 2.64476
 J0437 = {'name':'J0437-4715',
@@ -164,7 +160,7 @@ J0437 = {'name':'J0437-4715',
 
 # J0536-7543
 J0536_freq = 0.80266
-J0536_T = 1/J0536_freq #1.245861
+J0536_T = 1 / J0536_freq #1.245861
 J0536_samples_T = J0536_T*10**6 / time_resolution
 J0536_dm = 18.58
 J0536 = {'name':'J0536-7543',
@@ -176,7 +172,7 @@ J0536 = {'name':'J0536-7543',
 
 # J0737-3039A
 J0737_freq = 44.054069392744 #44.085374 # # Pdot=0.000102
-J0737_T = 1.0/J0737_freq
+J0737_T = 1.0 / J0737_freq
 J0737_samples_T = J0737_T*10**6 / time_resolution
 J0737_dm = 48.92
 J0737 = {'name':'J0737-3039A',
@@ -188,7 +184,7 @@ J0737 = {'name':'J0737-3039A',
 
 # J0742-2822
 J0742_freq = 5.9965594774
-J0742_T = 1.0/J0742_freq
+J0742_T = 1.0 / J0742_freq
 J0742_dm = 73.728
 J0742_samples_T = J0742_T*10**6 / time_resolution
 J0742 = {'name':'J0742-2822',
@@ -200,7 +196,7 @@ J0742 = {'name':'J0742-2822',
 
 # J1644-4559
 J1644_freq = 2.197424522481 # 2.19731 #
-J1644_T = 1.0/J1644_freq
+J1644_T = 1.0 / J1644_freq
 J1644_samples_T = J1644_T*10**6 / time_resolution
 J1644_dm = 478.8
 J1644 = {'name':'J1644-4559',
@@ -211,7 +207,7 @@ J1644 = {'name':'J1644-4559',
          }
 
 gsm_freq = 1733.333
-gsm_T = 1.0/gsm_freq
+gsm_T = 1.0 / gsm_freq
 gsm_samples_T = gsm_T*10**6 / time_resolution
 gsm_dm = 0 
 gsm = {'name':'GSM',
