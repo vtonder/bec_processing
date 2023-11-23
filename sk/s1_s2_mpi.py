@@ -58,7 +58,8 @@ if rank == 0:
     print("M                  :", M)
 
     if num_data_points_rank % time_chunk_size:
-        print("not respecting the chunk! number of data points to be processed per processor must be must be divisble "
+        # time_chunk_size must be a factor of num_data_points_rank
+        print("not respecting the chunk! number of data points to be processed per processor must be must be divisible "
               "by time_chunk_size: ", time_chunk_size, " remainder:", num_data_points_rank % time_chunk_size)
         exit()
 
