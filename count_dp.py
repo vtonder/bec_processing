@@ -6,6 +6,12 @@ from constants import start_indices, time_chunk_size, num_ch
 import re
 import time
 
+"""
+- A script to calculate the total number of dropped packets in a the given file
+- Dropped packets are accumulated for each frequency channel
+- The total number of data points is embedded into the output filename
+"""
+
 regex = re.compile(r'\d+')
 # get number of processors and processor rank
 comm = MPI.COMM_WORLD
@@ -48,5 +54,5 @@ else:
     nums_str = regex.findall(args.file)
     tag = nums_str[0][-4:] # get last 4 digits of observation file
     pol = args.file[-4]
-    np.save('dp_' + tag + '_' + pol, dp)
+    np.save('dp_' + str(num_data_points) + '_' + tag + '_' + pol, dp)
     print("done processing: ", time.time() - t1)
