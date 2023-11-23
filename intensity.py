@@ -118,8 +118,8 @@ parser.add_argument("-r", dest = "rfi", help = "RFI mitigation to conduct. optio
 parser.add_argument("-M", dest = "M", help = "Number of spectra to accumulate in SK calculation. Use with -r sk or msk or vmsk.", default = 512)
 parser.add_argument("-m", dest = "m", help = "Number of time samples to add up in MSK. Use with -r sk or msk or vmsk.", default = 1)
 parser.add_argument("-n", dest = "n", help = "Number of ch to add up in MSK. Use with -r sk or msk or vmsk.", default = 1)
-parser.add_argument("-l", dest = "low", help = "Key for lower threshold to use. Keys are defined constants file. 0 (3 sigma), 4 (1 % PFA), 7 (4 sigma)", default = None)
-parser.add_argument("-u", dest = "up", help = "Key for upper threshold to use. Keys are defined constants file. 0 (3 sigma), 4 (1 % PFA), 7 (4 sigma), 8 (sk max)", default = None)
+parser.add_argument("-l", dest = "low", help = "Key for lower threshold to use. Keys are defined constants file. 0 (3 sigma), 4 (1 %% PFA), 7 (4 sigma)", default = None)
+parser.add_argument("-u", dest = "up", help = "Key for upper threshold to use. Keys are defined constants file. 0 (3 sigma), 4 (1 %% PFA), 7 (4 sigma), 8 (sk max)", default = None)
 parser.add_argument("-d", dest = "dp", help = "How dropped packets were handled. g : replaced by Gaussian noise ; z : left as 0s. Use with -r sk or msk or vmsk.", default = "z")
 parser.add_argument("-a", dest = "dme", help = "Apply lower thresholds across the band and upper thresholds only to DME freq ch's. ", default = False)
 parser.add_argument("-s", dest = "std", help = "standard deviation, used as threshold with -r pt", default = 14)
@@ -275,7 +275,7 @@ else:
         summed_profile += np.float32(tmp_summed_profile)
         num_nz += np.float32(tmp_num_nz)
 
-        if rfi != "None":
+        if args.rfi:
             tmp_summed_flags = np.zeros([num_ch, int_samples_T], dtype=np.float32)
             comm.Recv([tmp_summed_flags, MPI.DOUBLE], source=i, tag=17)
             summed_flags += np.float32(tmp_summed_flags)
