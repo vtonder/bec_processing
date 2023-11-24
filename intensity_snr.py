@@ -4,7 +4,7 @@ import numpy as np
 import time
 import sys
 sys.path.append("../")
-from constants import num_ch, start_indices, pulsars, xy_time_offsets, time_chunk_size, upper_limit, lower_limit
+from constants import num_ch, start_indices, pulsars, xy_time_offsets, time_chunk_size, upper_limit_3s, lower_limit_3s
 from pulsar_processing.pulsar_functions import incoherent_dedisperse
 import argparse
 from matplotlib import pyplot as plt

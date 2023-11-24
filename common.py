@@ -71,36 +71,56 @@ def get_pulse_flags(summed_flags, pulse_start, pulse_stop):
     return pf
 
 def get_low_limit(low_key, M):
-    if low_key == 7:
-        from constants import lower_limit7 as l
+    if low_key == "4s":
+        from constants import lower_limit_4s as l
         low_prefix = "l4sig"
-    elif low_key == 0:
-        from constants import lower_limit as l
+    elif low_key == "3s":
+        from constants import lower_limit_3s as l
         low_prefix = "l3sig"
-    elif low_key == 4:
-        from constants import lower_limit4 as l
-        low_prefix = "l1pfa"
+    elif low_key == "2_5s":
+        from constants import lower_limit_2_5s as l
+        low_prefix = "l2_5sig"
+    elif low_key == "2s":
+        from constants import lower_limit_2s as l
+        low_prefix = "l2sig"
+    elif low_key == "1s":
+        from constants import lower_limit_1s as l
+        low_prefix = "l1sig"
+    elif low_key == "2p":
+        from constants import lower_limit_2p as l
+        low_prefix = "l2pfa"
     else:
-        print("LOWER KEY ERROR: Only 0 (3 sigma) and 7 (4 sigma) now supported.")
+        print("LOWER KEY ERROR: see get_low_limit in common.py for mapping")
+        exit()
 
     return l[M], low_prefix
 
 # returns SK upper limit based on given key and M value. keys map to those in constants file
 def get_up_limit(up_key, M):
-    if up_key == 7:
-        from constants import upper_limit7 as u
+    if up_key == "4s":
+        from constants import upper_limit_4s as u
         up_prefix = "u4sig"
-    elif up_key == 8:
-        from constants import upper_limit8 as u
-        up_prefix = "uskmax"
-    elif up_key == 0:
-        from constants import upper_limit as u
+    elif up_key == "3s":
+        from constants import upper_limit_3s as u
         up_prefix = "u3sig"
-    elif up_key == 4:
-        from constants import upper_limit4 as u
-        up_prefix = "u1pfa"
+    elif up_key == "2_5s":
+        from constants import upper_limit_2_5s as u
+        up_prefix = "u2_5sig"
+    elif up_key == "2s":
+        from constants import upper_limit_2s as u
+        up_prefix = "u2sig"
+    elif up_key == "1s":
+        from constants import upper_limit_1s as u
+        up_prefix = "u1sig"
+    elif up_key == "2p":
+        from constants import upper_limit_2p as u
+        up_prefix = "u2pfa"
+    elif up_key == "skmax":
+        from constants import upper_limit_skmax as u
+        up_prefix = "uskmax"
     else:
-        print("UPPER KEY ERROR: Only 0 (3 sigma), 7 (4 sigma), 8 (sk max) now supported.")
+        print("UPPER KEY ERROR: see get_up_limit in common.py for mapping")
+        exit()
 
     return u[M], up_prefix
 
