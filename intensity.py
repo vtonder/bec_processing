@@ -46,7 +46,7 @@ def sk_mit(data, sk_flags, sf, sk, M, data_window_len, first_non_zero_idx, chunk
             if check_thres_array[ch](val):
                 sk_flags[ch, sk_idx] = np.uint8(1)
                 sf[ch, idx_start:idx_stop] = 1
-                # Use to replace with noise: np.random.normal(0, 14, (M, 2)) but now 0 to try and mimic what pulsar timing experts do
+                # Use to replace with noise: np.random.normal(0, 14, (M, 2)) but now 0 & normalise, to try and mimic what pulsar timing experts do
                 data[ch, idx_start:idx_stop, :] = 0 
 
     return data, sk_flags, sf
@@ -87,11 +87,10 @@ def vmsk_mit(data, sk_flags, sf, sk, M, data_window_len, first_non_zero_idx, chu
 def pt_mit(data, std, sf):
     """
     Power threshold (pt) RFI mitigation technique. Use 4 sigma as threshold
-    Sigma was previously obtained from mean_analysis, run mean_analysis/plot_all_var.py
     Can not have a flags matrix because it'll be the same size as the observation file which is ~500 GB
-    :param data:
-    :param std:
-    :param sf:
+    :param data: data must be in 3d format: freq ch x time samples x re,im 
+    :param std: std of an observation can be obtained from mean_analysis, run mean_analysis/plot_all_var.py 
+    :param sf: summed flags must be same shape as summed_profile: freq ch x pulse phase bins 
     :return:
     """
     threshold = 4 * std
@@ -161,15 +160,15 @@ if rfi == "sk" or rfi == "msk" or rfi == "vmsk":
     m = int(args.m)
     n = int(args.n)
     if args.low and args.up:
-        low, low_prefix = get_low_limit(int(args.low), M)
-        up, up_prefix = get_up_limit(int(args.up), M)
+        low, low_prefix = get_low_limit(args.low, M)
+        up, up_prefix = get_up_limit(args.up, M)
         check_thres_arr = num_ch * [check_low_up]
     elif args.low:
-        low, low_prefix = get_low_limit(int(args.low), M)
+        low, low_prefix = get_low_limit(args.low, M)
         up_prefix = ""
         check_thres_arr = num_ch * [check_low]
     elif args.up:
-        up, up_prefix = get_up_limit(int(args.up), M)
+        up, up_prefix = get_up_limit(args.up, M)
         low_prefix = ""
         check_thres_arr = num_ch * [check_up]
     else:
