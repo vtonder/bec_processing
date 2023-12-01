@@ -1,5 +1,8 @@
 import numpy as np
 
+thesis_font = 12 # got from ThesisMain.tex
+jai_font = 11 # got from ws-jai.cls
+
 # MeerKAT bec mode observational information
 # When look at the h5py data h5_file_obj['Data/timestamps'] data is 2048 apart. this represents samples
 # it takes 2048 adc samples to produce one 1024 ch spectra and therefore the bec mode data steps in 2048 sample sizes
