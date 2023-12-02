@@ -86,6 +86,12 @@ def get_low_limit(low_key, M):
     elif low_key == "1s":
         from constants import lower_limit_1s as l
         low_prefix = "l1sig"
+    elif low_key == "0_5s":
+        from constants import lower_limit_0_5s as l
+        low_prefix = "l0_5sig"
+    elif low_key == "0s":
+        from constants import lower_limit_0s as l
+        low_prefix = "l0sig"
     elif low_key == "2p":
         from constants import lower_limit_2p as l
         low_prefix = "l2pfa"
@@ -115,6 +121,12 @@ def get_up_limit(up_key, M):
     elif up_key == "1s":
         from constants import upper_limit_1s as u
         up_prefix = "u1sig"
+    elif up_key == "0_5s":
+        from constants import upper_limit_0_5s as u
+        up_prefix = "l0_5sig"
+    elif up_key == "0s":
+        from constants import upper_limit_0s as u
+        up_prefix = "l0sig"
     elif up_key == "2p":
         from constants import upper_limit_2p as u
         up_prefix = "u2pfa"
