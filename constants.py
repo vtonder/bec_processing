@@ -1,5 +1,8 @@
 import numpy as np
 
+thesis_font = 12 # got from ThesisMain.tex
+jai_font = 11 # got from ws-jai.cls
+
 # MeerKAT bec mode observational information
 # When look at the h5py data h5_file_obj['Data/timestamps'] data is 2048 apart. this represents samples
 # it takes 2048 adc samples to produce one 1024 ch spectra and therefore the bec mode data steps in 2048 sample sizes
@@ -84,9 +87,11 @@ upper_limit_1p = {64:1.7, 128:1.531, 256:1.394, 512:1.266733, 1024:1.180529, 204
 lower_limit_10p = {64:0.6753, 128:0.75457, 256:0.8178, 512:0.8665, 1024:0.9032, 2048:0.902, 4096:0.95, 8192:0.9646, 16384:0.975}
 upper_limit_10p = {64:1.415, 128:1.3161, 256:1.22, 512:1.1539, 1024:1.1075, 2048:1.0751, 4096:1.053, 8192:1.0368, 16384:1.0257}
 
-# Used SK histograms and predicted PDF to analyse SK upper limit within clean data channels
-# Use sk values and looked for max value of max sk values in all clean channels
-upper_limit_skmax = {64:10.4, 128:8.3, 256:10, 512:8.4, 1024:6.3, 2048:4.1, 4096:4.3, 8192:3.9, 16384:3}
+# Used SK histograms and predicted PDF to analyse SK lower and upper limit within clean data channels, see sk/pulsar_sk_thresholds.py
+# Compute min and max values, of min and max sk values per clean channel
+# Used max and min values between both X-pol and Y-pol sk data sets
+lower_limit_skmin = {64:0.17, 128:0.21, 256:0.25, 512:0.6, 1024:0.7, 2048:0.79, 4096:0.85, 8192:0.89}
+upper_limit_skmax = {64:14.68, 128:12.31, 256:10.77, 512:8.41, 1024:6.21, 2048:4.98, 4096:5.63, 8192:5.7}
 
 # median of max sk values of all clean channels
 upper_limit9 = {64:5, 128:4.12, 256:3.791, 512:3.244, 1024:2.576, 2048:1.991, 4096:1.564, 8192:1.301, 16384:1.159}

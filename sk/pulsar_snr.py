@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import sys
+sys.path.append('../')
 from constants import pulsars, num_ch, frequencies, dispersion_constant, freq_resolution, time_resolution, dme_ch
 import re
 from common import get_freq_ch
@@ -95,8 +97,8 @@ def apply_sarao_mask(I, num_nz):
     Zero out GSM channels: 95 - 125
     """
     samples_T = I.shape[1]
-    #I[0:50, :] = np.zeros([50, samples_T])
-    #num_nz[0:50, :] = np.zeros([50, samples_T])
+    I[0:50, :] = np.zeros([50, samples_T])
+    num_nz[0:50, :] = np.zeros([50, samples_T])
     I[95:126, :] = np.zeros([31, samples_T]) # GSM
     num_nz[95:126, :] = np.zeros([31, samples_T]) # GSM
     #I[260:532,:] = np.zeros([272, samples_T]) # includes aircraft and GNSS
@@ -105,8 +107,8 @@ def apply_sarao_mask(I, num_nz):
     #I[794:901,:] = np.zeros([107, samples_T]) # GNSS except Iridium
     #num_nz[794:901,:] = np.zeros([107, samples_T]) # GNSS except Iridium
     #I[794:924,:] = np.zeros([130, samples_T]) # GNSS and Iridium
-    #I[-50:, :] = np.zeros([50, samples_T])
-    #num_nz[-50:, :] = np.zeros([50, samples_T])
+    I[-50:, :] = np.zeros([50, samples_T])
+    num_nz[-50:, :] = np.zeros([50, samples_T])
 
     return I, num_nz
 
@@ -250,7 +252,7 @@ class PI:
         self.toa_un = 0
 
         if initialise:
-            #self.I, self.nz = apply_sarao_mask(self.I, self.nz)
+            self.I, self.nz = apply_sarao_mask(self.I, self.nz)
             # Need to recompute profile after masking
             self.profile = get_profile(self.I, self.nz)
             self.norm_profile = self.profile / max(self.profile)

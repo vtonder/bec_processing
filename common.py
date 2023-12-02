@@ -89,6 +89,9 @@ def get_low_limit(low_key, M):
     elif low_key == "2p":
         from constants import lower_limit_2p as l
         low_prefix = "l2pfa"
+    elif low_key == "skmin":
+        from constants import lower_limit_skmin as l
+        low_prefix = "lskmin"
     else:
         print("LOWER KEY ERROR: see get_low_limit in common.py for mapping")
         exit()

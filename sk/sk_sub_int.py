@@ -79,7 +79,9 @@ rank = comm.Get_rank()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("tag", help="observation tag to process. search path: /net/com08/data6/vereese/")
+parser.add_argument("p", help="Number of pulses per sub integration. calculated 157 for tag 2210 and 47 for tag 1569")
 parser.add_argument("-M", dest="M", help="Number of spectra to accumulate in SK calculation", default=512)
+
 args = parser.parse_args()
 
 fx = '160464' + args.tag + '_wide_tied_array_channelised_voltage_0x.h5'
@@ -111,10 +113,15 @@ else:
     ndp = ndp_y
 
 num_pulses = ndp / samples_T  # number of pulses per observation
-np_rank = int(np.floor(num_pulses / size)) # number of pulses per rank
-num_samples_rank = np_rank * samples_T #number of samples per rank
-np_sub_int = 157 # number of pulses per sub integration 45216/32/157 = 9
-num_sub_int = int(np_rank / np_sub_int)  # tested that 9 divides into np_rank. number of sub integrations per processor
+np_rank = int(np.floor(num_pulses / size)) # number of pulses per processor
+num_samples_rank = np_rank * samples_T # number of samples per rank
+np_sub_int = int(args.p) # number of pulses per sub integration  
+
+if np_rank % np_sub_int:
+    print("number of pulses per sub integration must be be a factor of the number of pulses per processor. Try 157 for 2210 (157 is the 4th factor of 1413=45216/32=np_rank) and 47 for 1569 (47 is the 3rd factor of 94=3008/32=np_rank when using 32 processors)")
+    exit()
+
+num_sub_int = int(np_rank / np_sub_int)  # number of sub integrations per processor
 sk_flags_x = np.zeros([num_ch, int(num_samples_rank/M)], dtype=np.int8)
 sk_flags_y = np.zeros([num_ch, int(num_samples_rank/M)], dtype=np.int8)
 summed_profile = np.zeros([num_sub_int, num_ch, int_samples_T], dtype=np.float32)
