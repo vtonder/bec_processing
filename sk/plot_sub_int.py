@@ -20,7 +20,7 @@ plt.rc('mathtext', fontset='stix')
 s = np.load("sub_int_intensity_2210.npy")
 s1 = np.load("sub_int_SK_intensity_M1024_2210.npy")
 
-# identified ch 280 as a intermittent RFI ch
+# identified ch 280 as an intermittent RFI ch
 # wrt observation time:
 # 157*9*32*J0437_samples_T*time_resolution*10**-6 = 260 
 # 260 / 60 = 4.3
