@@ -68,6 +68,7 @@ def compute(I, nz):
     snr, toa_un = snr_toa_un(prof, pulse_start, pulse_width)
 
     return pulse_start, pulse_stop, pulse_width, snr, toa_un
+
 def snr_toa_un(profile, pulse_start, pulse_width):
     snr = 0
     m = np.mean(profile[0:pulse_width])
@@ -82,6 +83,13 @@ def snr_toa_un(profile, pulse_start, pulse_width):
 
     return snr, toa_un
 
+# pho is a SNR ratio defined as per Nita 2016 "Spectral Kurtosis statistics of transient signals"
+def get_pho(profile):
+    peak = get_peak(profile)
+    floor = get_floor(profile)
+
+    return (peak - floor) / floor
+
 def calc_var(I):
     std = []
     for i in np.arange(num_ch):
@@ -94,7 +102,7 @@ def calc_var(I):
 def apply_sarao_mask(I, num_nz):
     """
     Zero out first and last frequency channels 50.
-    Zero out GSM channels: 95 - 125
+    Zero out GSM channels: 95 - 125 because they clipped
     """
     samples_T = I.shape[1]
     I[0:50, :] = np.zeros([50, samples_T])

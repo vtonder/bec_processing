@@ -2,32 +2,55 @@ import numpy as np
 from pulsar_snr import PI
 from matplotlib import pyplot as plt
 
-t = ["1sig", "2sig", "2_5sig", "3sig", "4sig", "skmin"] # t : threshold
-M = ["256", "2048"]
+lt = ["1sig", "2sig", "2_5sig", "3sig", "4sig", "skmin"] # lt : lower threshold
+ut = ["1sig", "2sig", "2_5sig", "3sig", "4sig", "skmax"] # ut : upper threshold
 
-lt_snr = np.zeros([len(M), len(t)])
-ut_snr = np.zeros([len(M), len(t)])
+M = ["128", "256", "512", "1024", "2048", "4096", "8192"]
+
+lt_snr = np.zeros([len(M), len(lt)])
+ut_snr = np.zeros([len(M), len(ut)])
 
 for i in np.arange(len(M)):
     # assume lower and upper thresholds have the same length
-    for j in np.arange(len(t)):
+    print("\nMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM: ", M[i])
+
+    for j in np.arange(len(lt)):
         # set initialise to False and call compute - this way no mask is applied
         # TODO: but mask also affects snr for different M and threshold - so how does one then determine the best mask?
-        intensity_l = PI("../", "sk_intensity_z_l" + t[j] + "_M" + M[i] + "_m1_n1_2210_p45216.npy",
-                       "sk_num_nz_z_l" + t[j] + "_M" + M[i] + "_m1_n1_2210_p45216.npy", initialise = False)
+        print("lt: ", lt[j])
+        print("ut: ", ut[j])
+        print("")
+
+        intensity_l = PI("../", "sk_intensity_z_l" + lt[j] + "_M" + M[i] + "_m1_n1_2210_p45216.npy",
+                         "sk_num_nz_z_l" + lt[j] + "_M" + M[i] + "_m1_n1_2210_p45216.npy", initialise = False)
         intensity_l.compute()
-        intensity_u = PI("../", "sk_intensity_z_u" + t[j] + "_M" + M[i] + "_m1_n1_2210_p45216.npy",
-                       "sk_num_nz_z_u" + t[j] + "_M" + M[i] + "_m1_n1_2210_p45216.npy", initialise = False)
+        intensity_u = PI("../", "sk_intensity_z_u" + ut[j] + "_M" + M[i] + "_m1_n1_2210_p45216.npy",
+                         "sk_num_nz_z_u" + ut[j] + "_M" + M[i] + "_m1_n1_2210_p45216.npy", initialise = False)
         intensity_u.compute()
         lt_snr[i,j] = intensity_l.snr
         ut_snr[i,j] = intensity_u.snr
 
+lt_labels = ("$1\sigma$", "$2\sigma$", "$2.5\sigma$", "$3\sigma$", "$4\sigma$", "$SK_{min}$")
+x_range = np.arange(len(lt_labels))
+y_range = np.arange(len(M))
 fig, ax = plt.subplots()
-ax.imshow(lt_snr)
-ax.title("Lower threshold")
+snr_im_lt = ax.imshow(lt_snr, origin="lower")#, aspect="auto", extent=[1,6,128,8192])
+cbar = fig.colorbar(snr_im_lt, ax=ax)
+cbar.minorticks_on()
+ax.set_ylabel("M")
+ax.set_xlabel("threshold")
+ax.set_title("Lower threshold")
+ax.set_xticks(x_range, lt_labels)
+ax.set_yticks(y_range, M)
 
+ut_labels = ("$1\sigma$", "$2\sigma$", "$2.5\sigma$", "$3\sigma$", "$4\sigma$", "$SK_{max}$")
 fig1, ax1 = plt.subplots()
-ax1.imshow(ut_snr)
-ax1.title("Upper threshold")
-
+snr_im_ut = ax1.imshow(ut_snr, origin="lower")#, aspect="auto", extent=[1,6,128,8192])
+cbar1 = fig.colorbar(snr_im_ut, ax=ax1)
+cbar1.minorticks_on()
+ax1.set_title("Upper threshold")
+ax1.set_xticks(x_range, ut_labels)
+ax1.set_yticks(y_range, M)
+ax1.set_ylabel("M")
+ax1.set_xlabel("threshold")
 plt.show()

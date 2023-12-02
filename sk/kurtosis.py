@@ -108,6 +108,12 @@ def cc_spectral_kurtosis_cm(x1, x2, M, FFT_LEN, N = 1, d = 1):
 
     return SK
 
+# Equation 13 from Nita 2016 titled: "Spectral Kurtosis statistics of transient signals"
+def sk_gaus_tran(pho, delta):
+    offset = (2 * (1 - delta) * delta * (pho**2))/((1 + (delta * pho))**2)
+
+    return 1 + offset
+
 if __name__ == "__main__":
     mean = 0
     std = 1
