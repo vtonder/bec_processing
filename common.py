@@ -123,10 +123,10 @@ def get_up_limit(up_key, M):
         up_prefix = "u1sig"
     elif up_key == "0_5s":
         from constants import upper_limit_0_5s as u
-        up_prefix = "l0_5sig"
+        up_prefix = "u0_5sig"
     elif up_key == "0s":
         from constants import upper_limit_0s as u
-        up_prefix = "l0sig"
+        up_prefix = "u0sig"
     elif up_key == "2p":
         from constants import upper_limit_2p as u
         up_prefix = "u2pfa"
