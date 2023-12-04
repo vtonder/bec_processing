@@ -3,13 +3,13 @@ import sys
 sys.path.append("../")
 from kurtosis import spectral_kurtosis_cm_perio
 from matplotlib import pyplot as plt
-from common_sk import rfi_mitigation, get_low_limit, get_up_limit
+from common import get_low_limit, get_up_limit
 from investigate_sk import sk_pdf
 import time
 import argparse
 """
 This script investigates the effect of fluctuating gain in noise across the band on the SK estimator
-The fluctuating gain results in the noise distribution to becomes a Gaussian Mixture Model (GMM)   
+The fluctuating gain results in the noise distribution to become a Gaussian Mixture Model (GMM)   
 """
 
 def add_gain(p, perc, frac):
@@ -24,8 +24,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-M", dest = "M", help = "Number of spectra to accumulate in SK calculation", default = 2048)
 parser.add_argument("-n", dest = "n", help = "Number of SKs to calculate", default = 100000)
 parser.add_argument("-f", dest = "frac", help = "Number of SKs to calculate", default = 0.5)
-parser.add_argument("-l", dest = "low", help = "Key for lower threshold to use. Keys are defined constants file. 0 (3 sigma), 4 (1 % PFA), 7 (4 sigma)", default = 7)
-parser.add_argument("-u", dest = "up", help = "Key for upper threshold to use. Keys are defined constants file. 0 (3 sigma), 4 (1 % PFA), 7 (4 sigma), 8 (sk max)", default = 7)
+parser.add_argument("-l", dest = "low", help = "Lower threshold to use. defined in constants file. map in get_lower_limit in common.py. options: 1s, 2s, 2_5s, 3s, 4s, 2p, skmin", default = "4s")
+parser.add_argument("-u", dest = "up", help = "Upper threshold to use. defined in constants file. map in get_upper_limit in common.py. options: 1s, 2s, 2_5s, 3s, 4s, 2p, skmax", default = "4s")
 parser.add_argument("-g", dest = "gain", help = "Highest gain to add", default = 50)
 parser.add_argument("-s", dest = "step", help = "Step size for gain", default = 2.5)
 parser.add_argument("-p", dest = "plot", help = "Plot or save the data", default = False)
@@ -38,8 +38,8 @@ highest_gain = float(args.gain)
 step_size = float(args.step)
 N = num_sk * M
 
-low, low_prefix = get_low_limit(int(args.low), M)
-up, up_prefix = get_up_limit(int(args.up), M)
+low, low_prefix = get_low_limit(args.low, M)
+up, up_prefix = get_up_limit(args.up, M)
 
 t1 = time.time()
 sk_values = np.arange(0, 2, 0.01)
@@ -86,8 +86,8 @@ if args.plot:
         axs[i].plot(sk_values, theoretical_sk_pdf)
         axs[i].set_ylim([10**-2, 10**1])
         #axs[i].vlines(x=low) #,xmin=M[0],xmax=M[-1], colors="red", linestyle="--", label="none")
-        ax1.set_ylabel("SK")
-        ax1.set_xlabel("% Ga")
+        axs[i].set_ylabel("SK")
+        axs[i].set_xlabel("% Ga")
     fig1.supxlabel("SK values")
     fig1.supylabel("PDF")
     plt.show()
