@@ -1,7 +1,12 @@
 import numpy as np
 
+# constants for plotting
 thesis_font = 12 # got from ThesisMain.tex
 jai_font = 11 # got from ws-jai.cls
+a4_textwidth = 9.6 # From ws-jai.cls
+a4_textheight = 7
+beamer_textwidth =  128.0 / 25.4 # From Ludwig
+beamer_textheight = 96.0 / 25.4
 
 # MeerKAT bec mode observational information
 # When look at the h5py data h5_file_obj['Data/timestamps'] data is 2048 apart. this represents samples
