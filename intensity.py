@@ -213,7 +213,7 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
     if chunk_stop_x == -1 or chunk_stop_y == -1:
         break
 
-    # summed flags per polarisation
+    # summed flags per polarisation per data_len_x(y) window
     sf_x = np.zeros([num_ch, data_len_x], dtype=np.float32)
     sf_y = np.zeros([num_ch, data_len_y], dtype=np.float32)
 

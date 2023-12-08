@@ -22,7 +22,7 @@ s1 = np.load("./2210/sub_int_intensity_M16384_2210.npy")
 #s2 = np.load("./2210/sub_int_intensity_sigma2210.npy")
 
 
-# identified ch 280 as a intermittent RFI ch
+# identified ch 280 as an intermittent RFI ch
 # wrt observation time:
 # 45216 (total # pulses) * J0437_samples_T*time_resolution*10**-6 = 260 
 # 260 / 60 = 4.3

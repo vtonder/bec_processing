@@ -27,15 +27,17 @@ def get_fwhm(peak, floor):
     return ((peak - floor) / 2) + floor
 
 def get_on_pulse(prof, fwhm, min_width = 50):
-    idx1 = np.abs(prof - fwhm).argmin()
-    prof[idx1] = 0
-    idx2 = np.abs(prof - fwhm).argmin()
+    # Make a copy as to not modify original profile
+    prof_c = np.copy(prof)
+    idx1 = np.abs(prof_c - fwhm).argmin()
+    prof_c[idx1] = 0
+    idx2 = np.abs(prof_c - fwhm).argmin()
 
     # check to make sure that idx2 does not also come out with a pulse start value
     # Know J0437 won't have a pulse width smaller than 50
     while np.abs(idx2 - idx1) <= min_width:
-        prof[idx2] = 0
-        idx2 = np.abs(prof - fwhm).argmin()
+        prof_c[idx2] = 0
+        idx2 = np.abs(prof_c - fwhm).argmin()
 
     if idx1 < idx2:
         pulse_start = idx1
