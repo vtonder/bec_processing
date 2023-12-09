@@ -83,7 +83,7 @@ if __name__ == "__main__":
         #sk_low_4sig.update({m:PI(DIR, "sk_intensity_l4sig_M" + m + "_m1_n1_2210_p45216.npy", "sk_num_nz_l4sig_M" + m + "_m1_n1_2210_p45216.npy", "sk_summed_flags_l4sig_M" + m + "_m1_n1_2210_p45216.npy", initialise=True)})
         #sk_low_4sig_median.update({m:PI(DIR, "median_z_r4_sk_l4sig_M" + m + "_2210_p4812.npy", "nz_median_z_r4_sk_l4sig_M" + m + "_2210_p4812.npy", "sf_median_z_r4_sk_l4sig_M" + m + "_2210_p4812.npy", initialise=True)})
 
-        sk_l1siguskmax.update({m:PI(DIR, "sk_intensity_l1siguskmax_M" + m + "_m1_n1_2210_p45216.npy", "sk_num_nz_l1siguskmax_M" + m + "_m1_n1_2210_p45216.npy", "sk_summed_flags_l1siguskmax_M" + m + "_m1_n1_2210_p45216.npy")})
+        sk_l1siguskmax.update({m:PI(DIR, "sk_intensity_z_l1siguskmax_M" + m + "_m1_n1_2210_p45216.npy", "sk_num_nz_z_l1siguskmax_M" + m + "_m1_n1_2210_p45216.npy", "sk_summed_flags_z_l1siguskmax_M" + m + "_m1_n1_2210_p45216.npy")})
 
     pt = PI(DIR, "pt_intensity_z_2210_p45216.npy", "pt_num_nz_z_2210_p45216.npy", "pt_summed_flags_z_2210_p45216.npy")
     med = PI(DIR, "median_z_r4_2210_p4812.npy", "num_nz_median_z_2210_p4812.npy", "sf_median_z_2210_p4812.npy")
@@ -231,14 +231,14 @@ if __name__ == "__main__":
     #ax4.plot(sk_pfa4sigskmaxlim["8192"].rfi, label="sk pfa 4 sig sk max M=8192")
     #ax4.plot(frequencies, sk_low_4sig["2048"].rfi, label="SK, PFA: low 4$\sigma$")
     ax4.plot(frequencies, sk_l1siguskmax["512"].rfi, label="SK, PFA: low 1$\sigma$ up: skmax")
-    ax4.plot(frequencies, med.rfi, label="median")
-    ax4.plot(frequencies, pt.rfi, label=">= 4$\sigma$")
+    #ax4.plot(frequencies, med.rfi, label="median")
+    #ax4.plot(frequencies, pt.rfi, label=">= 4$\sigma$")
     #ax4.plot(masked.rfi, label="masked")
     ax4.set_ylabel("% RFI flagged")
     ax4.set_xlabel("frequency [MHz]")
     ax4.legend()
     ax4.set_xlim([frequencies[0], frequencies[-1]])
-    ax4.set_ylim([0, 2])
+    #ax4.set_ylim([0, 2])
     #plt.savefig('/home/vereese/Documents/PhD/CASPER2023/casper_presentation/rfi.eps', bbox_inches='tight')
     plt.show()
 
