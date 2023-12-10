@@ -4,7 +4,7 @@ import numpy as np
 import time
 import sys
 sys.path.append("../")
-from constants import num_ch, start_indices, pulsars, xy_time_offsets, time_chunk_size, upper_limit4, lower_limit4
+from constants import num_ch, start_indices, pulsars, xy_time_offsets, time_chunk_size, upper_limit_2p, lower_limit_2p
 from pulsar_processing.pulsar_functions import incoherent_dedisperse
 import argparse
 from kurtosis import spectral_kurtosis_cm
@@ -87,8 +87,8 @@ tot_ndp_y = dfy['Data/timestamps'].shape[0]
 ind = np.load("max_pulses.npy")
 
 M = int(args.M)
-low = lower_limit4[M]
-up = upper_limit4[512]
+low = lower_limit_2p[M]
+up = upper_limit_2p[512]
 
 tag = args.tag
 pulsar = pulsars[tag]
