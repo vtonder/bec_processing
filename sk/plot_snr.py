@@ -78,11 +78,11 @@ if __name__ == "__main__":
         #sk_low_pfa2.update({m: PI(DIR, "sk_intensity_low_pfa2_M" + m + "_2210_p45216.npy", "sk_low_pfa2_summed_flags_M" + m + "_2210_p45216.npy", initialise=True)})
         #sk_low.update({m: PI(DIR, "sk_intensity_low_M" + m + "_2210_p45216.npy", "sk_low_summed_flags_M" + m + "_2210_p45216.npy", initialise=True)})
         #sk_pfa4sigskmaxlim.update({m:PI(DIR, "sk_intensity_sig4skmaxlim_M"+m+"_2210_p45216.npy","sk_sig4skmaxlim_summed_flags_M"+m+"_2210_p45216.npy", initialise=True)})
-        #sk_4sig.update({m:PI(DIR, "sk_intensity_pfa4sig_M"+m+"_2210_p45216.npy", "sk_pfa4sig_summed_flags_M"+m+"_2210_p45216.npy", initialise=True)})
         #sk_4sig_median.update({m:PI(DIR, "sk_pfa4sig_M"+m+"_median_I4_2210_p4812.npy", "sk_pfa4sig_M"+m+"_sf_median_2210_p4812.npy", initialise=True)})
         #sk_low_4sig.update({m:PI(DIR, "sk_intensity_l4sig_M" + m + "_m1_n1_2210_p45216.npy", "sk_num_nz_l4sig_M" + m + "_m1_n1_2210_p45216.npy", "sk_summed_flags_l4sig_M" + m + "_m1_n1_2210_p45216.npy", initialise=True)})
         #sk_low_4sig_median.update({m:PI(DIR, "median_z_r4_sk_l4sig_M" + m + "_2210_p4812.npy", "nz_median_z_r4_sk_l4sig_M" + m + "_2210_p4812.npy", "sf_median_z_r4_sk_l4sig_M" + m + "_2210_p4812.npy", initialise=True)})
 
+        sk_4sig.update({m:PI(DIR, "sk_intensity_z_l4sigu4sig_M" + m + "_m1_n1_2210_p45216.npy", "sk_num_nz_z_l4sigu4sig_M" + m + "_m1_n1_2210_p45216.npy", "sk_summed_flags_z_l4sigu4sig_M" + m + "_m1_n1_2210_p45216.npy")})
         sk_l1siguskmax.update({m:PI(DIR, "sk_intensity_z_l1siguskmax_M" + m + "_m1_n1_2210_p45216.npy", "sk_num_nz_z_l1siguskmax_M" + m + "_m1_n1_2210_p45216.npy", "sk_summed_flags_z_l1siguskmax_M" + m + "_m1_n1_2210_p45216.npy")})
 
     pt = PI(DIR, "pt_intensity_z_2210_p45216.npy", "pt_num_nz_z_2210_p45216.npy", "pt_summed_flags_z_2210_p45216.npy")
@@ -90,7 +90,7 @@ if __name__ == "__main__":
     # median gets run 4 times, therefore it's % RFI is different to the other data sets
     med.rfi = 100*med.sf.sum(axis=1)/(np.floor(J0437_samples_T)*4)
 
-    #snr_sk_4sig, toa_un_sk_4sig = make_snr_toa_list(sk_4sig, M)
+    snr_sk_4sig, toa_un_sk_4sig = make_snr_toa_list(sk_4sig, M)
     #snr_sk_4sig_med, toa_un_sk_4sig_med = make_snr_toa_list(sk_4sig_median, M)
     #snr_sk_low_4sig, toa_un_sk_low_4sig = make_snr_toa_list(sk_low_4sig, M)
     #snr_4sigskmax, toa_un_4sigskmax = make_snr_toa_list(sk_pfa4sigskmaxlim, M)
@@ -137,7 +137,7 @@ if __name__ == "__main__":
     #ax.semilogx(M, snr_sk_low_2, '-o', label="SK, PFA: 2%$", linewidth=2, base=2)
     #ax.semilogx(M, snr_sk_low, '-o', label="SK, PFA: low 3$\sigma$", linewidth=2, base=2)
     #ax.semilogx(M, snr_4sigskmax, '-o', label="SK, PFA: 4$\sigma$ SK max", linewidth=2, base=2)
-    #ax.semilogx(M, snr_sk_4sig, '-o', label="SK, PFA: 4$\sigma$", linewidth=2, base=2)
+    ax.semilogx(M, snr_sk_4sig, '-o', label="SK, PFA: 4$\sigma$", linewidth=2, base=2)
     #ax.semilogx(M, snr_sk_4sig_med, '-o', label="SK, PFA: 4$\sigma$ median", linewidth=2, base=2)
     ax.semilogx(M, snr_1sigskmax, '-o', label="SK, PFA: 1$\sigma$ SK max", linewidth=2, base=2)
     ax.hlines(y = med.snr, xmin = M[0], xmax = M[-1], colors="blue", linestyle="--", label = "median")
@@ -153,7 +153,7 @@ if __name__ == "__main__":
     #plt.savefig('/home/vereese/Documents/PhD/CASPER2023/casper_presentation/sk_snr.eps', transparent=True, bbox_inches='tight')
 
     fig1, ax1 = plt.subplots()
-    #ax1.semilogx(M, toa_un_sk_4sig, '-o', label="SK, PFA: 4$\sigma$", linewidth=2, base=2)
+    ax1.semilogx(M, toa_un_sk_4sig, '-o', label="SK, PFA: 4$\sigma$", linewidth=2, base=2)
     #ax1.semilogx(M, toa_un_4sigskmax, '-o', label="SK, PFA: 4$\sigma$ SK max", linewidth=2, base=2)
     #ax1.semilogx(M, toa_un_sk_low_4sig_med, '-o', label="SK, PFA: low 4$\sigma$ median", linewidth=2, base=2)
     #ax1.semilogx(M, toa_un_sk_low_4sig, '-o', label="SK, PFA: low  4$\sigma$", linewidth=2, base=2)
@@ -193,7 +193,7 @@ if __name__ == "__main__":
     #ax3.plot(phi, sk_4sig["64"].norm_profile+0.5, label="SK, M = 64, PFA: 4$\sigma$")
     #ax3.plot(phi, sk_4sig["128"].norm_profile+0.6, label="SK, M = 128, PFA: 4$\sigma$")
     #ax3.plot(phi, sk_4sig["256"].norm_profile+0.7, label="SK, M = 256, PFA: 4$\sigma$")
-    #ax3.plot(phi, sk_4sig["512"].norm_profile+0.8, label="SK, M = 512, PFA: 4$\sigma$")
+    ax3.plot(phi, sk_4sig["512"].norm_profile+0.8, label="SK, M = 512, PFA: 4$\sigma$")
     #ax3.plot(phi, sk_4sig["1024"].norm_profile+0.4, label="SK, M = 1024, PFA: 4$\sigma$")
     #ax3.plot(phi, sk_4sig["2048"].norm_profile+1, label="SK, M = 2048, PFA: 4$\sigma$")
     ax3.plot(phi, pt.norm_profile + 0.3, label=">= 4$\sigma$")
