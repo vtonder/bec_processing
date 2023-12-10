@@ -1,18 +1,18 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from kurtosis import spectral_kurtosis_cm, s1_s2, ms_spectral_kurtosis_cm
-from scipy import signal
+from constants import thesis_font, a4_textwidth, a4_textheight
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-# This is tuned for LaTeX beamer slides
-textwidth =  9.6 #128.0 / 25.4 #
-textheight = 7 # 96.0 / 25.4
-plt.rc('font', size=11, family='STIXGeneral')
+textwidth =  a4_textwidth
+textheight = a4_textheight
+font_size = thesis_font
+plt.rc('font', size=font_size, family='STIXGeneral')
 plt.rc('pdf', fonttype=42)
 #plt.rc('axes', titlesize=14, labelsize=14)
-plt.rc('axes', titlesize=11, labelsize=11)
-plt.rc(('xtick', 'ytick'), labelsize=11)
-plt.rc('legend', fontsize=11)
+plt.rc('axes', titlesize=font_size, labelsize=font_size)
+plt.rc(('xtick', 'ytick'), labelsize=font_size)
+plt.rc('legend', fontsize=font_size)
 plt.rc('lines', markersize=5)
 plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
 plt.rc('mathtext', fontset='stix')
@@ -23,8 +23,9 @@ n = 2
 FFT_LEN = 1024
 mean = 0
 std = 1
-N = 100*M*FFT_LEN
+N = 100 * M * FFT_LEN
 
+# These data sets were once off generated using sk_thresholds.py script
 pdf_M512 = np.load("/home/vereese/git/phd_data/sk_analysis/2210/pdf_M512.npy")
 pdf_M2048 = np.load("/home/vereese/git/phd_data/sk_analysis/2210/pdf_M2048.npy")
 
@@ -46,5 +47,6 @@ plt.legend()
 plt.xlim([0.7,1.3])
 plt.ylim([10**-1,10**1])
 plt.xlabel("SK values")
-#plt.savefig("/home/vereese/Documents/PhD/jai-2e/msk_hist")
+plt.ylabel("log(PDF)")
+plt.savefig("/home/vereese/Documents/PhD/ThesisTemplate/Figures/msk_hist")
 plt.show()
