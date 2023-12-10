@@ -32,7 +32,7 @@ def hypergeo(a,b,c,z):
 
 N = 1
 d = 1
-M = 65536
+M = 512
 
 u1 = 1
 u2 = (4*M**2)/((M-1)*(M+2)*(M+3)) # this is variance
@@ -110,43 +110,53 @@ cdf2 = 1 - cdf
 #print("CHECK PDF: ", np.sum(lud_pdf != p4))
 
 sigma3 = 3*np.sqrt(4/M) # theoretical 3 sigma lines
-pfa = 0.0013499 # probability of a false alarm = 0.267%
-pfa2 = 0.00067495
-pfa3 = 0.0026998
-pfa4 = 0.01 # 2% PFA 1% to both sides
-pfa5 = 0.005
-pfa6 = 0.05
-pfa7 = 3.1671241833008956e-05
+
+# probability of false alarm (PFA) according to %%
+pfa2p = 0.01 # 2% total PFA, 1% to both sides
+pfa0_13p = 0.00067495 # 0.13499% total PFA, 0.067% to both sides
+pfa0_54p = 0.0026998 # 0.53996% toal PFA, 0.269% to both sides
+pfa1p = 0.005 # 1% PFA,
+pfa6p = 0.05 # 10% PFA,
+
+# PFA ito sigma
+pfa0_5s = 0.308537538725987     # 0.5 sigma (1-0.382924922548026)/2
+pfa1s = 0.15865525393146002     # 1 sigma (1-0.68268949213708)/2
+pfa2s = 0.022750131948178987    # (2 sigma) (1-0.954499736103642)/2
+pfa2_5s = 0.006209665325775993  # (2.5 sigma) (1-0.987580669348448)/2
+pfa3s = 0.0013499               # probability of a false alarm = 0.267% (3sigma)
+pfa4s = 3.1671241833008956e-05  # (4 sigma)
+
 print("CDF theoretical 3 sigma upper limit: ", 1+sigma3)
 print("CDF theoretical 3 sigma lower limit: ", 1-sigma3)
-low_idx = np.abs(pfa7 - cdf).argmin()
-up_idx = np.abs(pfa7 - cdf2).argmin()
+low_idx = np.abs(pfa1s - cdf).argmin()
+up_idx = np.abs(pfa1s - cdf2).argmin()
 print("low: ", cdf[low_idx], x[low_idx])
 print("up : ", cdf2[up_idx], x[up_idx])
 
 plt.figure(0)
-plt.semilogy(x, p4, linewidth=2, label = "V")
+plt.semilogy(x, p4, linewidth=2)
 #plt.semilogy(x, lud_pdf, linewidth=2, label = "L")
 #plt.plot(p4, linewidth=2)
 plt.grid()
-#plt.xlim([0.8, 1.2])
-#plt.ylim([10**-1, 10**1])
+plt.xlim([0.8, 1.2])
+plt.ylim([10**-1, 10**1])
 plt.ylabel("SK PDF")
 plt.xlabel("SK")
 plt.legend()
 #plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/pdf.eps', bbox_inches='tight')
 
+
 plt.figure(1) #, figsize=[22,16])
 #plt.semilogy(x, lud_cdf, linewidth=2, label = "L")
 #plt.semilogy(x, lud_ccdf, linewidth=2, label = "L")
-plt.semilogy(x, cdf, linewidth=2, label = "V")
-plt.semilogy(x, cdf2, linewidth=2, label = "V")
-plt.axhline(pfa7, color = 'r', linewidth=2)
+plt.semilogy(x, cdf, linewidth=2)
+plt.semilogy(x, cdf2, linewidth=2)
+plt.axhline(pfa0_5s, color = 'r', linewidth=2)
 plt.axvline(1+sigma3, color = 'g', linewidth=2, linestyle = '--')
 plt.axvline(1-sigma3, color = 'g', linewidth=2, linestyle = '--')
 plt.axvline(0.77511, color = 'g', linewidth=2, linestyle = '-')
 plt.axvline(1.3254, color = 'g', linewidth=2, linestyle = '-')
-#plt.xlim([0.65, 1.35])
+plt.xlim([0.65, 1.35])
 plt.ylim([10**-7, 10**1])
 plt.tight_layout()
 plt.ylabel("SK CDF and CCDF")
