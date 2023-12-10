@@ -3,10 +3,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 import sys
 sys.path.append('../')
-sys.path.append('../pulsar_processing/')
-from constants import time_resolution, J0437_samples_T, pulsars, frequencies, thesis_font, a4_textwidth, a4_textheight
+from constants import J0437_samples_T, num_ch, frequencies, thesis_font, a4_textwidth, a4_textheight
 from pulsar_snr import PI
-from pulsar_processing.pulsar_functions import incoherent_dedisperse
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -68,8 +66,13 @@ if __name__ == "__main__":
     #sk_z4sig =  PI("zsk_intensity_l4sigu4sig_M2048_2210_p45216.npy", "zsk_summed_flags_l4sigu4sig_M2048_2210_p45216.npy")
     #sk_z4sigl = PI("zsk_intensity_l4sig_M2048_2210_p45216.npy", "zsk_summed_flags_l4sig_M2048_2210_p45216.npy")
     #sk_zskmax = PI("zsk_intensity_l4siguskmax_M2048_2210_p45216.npy","zsk_summed_flags_l4siguskmax_M2048_2210_p45216.npy")
+
+    # No RFI mitigation data set
     I = PI(DIR, "intensity_z_2210_p45216.npy", "num_nz_z_2210_p45216.npy", initialise=False)
     I.compute()
+
+    # Only static mask applied
+    Im = PI(DIR, "intensity_z_2210_p45216.npy", "num_nz_z_2210_p45216.npy")
 
     M = [64, 128, 256, 512, 1024, 2048, 4096, 8192]
     for m in M:
@@ -88,17 +91,17 @@ if __name__ == "__main__":
     pt = PI(DIR, "pt_intensity_z_2210_p45216.npy", "pt_num_nz_z_2210_p45216.npy", "pt_summed_flags_z_2210_p45216.npy")
     med = PI(DIR, "median_z_r4_2210_p4812.npy", "num_nz_median_z_2210_p4812.npy", "sf_median_z_2210_p4812.npy")
     # median gets run 4 times, therefore it's % RFI is different to the other data sets
-    med.rfi = 100*med.sf.sum(axis=1)/(np.floor(J0437_samples_T)*4)
+    med.rfi_freq = 100 * med.sf.sum(axis = 1) / (np.floor(J0437_samples_T) * 4)
+    med.rfi_pulse = 100 * med.sf.sum(axis = 0) / (num_ch * 4)
 
     snr_sk_4sig, toa_un_sk_4sig = make_snr_toa_list(sk_4sig, M)
+    snr_1sigskmax, toa_un_1sigskmax = make_snr_toa_list(sk_l1siguskmax, M)
+
     #snr_sk_4sig_med, toa_un_sk_4sig_med = make_snr_toa_list(sk_4sig_median, M)
     #snr_sk_low_4sig, toa_un_sk_low_4sig = make_snr_toa_list(sk_low_4sig, M)
     #snr_4sigskmax, toa_un_4sigskmax = make_snr_toa_list(sk_pfa4sigskmaxlim, M)
     #snr_sk_low_4sig_med, toa_un_sk_low_4sig_med = make_snr_toa_list(sk_low_4sig_median, M)
     #snr_sk_low_2, toa_un_sk_low_2 = make_snr_toa_list(sk_low_pfa2, M)
-
-    snr_1sigskmax, toa_un_1sigskmax = make_snr_toa_list(sk_l1siguskmax, M)
-
     #snr_sk_1349, toa_un_sk_1349 = make_snr_toa_list(sk, M)
     #snr_sk_low, toa_un_sk_low = make_snr_toa_list(sk_low, M)
 
@@ -132,33 +135,25 @@ if __name__ == "__main__":
     #m256_snr, m256_toa = make_snr_toa_list(msk_4siglow_M256m1nx, n_ch)"""
 
     fig, ax = plt.subplots()
-    #ax.semilogx(M, snr_sk_low_4sig_med, '-o', label="SK, PFA: low 4$\sigma$ median", linewidth=2, base=2)
-    #ax.semilogx(M, snr_sk_low_4sig, '-o', label="SK, PFA: low 4$\sigma$", linewidth=2, base=2)
-    #ax.semilogx(M, snr_sk_low_2, '-o', label="SK, PFA: 2%$", linewidth=2, base=2)
-    #ax.semilogx(M, snr_sk_low, '-o', label="SK, PFA: low 3$\sigma$", linewidth=2, base=2)
-    #ax.semilogx(M, snr_4sigskmax, '-o', label="SK, PFA: 4$\sigma$ SK max", linewidth=2, base=2)
     ax.semilogx(M, snr_sk_4sig, '-o', label="SK, PFA: 4$\sigma$", linewidth=2, base=2)
-    #ax.semilogx(M, snr_sk_4sig_med, '-o', label="SK, PFA: 4$\sigma$ median", linewidth=2, base=2)
-    ax.semilogx(M, snr_1sigskmax, '-o', label="SK, PFA: 1$\sigma$ SK max", linewidth=2, base=2)
+    ax.semilogx(M, snr_1sigskmax, '-o', label="SK, PFA: 1$\sigma$, $SK_{max}$", linewidth=2, base=2)
     ax.hlines(y = med.snr, xmin = M[0], xmax = M[-1], colors="blue", linestyle="--", label = "median")
     ax.hlines(y = pt.snr, xmin = M[0], xmax = M[-1], colors="green", linestyle="--", label =">= 4$\sigma$")
+    ax.hlines(y = Im.snr, xmin = M[0], xmax = M[-1], colors="orange", linestyle="--", label = "static mask")
     ax.hlines(y = I.snr, xmin = M[0], xmax = M[-1], colors="red", linestyle="--", label = "none")
-    #ax.hlines(y=masked.snr,xmin=M[0],xmax=M[-1], colors="yellow", linestyle="--", label="masked")
     ax.xaxis.set_major_formatter(matplotlib.ticker.LogFormatter(base=2))
     ax.set_ylabel("SNR")
     ax.set_xlabel("M values")
     ax.set_xlim([M[0], M[-1]])
     ax.legend(loc=3)
     ax.grid()
-    #plt.savefig('/home/vereese/Documents/PhD/CASPER2023/casper_presentation/sk_snr.eps', transparent=True, bbox_inches='tight')
+    plt.savefig('/home/vereese/thesis_pics/sk_snr.eps', transparent=True, bbox_inches='tight')
 
     fig1, ax1 = plt.subplots()
     ax1.semilogx(M, toa_un_sk_4sig, '-o', label="SK, PFA: 4$\sigma$", linewidth=2, base=2)
-    #ax1.semilogx(M, toa_un_4sigskmax, '-o', label="SK, PFA: 4$\sigma$ SK max", linewidth=2, base=2)
-    #ax1.semilogx(M, toa_un_sk_low_4sig_med, '-o', label="SK, PFA: low 4$\sigma$ median", linewidth=2, base=2)
-    #ax1.semilogx(M, toa_un_sk_low_4sig, '-o', label="SK, PFA: low  4$\sigma$", linewidth=2, base=2)
-    ax1.semilogx(M, toa_un_1sigskmax, '-o', label="SK, PFA: 1$\sigma$ SK max", linewidth=2, base=2)
-    ax1.hlines(y=I.toa_un,xmin=M[0],xmax=M[-1], colors="red", linestyle="--", label="none")
+    ax1.semilogx(M, toa_un_1sigskmax, '-o', label="SK, PFA: 1$\sigma$, $SK_{max}$", linewidth=2, base=2)
+    ax1.hlines(y=I.toa_un, xmin=M[0],xmax=M[-1], colors="red", linestyle="--", label="none")
+    ax1.hlines(y=Im.toa_un, xmin=M[0],xmax=M[-1], colors="orange", linestyle="--", label="static mask")
     ax1.hlines(y=pt.toa_un, xmin=M[0], xmax=M[-1], colors="green", linestyle="--", label=">= 4$\sigma$")
     ax1.hlines(y=med.toa_un,xmin=M[0],xmax=M[-1], colors="blue", linestyle="--", label="median")
     ax1.xaxis.set_major_formatter(matplotlib.ticker.LogFormatter(base=2))
@@ -167,7 +162,7 @@ if __name__ == "__main__":
     ax1.set_xlim([M[0], M[-1]])
     ax1.legend()
     ax1.grid()
-    #plt.savefig('/home/vereese/Documents/PhD/CASPER2023/casper_presentation/sk_toa_un.eps', transparent=True, bbox_inches='tight')
+    plt.savefig('/home/vereese/thesis_pics/sk_toa_un.eps', transparent=True, bbox_inches='tight')
 
     """fig2, ax2 = plt.subplots()
     #plt.plot(n_ch, m64_med_snr, '-o', label="M64, m = 1 median", linewidth=2)
@@ -189,57 +184,51 @@ if __name__ == "__main__":
 
     phi = np.arange(0, 1, 1/len(I.profile))
     fig3, ax3 = plt.subplots()
-    ax3.plot(phi, I.norm_profile+0.5, label="none")
+    ax3.plot(phi, I.norm_profile + 0.5, label="none")
     #ax3.plot(phi, sk_4sig["64"].norm_profile+0.5, label="SK, M = 64, PFA: 4$\sigma$")
     #ax3.plot(phi, sk_4sig["128"].norm_profile+0.6, label="SK, M = 128, PFA: 4$\sigma$")
     #ax3.plot(phi, sk_4sig["256"].norm_profile+0.7, label="SK, M = 256, PFA: 4$\sigma$")
-    ax3.plot(phi, sk_4sig["512"].norm_profile+0.8, label="SK, M = 512, PFA: 4$\sigma$")
+    ax3.plot(phi, sk_4sig["512"].norm_profile + 0.4, label="SK, PFA: 4$\sigma$")
     #ax3.plot(phi, sk_4sig["1024"].norm_profile+0.4, label="SK, M = 1024, PFA: 4$\sigma$")
     #ax3.plot(phi, sk_4sig["2048"].norm_profile+1, label="SK, M = 2048, PFA: 4$\sigma$")
     ax3.plot(phi, pt.norm_profile + 0.3, label=">= 4$\sigma$")
     #ax3.plot(phi, sk_pfa4sigskmaxlim["1024"].norm_profile + 0.3, label="SK, PFA: 4$\sigma$ SK max")
     #ax3.plot(phi, sk_low_4sig["1024"].norm_profile + 0.2, label="SK, PFA: low 4$\sigma$")
-    ax3.plot(phi, sk_l1siguskmax["512"].norm_profile + 0.2, label="SK, PFA: 1$\sigma$ SK max")
-    ax3.plot(phi, med.norm_profile+0.1, label="median")
+    ax3.plot(phi, sk_l1siguskmax["512"].norm_profile + 0.2, label="SK, PFA: 1$\sigma$, $SK_{max}$")
+    ax3.plot(phi, med.norm_profile + 0.1, label="median")
     #ax3.plot(phi, sk_low_4sig_median["1024"].norm_profile, label="SK, PFA: low 4$\sigma$ median")
     ax3.set_ylabel("normalized pulsar intensity profile")
     ax3.set_xlabel("pulsar phase")
     ax3.set_xlim([0,1])
     ax3.grid()
     ax3.legend()
-    #plt.savefig('/home/vereese/Documents/PhD/CASPER2023/casper_presentation/profile.eps', bbox_inches='tight')
+    plt.savefig('/home/vereese/thesis_pics/profile.eps', bbox_inches='tight')
 
-    #var_x = np.load("/home/vereese/git/phd_data/mean_analysis/2210/var_0x_1024.npy")
     fig4, ax4 = plt.subplots()
-    #ax4.plot(var_x[:,0]/100, label="variance")
-    #ax4.plot(sk["256"].rfi, label="M  = 256 sk pfa 3 sig")
-    #ax4.plot(sk["512"].rfi, label="M  = 512 sk pfa 3 sig")
-    #ax4.plot(sk["1024"].rfi, label="M = 1024 sk pfa 3 sig")
-    #ax4.plot(sk["2048"].rfi, label="M = 2048 sk pfa 3 sig")
-    #ax4.plot(sk_low["512"].rfi, label="sk low 3 sig")
-    #ax4.plot(sk["4096"].rfi, label="sk pfa 3 sig")
-    #ax4.plot(sk_4sig["128"].rfi, label="sk pfa 4 sig M=128")
-    #ax4.plot(sk_4sig["256"].rfi, label="sk pfa 4 sig M=256")
-    #ax4.plot(sk_4sig["512"].rfi, label="sk pfa 4 sig M=512")
-    #ax4.plot(sk_4sig["1024"].rfi, label="sk pfa 4 sig M=1024")
-    #ax4.plot(frequencies, sk_4sig["2048"].rfi, label="SK, M = 2048, PFA: 4$\sigma$")
-    #ax4.plot(sk_4sig["4096"].rfi, label="sk pfa 4 sig M=4096")
-    #ax4.plot(sk_nz4sig.rfi, label="non zero sk pfa 4 sig")
-    #ax4.plot(sk_z4sig.rfi, label="zero sk pfa 4 sig " + str(sk_z4sig.snr))
-    #ax4.plot(sk_zskmax.rfi, label="zero sk pfa 4 sig skmax")
-    #ax4.plot(sk_4sig["2048"].rfi, label="sk pfa 4 sig M=2048")
-    #ax4.plot(sk_pfa4sigskmaxlim["8192"].rfi, label="sk pfa 4 sig sk max M=8192")
-    #ax4.plot(frequencies, sk_low_4sig["2048"].rfi, label="SK, PFA: low 4$\sigma$")
-    ax4.plot(frequencies, sk_l1siguskmax["512"].rfi, label="SK, PFA: low 1$\sigma$ up: skmax")
-    #ax4.plot(frequencies, med.rfi, label="median")
-    #ax4.plot(frequencies, pt.rfi, label=">= 4$\sigma$")
-    #ax4.plot(masked.rfi, label="masked")
+    ax4.plot(frequencies, sk_4sig["512"].rfi_freq, label="SK, PFA: 4$\sigma$")
+    ax4.plot(frequencies, sk_l1siguskmax["512"].rfi_freq, label="SK, PFA: 1$\sigma$, $SK_{max}$")
+    ax4.plot(frequencies, med.rfi_freq, label="median")
+    ax4.plot(frequencies, pt.rfi_freq, label=">= 4$\sigma$")
     ax4.set_ylabel("% RFI flagged")
     ax4.set_xlabel("frequency [MHz]")
     ax4.legend()
     ax4.set_xlim([frequencies[0], frequencies[-1]])
     #ax4.set_ylim([0, 2])
-    #plt.savefig('/home/vereese/Documents/PhD/CASPER2023/casper_presentation/rfi.eps', bbox_inches='tight')
+    plt.axvspan(frequencies[0], frequencies[50], color='blue', alpha=0.5)
+    plt.axvspan(frequencies[-50], frequencies[-1], color='blue', alpha=0.5)
+    plt.axvspan(frequencies[95], frequencies[126], color='blue', alpha=0.5)
+    plt.savefig('/home/vereese/thesis_pics/rfi_freq.eps', bbox_inches='tight')
+
+    fig5, ax5 = plt.subplots()
+    ax5.plot(frequencies, sk_4sig["512"].rfi_pulse, label="SK, PFA: 4$\sigma$")
+    ax5.plot(frequencies, sk_l1siguskmax["512"].rfi_pulse, label="SK, PFA: 1$\sigma$, $SK_{max}$")
+    ax5.plot(frequencies, med.rfi_pulse, label="median")
+    ax5.plot(frequencies, pt.rfi_pulse, label=">= 4$\sigma$")
+    ax5.set_ylabel("% RFI flagged")
+    ax5.set_xlabel("frequency [MHz]")
+    ax5.legend()
+    ax5.set_xlim([frequencies[0], frequencies[-1]])
+    plt.savefig('/home/vereese/thesis_pics/rfi_pulse.eps', bbox_inches='tight')
     plt.show()
 
 """a = I.I.sum(axis=1)
@@ -265,19 +254,15 @@ plt.show()"""
 #plt.semilogy(sk_low_pfa4sig["128"].rfi, label="sk low 4sig M128")
 #plt.semilogy(sk_low_pfa4sig["256"].rfi, label="sk low 4sig M256")
 #ax4.semilogy(sk_low_pfa4sig["4096"].rfi, label="sk low 4sig M4096")
-
 #plt.plot(sk_low_pfa4sig["256"].rfi, label="sk low 4sig M265")
 #plt.plot(sk["1024"].rfi, label="sk 3sig ")
 #plt.plot(vmsk_4siglow_M64m1nx["8"].rfi, label="msk M64m1n8")
 #plt.semilogy(msk_4siglow_M256m1nx["2"].rfi, label="msk M256m1n2")
-
 #plt.semilogy(vmsk_4siglow_M256m1n2.rfi, label="vmsk M256m1n2")
 #plt.plot(sk_pfa4sigsklim["1024"].rfi, label="sk 4sig sklim")
 #plt.plot(sk_pfa4sig4sigsklim["1024"].rfi, label="sk 4sig 4sig sklim")
 #plt.plot(sk_4sig["64"].rfi, label="sk 4sig")
-#
 #plt.plot(vt.rfi, label="var threshold")
-
 #plt.plot(sk_low_pfa4sig["1024"].rfi, label="sk low pfa 4 sig")
 #plt.plot(sk_pfa4sig4sigsklim["1024"].rfi, label="sk pfa 4 sig 4 sig sklim")
 #plt.plot(sk_pfa4sigsklim["1024"].rfi, label="sk pfa 4 sig sklim")

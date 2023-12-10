@@ -1,10 +1,11 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import sys
 sys.path.append('../')
-from constants import pulsars, num_ch, frequencies, dispersion_constant, freq_resolution, time_resolution, dme_ch
+sys.path.append('../pulsar_processing/')
+from constants import pulsars, num_ch, time_resolution, dme_ch
 import re
 from common import get_freq_ch
+from pulsar_processing.pulsar_functions import incoherent_dedisperse
 
 def get_profile(I, nz):
     """
@@ -245,7 +246,11 @@ class PI:
 
         if sf:
             self.sf = np.load(dir + sf)
-            self.rfi = 100*(np.float32(self.sf).sum(axis=1) / (self.num_pol*int(self.samples_T)*self.num_pulses))
+            # % RFI flagged as a function of frequency
+            self.rfi_freq = 100 * (np.float32(self.sf).sum(axis=1) / (self.num_pol * int(self.samples_T) * self.num_pulses))
+            # % RFI flagged as a function of pulse phase
+            dsf = incoherent_dedisperse(np.copy(self.sf), pulsars[self.tag]) # dedispersed summed flags
+            self.rfi_pulse = 100 * (np.float32(dsf).sum(axis=0) / (self.num_pol * int(self.samples_T) * num_ch))
         else:
             self.sf = None
 
@@ -279,5 +284,3 @@ class PI:
         snr, toa_un = snr_toa_un(profile, pulse_start, pulse_width)
 
         self.pulse_start, self.pulse_stop, self.pulse_width, self.snr, self.toa_un = pulse_start, pulse_stop, pulse_width, snr, toa_un
-
-        #return pulse_start, pulse_stop, pulse_width, snr, toa_un
