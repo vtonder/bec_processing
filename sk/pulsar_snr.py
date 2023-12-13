@@ -249,8 +249,8 @@ class PI:
             # % RFI flagged as a function of frequency
             self.rfi_freq = 100 * (np.float32(self.sf).sum(axis=1) / (self.num_pol * int(self.samples_T) * self.num_pulses))
             # % RFI flagged as a function of pulse phase
-            dsf = incoherent_dedisperse(np.copy(self.sf), pulsars[self.tag]) # dedispersed summed flags
-            self.rfi_pulse = 100 * (np.float32(dsf).sum(axis=0) / (self.num_pol * int(self.samples_T) * num_ch))
+            dsf = incoherent_dedisperse(np.copy(self.sf), self.tag) # dedispersed summed flags
+            self.rfi_pulse = 100 * (np.float32(dsf).sum(axis=0) / (self.num_pol * self.num_pulses * num_ch))
         else:
             self.sf = None
 
