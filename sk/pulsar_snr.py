@@ -242,7 +242,7 @@ class PI:
         self.tag = nums_str[-2]
         self.num_pulses = nums_int[-1]
         self.pulsar = pulsars[self.tag]
-        self.samples_T = int(np.floor(self.pulsar['samples_T']))
+        self.samples_T = round(self.pulsar['samples_T'])
 
         if sf:
             self.sf = np.load(dir + sf)
