@@ -5,12 +5,20 @@ from kurtosis import sk_gaus_tran
 import sys
 sys.path.append('../')
 from constants import num_ch, lower_limit_1s
+import argparse
 
-intensity = PI("../", "intensity_z_2210_p45216.npy", "num_nz_z_2210_p45216.npy", initialise=True)
+parser = argparse.ArgumentParser()
+parser.add_argument("-d", dest = "dir", help = "directory where data is located. default location: /home/vereese/data/phd_data/sk_analysis/2210", default = "/home/vereese/data/phd_data/sk_analysis/2210/")
+# "/home/vereese/git/phd_data/sk_analysis/2210/4sig/"
+args = parser.parse_args()
+DIR = args.dir
+
+
+intensity = PI(DIR, "intensity_z_2210_p45216.npy", "num_nz_z_2210_p45216.npy", initialise=True)
 #intensity.compute()
 
-M = 512
-#M = 4096 
+#M = 512
+M = 4096 
 
 P_M = intensity.samples_T / M # pulsar period / M This is needed to adjust predicted M because not all M windows will contain the on-pulse section 
 #for i in np.arange(num_ch): 
@@ -30,8 +38,8 @@ print("Pulse width: ", pulse_width)
 print("Pulse period / M: ", P_M)
 print("Number of M blocks that contain on pulse: ", bop)
 print("SK in block that contains on pulse: ", sk_offset)
-print("averaged sk: ", predicted_sk)
-print("1 sigma inside, only lower: ", s1_in)
+print("predicted sk: ", predicted_sk)
+print("lower threshold 1 sigma away from mean 1: ", s1)
 
-print("mean sk shift ito 1sigma inside : ", ((predicted_sk) / s1_in) * 100)
+print("mean sk shift ito 1sigma inside : ", (np.abs(1-predicted_sk) / s1) * 100)
 
