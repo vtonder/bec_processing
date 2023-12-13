@@ -124,7 +124,8 @@ dp = args.dp
 tag = args.tag
 pulsar = pulsars[tag]
 samples_T = pulsar['samples_T']
-int_samples_T = int(np.floor(samples_T))
+#int_samples_T = int(np.floor(samples_T))
+int_samples_T = round(samples_T)
 
 fx = '160464' + args.tag + '_wide_tied_array_channelised_voltage_0x.h5'
 fy = '160464' + args.tag + '_wide_tied_array_channelised_voltage_0y.h5'
