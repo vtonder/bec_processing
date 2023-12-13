@@ -30,7 +30,7 @@ def incoherent_dedisperse(data, pulsar_tag):
     f2 = frequencies[-1]
     for i, freq in enumerate(frequencies):
         delay = 10**6*(dispersion_constant * dm * ((1 / f2**2) - (1 / freq**2))) # us
-        num_2_roll = int(np.round(delay / time_resolution)) # samples
+        num_2_roll = round(delay / time_resolution) # samples
         data[i, :] = np.roll(data[i, :], num_2_roll)
 
     return data

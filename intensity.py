@@ -9,9 +9,10 @@ from pulsar_processing.pulsar_functions import incoherent_dedisperse
 from common import get_data_window, get_pulse_window, get_pulse_power, get_pulse_flags, get_low_limit, get_up_limit
 import argparse
 
+# note val must either be one float or a numpy array of values
 def check_low(val):
     global low
-
+ 
     return val < low
 
 def check_up(val):
@@ -23,9 +24,42 @@ def check_low_up(val):
     global low
     global up
 
-    return val < low or val > up
+    # needs to be the bitwise | or operator, otherwise this function can't deal with both single or numpy arrays as val
+    return (val < low) | (val > up)
 
-def sk_mit(data, sk_flags, sf, sk, M, data_window_len, first_non_zero_idx, chunk_start, check_thres_array):
+def sk_msk(data, sk_flags, sf, sk, sk_idx, idx_start, idx_stop, check_thres_array):
+    for ch, val in enumerate(sk[:, sk_idx]):
+        if check_thres_array[ch](val):
+            sk_flags[ch, sk_idx] = np.uint8(1)
+            sf[ch, idx_start:idx_stop] = 1
+            # Use to replace with noise: np.random.normal(0, 14, (M, 2)) but now 0 & normalise, to try and mimic what pulsar timing experts do
+            data[ch, idx_start:idx_stop, :] = 0 
+
+    return data, sk_flags, sf
+
+# voting multi-scale kurtosis needs to check a range of sk values depending on m and n parameter settings
+def vmsk(data, sk_flags, sf, sk, sk_idx, idx_start, idx_stop, check_thres_array):
+    global m
+    global n
+
+    chs = np.arange(sk.shape[0])
+    for ch in chs:
+        ri = ch - n + 1
+        rj = sk_idx - m + 1
+
+        if ri < 0:
+            ri = 0
+        if rj < 0:
+            rj = 0
+
+        if check_thres_array[ch](sk[ri:(ch+1), rj:(sk_idx+1)]).any():
+            sk_flags[ch, sk_idx] = np.uint8(1)
+            sf[ch, idx_start:idx_stop] = 1
+            data[ch, idx_start:idx_stop, :] = 0
+
+    return data, sk_flags, sf
+
+def sk_mit(data, sk_flags, sf, sk, M, data_window_len, first_non_zero_idx, chunk_start, check_thres_array, sk_type):
 
     for idx in np.arange(0, data_window_len, M):
         idx_start = int(idx)
@@ -42,45 +76,7 @@ def sk_mit(data, sk_flags, sf, sk, M, data_window_len, first_non_zero_idx, chunk
             print("idx_stop: ", idx_stop)
             idx_stop = ndp - 1
 
-        for ch, val in enumerate(sk[:, sk_idx]):
-            if check_thres_array[ch](val):
-                sk_flags[ch, sk_idx] = np.uint8(1)
-                sf[ch, idx_start:idx_stop] = 1
-                # Use to replace with noise: np.random.normal(0, 14, (M, 2)) but now 0 & normalise, to try and mimic what pulsar timing experts do
-                data[ch, idx_start:idx_stop, :] = 0 
-
-    return data, sk_flags, sf
-
-def vmsk_mit(data, sk_flags, sf, sk, M, data_window_len, first_non_zero_idx, chunk_start):
-    for idx in np.arange(0, data_window_len, M):
-        idx_start = int(idx)
-        idx_stop = int(idx_start + M)
-
-        sk_idx = int((chunk_start+idx_start-first_non_zero_idx)/M)
-        if sk_idx >= sk.shape[1]:
-            print("reached end of sk_idx")
-            break
-
-        if idx_stop >= ndp:
-            print("shortening range because otherwise it will read from memory that doesn't exist")
-            print("tot_ndp : ", ndp)
-            print("idx_stop: ", idx_stop)
-            idx_stop = ndp - 1
-
-        chs = np.arange(sk.shape[0])
-        for ch in chs:
-            ri = ch - n + 1
-            rj = sk_idx - m + 1
-
-            if ri < 0:
-                ri = 0
-            if rj < 0:
-                rj = 0
-
-            if (sk[ri:(ch+1), rj:(sk_idx+1)] < low).any():
-                sk_flags[ch, sk_idx] = np.uint8(1)
-                sf[ch, idx_start:idx_stop] = 1
-                data[ch, idx_start:idx_stop, :] = 0
+        data, sk_flags, sf = sk_type(data, sk_flags, sf, sk, sk_idx, idx_start, idx_stop, check_thres_array)
 
     return data, sk_flags, sf
 
@@ -105,7 +101,6 @@ def pt_mit(data, std, sf):
 
     return data, sf
 
-
 # get number of processors and processor rank
 comm = MPI.COMM_WORLD
 size = comm.Get_size()
@@ -129,7 +124,8 @@ dp = args.dp
 tag = args.tag
 pulsar = pulsars[tag]
 samples_T = pulsar['samples_T']
-int_samples_T = int(np.floor(samples_T))
+#int_samples_T = int(np.floor(samples_T))
+int_samples_T = round(samples_T)
 
 fx = '160464' + args.tag + '_wide_tied_array_channelised_voltage_0x.h5'
 fy = '160464' + args.tag + '_wide_tied_array_channelised_voltage_0y.h5'
@@ -181,8 +177,20 @@ if rfi == "sk" or rfi == "msk" or rfi == "vmsk":
         for ch in dme_ch:
             check_thres_arr[ch] = check_low_up
 
-    skx = np.float32(np.load("./sk/" + rfi + "_" + args.dp + "_M" + str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_0x.npy"))
-    sky = np.float32(np.load("./sk/" + rfi + "_" + args.dp + "_M" + str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_0y.npy"))
+    if rfi == "sk":
+        skx = np.float32(np.load("./sk/" + "sk_" + args.dp + "_M" + str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_0x.npy"))
+        sky = np.float32(np.load("./sk/" + "sk_" + args.dp + "_M" + str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_0y.npy"))
+    else:
+        # Note, both msk and vmsk use msk data sets
+        skx = np.float32(np.load("./sk/" + "msk_" + args.dp + "_M" + str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_0x.npy"))
+        sky = np.float32(np.load("./sk/" + "msk_" + args.dp + "_M" + str(M) + "_m" + str(m) + "_n" + str(n) + "_" + tag + "_0y.npy"))
+
+    # The type of sk mitigation function to call
+    if rfi == "vmsk":
+        sk_type = vmsk 
+    else:
+        sk_type = sk_msk 
+
     x_flags = np.zeros(skx.shape, dtype=np.uint8)
     y_flags = np.zeros(sky.shape, dtype=np.uint8)
 
@@ -223,25 +231,19 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
         data_x = dfx['Data/bf_raw'][:, chunk_start_x:chunk_stop_x, :].astype(np.float32)
         prev_start_x = chunk_start_x
         prev_stop_x = chunk_stop_x
-        if args.rfi:
-            if rfi == "sk" or rfi == "msk":
-                data_x, x_flags, sf_x = sk_mit(data_x, x_flags, sf_x, skx, M, data_len_x, start_indices[fx], chunk_start_x, check_thres_arr)
-            elif rfi == "vmsk":
-                data_x, x_flags, sf_x = vmsk_mit(data_x, x_flags, sf_x, skx, M, data_len_x, start_indices[fx], chunk_start_x)
-            elif rfi == "pt":
-                data_x, sf_x = pt_mit(data_x, int(args.std), sf_x)
+        if args.rfi == "sk" or args.rfi == "msk" or args.rfi == "vmsk":
+            data_x, x_flags, sf_x = sk_mit(data_x, x_flags, sf_x, skx, M, data_len_x, start_indices[fx], chunk_start_x, check_thres_arr, sk_type)
+        elif args.rfi == "pt":
+            data_x, sf_x = pt_mit(data_x, int(args.std), sf_x)
 
     if prev_start_y != chunk_start_y or prev_stop_y != chunk_stop_y:
         data_y = dfy['Data/bf_raw'][:, chunk_start_y:chunk_stop_y, :].astype(np.float32)
         prev_start_y = chunk_start_y
         prev_stop_y = chunk_stop_y
-        if args.rfi:
-            if rfi == "sk" or rfi == "msk":
-                data_y, sky_flags, sf_y = sk_mit(data_y, y_flags, sf_y, sky, M, data_len_y, start_indices[fy], chunk_start_y, check_thres_arr)
-            elif rfi == "vmsk":
-                data_y, y_flags, sf_y = vmsk_mit(data_y, y_flags, sf_y, sky, M, data_len_y, start_indices[fy], chunk_start_y)
-            elif rfi == "pt":
-                data_y, sf_y = pt_mit(data_y, int(args.std), sf_y)
+        if args.rfi == "sk" or args.rfi == "msk" or args.rfi == "vmsk":
+            data_y, sky_flags, sf_y = sk_mit(data_y, y_flags, sf_y, sky, M, data_len_y, start_indices[fy], chunk_start_y, check_thres_arr, sk_type)
+        elif args.rfi == "pt":
+            data_y, sf_y = pt_mit(data_y, int(args.std), sf_y)
 
     pulse_start_x, pulse_stop_x = get_pulse_window(chunk_start_x, si_x, i, samples_T, int_samples_T)
     pulse_start_y, pulse_stop_y = get_pulse_window(chunk_start_y, si_y, i, samples_T, int_samples_T)

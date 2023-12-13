@@ -105,7 +105,10 @@ if __name__ == "__main__":
     #snr_sk_1349, toa_un_sk_1349 = make_snr_toa_list(sk, M)
     #snr_sk_low, toa_un_sk_low = make_snr_toa_list(sk_low, M)
 
-    #n_ch = [2, 4, 8, 16]
+    n_ch = [2, 4, 8, 16]
+    msk_l1siguskamx_M512m1nx = {}
+    vmsk_l1siguskamx_M512m1nx = {}
+
     #msk_4siglow_M64m1nx = {}
     #msk_4siglow_M128m1nx = {}
     #msk_4siglow_M4096m1nx = {}
@@ -114,32 +117,36 @@ if __name__ == "__main__":
     #msk64m1nx_median = {"1":PI("sk_low_pfa4sig_M64_median_smoothed_I4.npy")}
     #msk128m1nx = {"1":PI("sk_intensity_low_pfa4sig_M128_2210_p45216.npy")}
 
-    """for n in n_ch:
+    for n in n_ch:
         n = str(n)
-        msk_4siglow_M64m1nx.update({n:PI(DIR, "MSK_intensity_low_sig4_M64_m1_n" + n + "_2210_p45216.npy", initialise=True)})
-        msk_4siglow_M128m1nx.update({n:PI(DIR, "MSK_intensity_low_sig4_M128_m1_n" + n + "_2210_p45216.npy", initialise=True)})
-        msk_4siglow_M4096m1nx.update({n:PI(DIR, "MSK_intensity_low_sig4_M4096_m1_n" + n + "_2210_p45216.npy", initialise=True)})
+        msk_l1siguskamx_M512m1nx.update({n:PI(DIR, "msk_intensity_z_l1siguskmax_M512_m1_n" + n + "_2210_p45216.npy", "msk_num_nz_z_l1siguskmax_M512_m1_n" + n + "_2210_p45216.npy", "msk_summed_flags_z_l1siguskmax_M512_m1_n" + n + "_2210_p45216.npy")})
+        vmsk_l1siguskamx_M512m1nx.update({n:PI(DIR, "vmsk_intensity_z_l1siguskmax_M512_m1_n" + n + "_2210_p45216.npy", "vmsk_num_nz_z_l1siguskmax_M512_m1_n" + n + "_2210_p45216.npy", "vmsk_summed_flags_z_l1siguskmax_M512_m1_n" + n + "_2210_p45216.npy")}) 
+        #msk_4siglow_M64m1nx.update({n:PI(DIR, "MSK_intensity_low_sig4_M64_m1_n" + n + "_2210_p45216.npy", initialise=True)})
+        #msk_4siglow_M128m1nx.update({n:PI(DIR, "MSK_intensity_low_sig4_M128_m1_n" + n + "_2210_p45216.npy", initialise=True)})
+        #msk_4siglow_M4096m1nx.update({n:PI(DIR, "MSK_intensity_low_sig4_M4096_m1_n" + n + "_2210_p45216.npy", initialise=True)})
         #msk_4siglow_M64m1nx[n].rfi = np.load(DIR + "MSK_rfi_64_m1_n" + n + ".npy")
-        vmsk_4siglow_M64m1nx.update({n:PI(DIR, "VMSK_intensity_low_sig4_M64_m1_n" + n + "_2210_p45216.npy", initialise=True)})
+        #vmsk_4siglow_M64m1nx.update({n:PI(DIR, "VMSK_intensity_low_sig4_M64_m1_n" + n + "_2210_p45216.npy", initialise=True)})
         #vmsk_4siglow_M64m1nx[n].rfi = np.load(DIR + "VMSK_rfi_64_m1_n" + n + ".npy")
-
         #msk64m1nx_median.update({n:PI(DIR, "msk_low_4sig_M64m1n" + n + "_median_I4.npy")})
         #msk128m1nx.update({n:PI(DIR, "MSK_intensity_low_sig4_M128_m1_n"+n+"_2210_p45216.npy")})
         #msk_4siglow_M256m1nx.update({n:PI(DIR, "MSK_intensity_low_sig4_M256_m1_n" + n + "_2210_p45216.npy")})
 
-    m64_snr, m64_toa = make_snr_toa_list(msk_4siglow_M64m1nx, n_ch)
-    vm64_snr, vm64_toa = make_snr_toa_list(vmsk_4siglow_M64m1nx, n_ch)
+    m512_snr, m512_toa = make_snr_toa_list(msk_l1siguskamx_M512m1nx, n_ch)
+    vm512_snr, vm512_toa = make_snr_toa_list(vmsk_l1siguskamx_M512m1nx, n_ch)
+
+    #m64_snr, m64_toa = make_snr_toa_list(msk_4siglow_M64m1nx, n_ch)
+    #vm64_snr, vm64_toa = make_snr_toa_list(vmsk_4siglow_M64m1nx, n_ch)
     #m64_med_snr, m64_med_toa = make_snr_toa_list(msk64m1nx_median, n_ch)
-    m128_snr, m128_toa = make_snr_toa_list(msk_4siglow_M128m1nx, n_ch)
-    m4096_snr, m4096_toa = make_snr_toa_list(msk_4siglow_M4096m1nx, n_ch)
-    #m256_snr, m256_toa = make_snr_toa_list(msk_4siglow_M256m1nx, n_ch)"""
+    #m128_snr, m128_toa = make_snr_toa_list(msk_4siglow_M128m1nx, n_ch)
+    #m4096_snr, m4096_toa = make_snr_toa_list(msk_4siglow_M4096m1nx, n_ch)
+    #m256_snr, m256_toa = make_snr_toa_list(msk_4siglow_M256m1nx, n_ch)
 
     fig, ax = plt.subplots()
     ax.semilogx(M, snr_sk_4sig, '-o', label="SK, PFA: 4$\sigma$", linewidth=2, base=2)
     ax.semilogx(M, snr_1sigskmax, '-o', label="SK, PFA: 1$\sigma$, $SK_{max}$", linewidth=2, base=2)
     ax.hlines(y = med.snr, xmin = M[0], xmax = M[-1], colors="blue", linestyle="--", label = "median")
     ax.hlines(y = pt.snr, xmin = M[0], xmax = M[-1], colors="green", linestyle="--", label =">= 4$\sigma$")
-    ax.hlines(y = Im.snr, xmin = M[0], xmax = M[-1], colors="orange", linestyle="--", label = "static mask")
+    ax.hlines(y = Im.snr, xmin = M[0], xmax = M[-1], colors="cyan", linestyle="--", label = "static mask")
     ax.hlines(y = I.snr, xmin = M[0], xmax = M[-1], colors="red", linestyle="--", label = "none")
     ax.xaxis.set_major_formatter(matplotlib.ticker.LogFormatter(base=2))
     ax.set_ylabel("SNR")
@@ -152,10 +159,10 @@ if __name__ == "__main__":
     fig1, ax1 = plt.subplots()
     ax1.semilogx(M, toa_un_sk_4sig, '-o', label="SK, PFA: 4$\sigma$", linewidth=2, base=2)
     ax1.semilogx(M, toa_un_1sigskmax, '-o', label="SK, PFA: 1$\sigma$, $SK_{max}$", linewidth=2, base=2)
-    ax1.hlines(y=I.toa_un, xmin=M[0],xmax=M[-1], colors="red", linestyle="--", label="none")
-    ax1.hlines(y=Im.toa_un, xmin=M[0],xmax=M[-1], colors="orange", linestyle="--", label="static mask")
+    ax1.hlines(y=I.toa_un, xmin=M[0], xmax=M[-1], colors="red", linestyle="--", label="none")
+    ax1.hlines(y=Im.toa_un, xmin=M[0], xmax=M[-1], colors="cyan", linestyle="--", label="static mask")
     ax1.hlines(y=pt.toa_un, xmin=M[0], xmax=M[-1], colors="green", linestyle="--", label=">= 4$\sigma$")
-    ax1.hlines(y=med.toa_un,xmin=M[0],xmax=M[-1], colors="blue", linestyle="--", label="median")
+    ax1.hlines(y=med.toa_un,xmin=M[0], xmax=M[-1], colors="blue", linestyle="--", label="median")
     ax1.xaxis.set_major_formatter(matplotlib.ticker.LogFormatter(base=2))
     ax1.set_xlabel("M values")
     ax1.set_ylabel("TOA uncertainty [$\mu$s]")
@@ -164,15 +171,16 @@ if __name__ == "__main__":
     ax1.grid()
     plt.savefig('/home/vereese/thesis_pics/sk_toa_un.eps', transparent=True, bbox_inches='tight')
 
-    """fig2, ax2 = plt.subplots()
-    #plt.plot(n_ch, m64_med_snr, '-o', label="M64, m = 1 median", linewidth=2)
-    ax2.plot(n_ch, m64_snr, '-o', label="msk M64, m = 1", linewidth=2)
-    ax2.plot(n_ch, m128_snr, '-o', label="msk M128, m = 1", linewidth=2)
-    ax2.plot(n_ch, m4096_snr, '-o', label="msk M4096, m = 1", linewidth=2)
-    ax2.plot(n_ch, vm64_snr, '-o', label="vmsk M64, m = 1", linewidth=2)
-    markers = ["d", "v", "s", "*", "^", "d"]
-    for i, Msk in enumerate(["64", "128", "256", "512", "4096", "8192"]):
-        ax2.plot(1, sk_low_4sig[Msk].snr, markers[i], label="SK, M="+Msk)
+    fig2, ax2 = plt.subplots()
+    ax2.plot(n_ch, m512_snr, '-o', label="MSK, M = 512, m = 1", linewidth=2)
+    ax2.plot(n_ch, vm512_snr, '-o', label="VMSK, M = 512, m = 1", linewidth=2)
+    #ax2.plot(n_ch, m64_snr, '-o', label="msk M64, m = 1", linewidth=2)
+    #ax2.plot(n_ch, m128_snr, '-o', label="msk M128, m = 1", linewidth=2)
+    #ax2.plot(n_ch, m4096_snr, '-o', label="msk M4096, m = 1", linewidth=2)
+    #ax2.plot(n_ch, vm64_snr, '-o', label="vmsk M64, m = 1", linewidth=2)
+    markers = ["d", "v", "s", "*"] #, "^", "d"]
+    for i, Msk in enumerate(["1024", "2048", "4096", "8192"]):
+        ax2.plot(1, sk_l1siguskmax[Msk].snr, markers[i], label="SK, M = "+Msk)
     #plt.plot(n_ch, m128_snr, '-o', label="M128, m = 1", linewidth=2)
     #plt.plot(n_ch, m256_snr, '-o', label="M256, m = 1", linewidth=2)
     ax2.set_xlabel("n")
@@ -180,7 +188,7 @@ if __name__ == "__main__":
     ax2.set_xlim([0, n_ch[-1]])
     ax2.grid()
     ax2.legend()
-    #plt.savefig('/home/vereese/Documents/PhD/CASPER2023/casper_presentation/msk.eps', bbox_inches='tight')"""
+    plt.savefig('/home/vereese/thesis_pics/msk_snr.eps', bbox_inches='tight')
 
     phi = np.arange(0, 1, 1/len(I.profile))
     fig3, ax3 = plt.subplots()
@@ -213,21 +221,21 @@ if __name__ == "__main__":
     ax4.set_xlabel("frequency [MHz]")
     ax4.legend()
     ax4.set_xlim([frequencies[0], frequencies[-1]])
-    #ax4.set_ylim([0, 2])
+    ax4.set_ylim([0, 15])
     plt.axvspan(frequencies[0], frequencies[50], color='blue', alpha=0.5)
     plt.axvspan(frequencies[-50], frequencies[-1], color='blue', alpha=0.5)
     plt.axvspan(frequencies[95], frequencies[126], color='blue', alpha=0.5)
     plt.savefig('/home/vereese/thesis_pics/rfi_freq.eps', bbox_inches='tight')
 
     fig5, ax5 = plt.subplots()
-    ax5.plot(frequencies, sk_4sig["512"].rfi_pulse, label="SK, PFA: 4$\sigma$")
-    ax5.plot(frequencies, sk_l1siguskmax["512"].rfi_pulse, label="SK, PFA: 1$\sigma$, $SK_{max}$")
-    ax5.plot(frequencies, med.rfi_pulse, label="median")
-    ax5.plot(frequencies, pt.rfi_pulse, label=">= 4$\sigma$")
+    ax5.plot(phi, sk_4sig["512"].rfi_pulse, label="SK, PFA: 4$\sigma$")
+    ax5.plot(phi, sk_l1siguskmax["512"].rfi_pulse, label="SK, PFA: 1$\sigma$, $SK_{max}$")
+    ax5.plot(phi, med.rfi_pulse, label="median")
+    ax5.plot(phi, pt.rfi_pulse, label=">= 4$\sigma$")
     ax5.set_ylabel("% RFI flagged")
-    ax5.set_xlabel("frequency [MHz]")
+    ax5.set_xlabel("pulse phase")
     ax5.legend()
-    ax5.set_xlim([frequencies[0], frequencies[-1]])
+    ax5.set_xlim([0, 1])
     plt.savefig('/home/vereese/thesis_pics/rfi_pulse.eps', bbox_inches='tight')
     plt.show()
 
