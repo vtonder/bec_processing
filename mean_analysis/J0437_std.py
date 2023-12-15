@@ -1,14 +1,13 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.ndimage import median_filter as med
-from constants import frequencies
+from constants import frequencies, a4_textheight, a4_textwidth, thesis_font
 
-font_size = 11
-textwidth = 9.6 #128.0 / 25.4
-textheight = 7 #96.0 / 25.4
+font_size = thesis_font
+textwidth = a4_textwidth
+textheight = a4_textheight
 plt.rc('font', size=font_size, family='STIXGeneral')
 plt.rc('pdf', fonttype=42)
-#plt.rc('axes', titlesize=14, labelsize=14)
 plt.rc('axes', titlesize=font_size, labelsize=font_size)
 plt.rc(('xtick', 'ytick'), labelsize=font_size)
 plt.rc('legend', fontsize=font_size)
@@ -26,22 +25,21 @@ med_x = np.median(vars_x, axis=0)
 smoothed = np.abs(vars_x - med_x)
 mad_x = np.median(np.abs(vars_x - med_x), axis=0)
 
-#mf = med(vars_y, 128)
-mf256_y = med(vars_y, 256)
 mf256_x = med(vars_x, 256)
-#mf3 = med(vars_y, 512)
-print(mf256_x.shape)
-np.save("std_xpol_2210", np.sqrt(mf256_x))
-np.save("std_ypol_2210", np.sqrt(mf256_y))
+mf256_y = med(vars_y, 256)
 
-plt.figure(1)
-plt.plot(frequencies, np.sqrt(vars_x[:,0]), label="$\sigma$")
-plt.plot(frequencies, np.sqrt(mf256_x[:, 0]), label="$\sigma_{mf}$")
+#np.save("std_xpol_2210", np.sqrt(mf256_x))
+#np.save("std_ypol_2210", np.sqrt(mf256_y))
+
+plt.figure(0)
+plt.plot(frequencies, np.sqrt(vars_x[:, 0]), label="$\sigma_X$", linewidth=2)
+plt.plot(frequencies, np.sqrt(mf256_x[:, 0]), label="$\sigma_{mf}$", linewidth=2)
 plt.xlabel('Frequencies [MHz]')
 plt.ylabel('$\sigma$')
 plt.xlim([frequencies[0], frequencies[-1]])
-plt.ylim([5,30])
+plt.ylim([5, 30])
 plt.legend()
+#plt.savefig('/home/vereese/Documents/PhD/CASPER2023/casper_presentation/std.eps', bbox_inches='tight')
 plt.show()
 
 '''plt.figure(0)
