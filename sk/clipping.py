@@ -1,24 +1,25 @@
 import numpy as np
-from scipy import signal, stats
 import matplotlib.pyplot as plt
-from kurtosis import spectral_kurtosis_cm, spectral_kurtosis
-
+from kurtosis import spectral_kurtosis
+from constants import a4_textheight, a4_textwidth, thesis_font
 '''
-This script investigates the effect of clipping on spectral kurtosis
+This script investigates the effect of clipping on spectral kurtosis. 
+Calculated % clipped signals as follows:
+wgn = np.random.normal(0, 82, size = 1000 * 1024)
+wgn_clipped = np.clip(wgn, -127, 127)
+total_clipped = np.sum(np.where(wgn_clipped == 127, True, False)) + np.sum(np.where(wgn_clipped == -127, True, False))
+total_clipped*100/(1000 * 1024) = 12.116015625 %
 '''
 
-#font = {'family': 'STIXGeneral',
-#        'size': 42}
-#plt.rc('font', **font)
-
-textwidth = 9.6 #128.0 / 25.4
-textheight = 7 #96.0 / 25.4
-plt.rc('font', size=22, family='STIXGeneral')
+textwidth =  a4_textwidth
+textheight = a4_textheight
+font_size = thesis_font
+plt.rc('font', size=font_size, family='STIXGeneral')
 plt.rc('pdf', fonttype=42)
 #plt.rc('axes', titlesize=14, labelsize=14)
-plt.rc('axes', titlesize=22, labelsize=22)
-plt.rc(('xtick', 'ytick'), labelsize=22)
-plt.rc('legend', fontsize=22)
+plt.rc('axes', titlesize=font_size, labelsize=font_size)
+plt.rc(('xtick', 'ytick'), labelsize=font_size)
+plt.rc('legend', fontsize=font_size)
 plt.rc('lines', markersize=5)
 plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
 plt.rc('mathtext', fontset='stix')
@@ -35,7 +36,7 @@ l_sk = []
 clipped_std = []
 l_clipped_std = []
 
-# pretend fft has already been taken, hence creating re, im data
+# pretend FFT has already been taken, hence creating re, im data
 for std in stds:
     wgn = np.random.normal(mean, std, size = M * FFT_LEN) + 1j * np.random.normal(mean, std, size = M * FFT_LEN)
     wgn_clipped = np.clip(wgn.real, -127, 127) + 1j*np.clip(wgn.imag, -127, 127)
@@ -44,7 +45,7 @@ for std in stds:
 
     sk = spectral_kurtosis(wgn, M, FFT_LEN, fft=False, normalise=False)
     sk_clipped = spectral_kurtosis(wgn_clipped, M, FFT_LEN, fft=False, normalise=False)
-    print(sk.shape)
+
     mean_sk.append(np.mean(sk))
     mean_sk_clipped.append(np.mean(sk_clipped))
 
@@ -60,29 +61,30 @@ for std in stds:
 print(clipped_std)
 print(l_clipped_std)
 
-plt.figure(0, figsize=[22,16])
+plt.figure(0)
 plt.plot(stds, mean_sk, label="original", linewidth=2)
 plt.plot(clipped_std, mean_sk_clipped, label="clipped", linewidth=2)
-#plt.plot(l_clipped_std, l_sk, label="l clipping")
+# plt.plot(l_clipped_std, l_sk, label="l clipping")
 plt.axhline(0.77, linestyle = '--', linewidth=2, label="thresholds")
 plt.axhline(1.33, linestyle = '--', linewidth=2)
 #plt.axvline(82, linestyle = '--', linewidth=2)
 plt.vlines(x = 82, ymin=0 , ymax = 0.77, color= 'r', linestyle = '--', linewidth=2)
 plt.legend()
 plt.xlim([stds[0], stds[-1]])
-plt.ylim([0.18,1.4])
+plt.ylim([0.18, 1.4])
 plt.xlabel('$\sigma$')
 plt.ylabel('$ \overline{SK}$')
-plt.savefig('/home/vereese/Documents/PhD/jai-2e/clip.eps', bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/clip.eps', bbox_inches='tight')
 plt.show()
 
-
-# To add spikes - to pretend like they're pulsars
+'''
+from scipy import signal, stats
+# To add spikes - to pretend like they're pulsars (Code from Ludwig)
 spike = np.random.rand(10000, M) > 0.99
 ampl = np.where(spike, 200, 20)
 x = np.clip(ampl * np.random.randn(10000, M), -127, 127) + 1j * np.clip(ampl * np.random.randn(10000, M), -127, 127)
 
-'''# Generate a random signal with some narrowband and impulsive components
+# Generate a random signal with some narrowband and impulsive components
 t = np.linspace(0, 1, 1000)
 f1 = 50
 f2 = 200
