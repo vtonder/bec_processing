@@ -39,9 +39,20 @@ dp = np.zeros(num_ch)
 
 for i, ld_idx in enumerate(np.arange(start, stop, time_chunk_size)):
     local_data = data[:, ld_idx:int(ld_idx+time_chunk_size), :]
-    dp_ind = np.where(local_data == 0, True, False) # True where there are dropped packets
-    # Only count as a dropped packet if both real and imaginary data points are 0
-    dp += np.sum(np.logical_and(dp_ind[:, :, 0], dp_ind[:, :, 1]), axis=1)
+    z_ind = np.where(local_data == 0, True, False) # True where there are zeros in the file 
+    # Only count as a dropped data point (ddp) if both real and imaginary data points are 0
+    ddp_ind = np.logical_and(z_ind[:, :, 0], z_ind[:, :, 1])
+
+    # Make a copy and shift
+    ddp_shift_ind = np.copy(ddp_ind)
+    ddp_shift_ind = np.roll(ddp_shift_ind, 1, axis=1)
+    ddp_shift_ind[:, 0] = False 
+
+    # Only count as a dropped packet (dp) if atleast two consecutive time_samples are 0 for both real and imaginary data points
+    dp_ind = np.logical_and(ddp_ind, ddp_shift_ind)
+
+    # Accumulate dp's
+    dp += np.sum(dp_ind, axis=1)
 
 if rank > 0:
     comm.Send([dp, MPI.DOUBLE], dest=0, tag=15)
