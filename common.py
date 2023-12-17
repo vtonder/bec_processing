@@ -57,6 +57,14 @@ def get_pulse_window(chunk_start, start_index, pulse_i, samples_T, int_samples_T
     return pulse_start, pulse_stop
 
 def get_pulse_power(data, pulse_start, pulse_stop):
+    """
+    A function to calculate power in a single pulse
+
+    :param data: shall be a 3d numpy array with dimensions frequency, time samples, real or imaginary format
+    :param pulse_start: index where pulse starts
+    :param pulse_stop: index where pulse stops
+    :return: single pulse (sp) power
+    """
     pulse = data[:, pulse_start:pulse_stop, :].astype(np.float32)
     sp = np.sum(pulse**2, axis=2)
 

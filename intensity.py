@@ -248,6 +248,7 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
     pulse_start_x, pulse_stop_x = get_pulse_window(chunk_start_x, si_x, i, samples_T, int_samples_T)
     pulse_start_y, pulse_stop_y = get_pulse_window(chunk_start_y, si_y, i, samples_T, int_samples_T)
 
+    # single pulse (sp)
     sp_x = get_pulse_power(data_x, pulse_start_x, pulse_stop_x)
     sp_y = get_pulse_power(data_y, pulse_start_y, pulse_stop_y)
     summed_profile += sp_x + sp_y
