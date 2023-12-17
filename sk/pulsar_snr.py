@@ -7,14 +7,18 @@ import re
 from common import get_freq_ch
 from pulsar_processing.pulsar_functions import incoherent_dedisperse
 
-def get_profile(I, nz):
+def get_profile(I, nz = None):
     """
+    Returns pulse profile. Note nz is optional. This is added to be backward compatible with data sets where flagged data was replaced with Gaussian noise
     :param I: Intensity numpy matrix with shape: num_ch X int_samples_T
     :param nz: Number of non-zero accumulations that went into each freq, phase-bin for both polarisations. same shape as I
     :return: normalised pulsar profile
     """
-    norm = nz.sum(axis = 0)
-    prof = I.sum(axis = 0) / norm
+    if nz is not None:
+        norm = nz.sum(axis = 0)
+        prof = I.sum(axis = 0) / norm
+    else:
+        prof = I.sum(axis=0)
 
     return prof
 
@@ -56,12 +60,16 @@ def get_on_pulse(prof, fwhm, min_width = 50):
 
     return pulse_start, pulse_stop, pulse_width
 
-def compute(I, nz):
+def compute(I, nz = None):
     # Make copies to ensure we're not modifying what get's passed in
     In = np.copy(I)
-    n_nz = np.copy(nz)
 
-    prof = get_profile(In, n_nz)
+    if nz is not None:
+        n_nz = np.copy(nz)
+        prof = get_profile(In, n_nz)
+    else:
+        prof = get_profile(In)
+
     peak = get_peak(prof)
     floor = get_floor(prof)
     fwhm = get_fwhm(peak, floor)
@@ -100,28 +108,31 @@ def calc_var(I):
         std.append(np.sqrt(np.var(profile[0:1000])))
     return std
 
-def apply_sarao_mask(I, num_nz):
+def apply_sarao_mask(I, num_nz = None):
     """
     Zero out first and last frequency channels 50.
     Zero out GSM channels: 95 - 125 because they clipped
     """
     samples_T = I.shape[1]
     I[0:50, :] = np.zeros([50, samples_T])
-    num_nz[0:50, :] = np.zeros([50, samples_T])
     I[95:126, :] = np.zeros([31, samples_T]) # GSM
-    num_nz[95:126, :] = np.zeros([31, samples_T]) # GSM
+    I[-50:, :] = np.zeros([50, samples_T])
     #I[260:532,:] = np.zeros([272, samples_T]) # includes aircraft and GNSS
     #I[347:533,:] = np.zeros([186, samples_T]) # excludes aircraft only GNSS
-    #num_nz[347:533,:] = np.zeros([186, samples_T]) # excludes aircraft only GNSS
     #I[794:901,:] = np.zeros([107, samples_T]) # GNSS except Iridium
-    #num_nz[794:901,:] = np.zeros([107, samples_T]) # GNSS except Iridium
     #I[794:924,:] = np.zeros([130, samples_T]) # GNSS and Iridium
-    I[-50:, :] = np.zeros([50, samples_T])
-    num_nz[-50:, :] = np.zeros([50, samples_T])
 
-    return I, num_nz
+    if num_nz is not None:
+        num_nz[0:50, :] = np.zeros([50, samples_T])
+        num_nz[95:126, :] = np.zeros([31, samples_T]) # GSM
+        num_nz[-50:, :] = np.zeros([50, samples_T])
+        # num_nz[347:533,:] = np.zeros([186, samples_T]) # excludes aircraft only GNSS
+        # num_nz[794:901,:] = np.zeros([107, samples_T]) # GNSS except Iridium
+        return I, num_nz
+    else:
+        return I
 
-def apply_dspsr_mask(I, num_nz):
+def apply_dspsr_mask(I, num_nz = None):
     """
     From Andrew Jameson, he uses DSPSR to zap the following:
     855.5820313 - 856.4179688 ?
@@ -142,88 +153,115 @@ def apply_dspsr_mask(I, num_nz):
         start = get_freq_ch(zf[0])
         end = get_freq_ch(zf[1])
         I[start:end,:] = np.zeros([end-start, samples_T])
-        num_nz[start:end,:] = np.zeros([end-start, samples_T])
+        if num_nz is not None:
+            num_nz[start:end,:] = np.zeros([end-start, samples_T])
 
-    return I, num_nz
+    if num_nz is not None:
+        return I, num_nz
+    else:
+        return I
 
-def apply_outer_band_mask(I, num_nz):
+def apply_outer_band_mask(I, num_nz = None):
     samples_T = I.shape[1]
     I[0:50, :] = np.zeros([50, samples_T])
-    num_nz[0:50, :] = np.zeros([50, samples_T])
     I[-50:, :] = np.zeros([50, samples_T])
-    num_nz[-50:, :] = np.zeros([50, samples_T])
 
-    return I, num_nz
+    if num_nz is not None:
+        num_nz[0:50, :] = np.zeros([50, samples_T])
+        num_nz[-50:, :] = np.zeros([50, samples_T])
+        return I, num_nz
+    else:
+        return I
 
-def apply_clipped_mask(I, num_nz):
+def apply_clipped_mask(I, num_nz = None):
     samples_T = I.shape[1]
     I[95:126, :] = np.zeros([31, samples_T])
-    num_nz[95:126, :] = np.zeros([31, samples_T])
+    if num_nz is not None:
+        num_nz[95:126, :] = np.zeros([31, samples_T])
+        return I, num_nz
+    else:
+        return I
 
-    return I, num_nz
-
-def apply_DME_mask(I, num_nz):
+def apply_DME_mask(I, num_nz = None):
     samples_T = I.shape[1]
     for ch in dme_ch:
         I[ch, :] = np.zeros([1, samples_T])
-        num_nz[ch, :] = np.zeros([1, samples_T])
+        if num_nz is not None:
+            num_nz[ch, :] = np.zeros([1, samples_T])
 
-    return I, num_nz
+    if num_nz is not None:
+        return I, num_nz
+    else:
+        return I
 
-def keep_DME_band(I, num_nz):
+def keep_DME_band(I, num_nz = None):
     # create new matrices
     nI = np.zeros(I.shape)
-    nnum_nz = np.zeros(num_nz.shape)
-
     nI[205:342, :] = I[205:342, :]
-    nnum_nz[205:342, :] = num_nz[205:342, :]
 
-    return nI, nnum_nz
+    if num_nz is not None:
+        nnum_nz = np.zeros(num_nz.shape)
+        nnum_nz[205:342, :] = num_nz[205:342, :]
+        return nI, nnum_nz
+    else:
+        return nI
 
-def apply_GNSS_low_mask(I, num_nz):
+def apply_GNSS_low_mask(I, num_nz = None):
     samples_T = I.shape[1]
     I[347:533, :] = np.zeros([186, samples_T])
-    num_nz[347:533, :] = np.zeros([186, samples_T])
+    if num_nz is not None:
+        num_nz[347:533, :] = np.zeros([186, samples_T])
+        return I, num_nz
+    else:
+        return I
 
-    return I, num_nz
-
-def apply_GNSS_high_mask(I, num_nz):
+def apply_GNSS_high_mask(I, num_nz = None):
     samples_T = I.shape[1]
     I[794:901, :] = np.zeros([107, samples_T])
-    num_nz[794:901, :] = np.zeros([107, samples_T])
+    if num_nz is not None:
+        num_nz[794:901, :] = np.zeros([107, samples_T])
+        return I, num_nz
+    else:
+        return I
 
-    return I, num_nz
-
-def apply_subset_GNSS_mask(I, num_nz):
+def apply_subset_GNSS_mask(I, num_nz = None):
     # These are the channels that median masks
     samples_T = I.shape[1]
     I[843, :] = np.zeros([1, samples_T])
-    num_nz[843, :] = np.zeros([1, samples_T])
     I[860:862, :] = np.zeros([2, samples_T])
-    num_nz[860:862, :] = np.zeros([2, samples_T])
 
-    return I, num_nz
+    if num_nz is not None:
+        num_nz[843, :] = np.zeros([1, samples_T])
+        num_nz[860:862, :] = np.zeros([2, samples_T])
+        return I, num_nz
+    else:
+        return I
 
-def apply_iridium_mask(I, num_nz):
+def apply_iridium_mask(I, num_nz = None):
     samples_T = I.shape[1]
     I[911:923, :] = np.zeros([12, samples_T])
-    num_nz[911:923, :] = np.zeros([12, samples_T])
+    if num_nz is not None:
+        num_nz[911:923, :] = np.zeros([12, samples_T])
+        return I, num_nz
+    else:
+        return I
 
-    return I, num_nz
-
-def keep_iridium_band(I, num_nz):
+def keep_iridium_band(I, num_nz = None):
     # create new matrices
+
     nI = np.zeros(I.shape)
-    nnum_nz = np.zeros(num_nz.shape)
-
     nI[911:923, :] = I[911:923, :]
-    nnum_nz[911:923, :] = num_nz[911:923, :]
 
-    return nI, nnum_nz
+    if num_nz is not None:
+       nnum_nz = np.zeros(num_nz.shape)
+       nnum_nz[911:923, :] = num_nz[911:923, :]
+       return nI, nnum_nz
+    else:
+       return nI
 
 regex = re.compile(r'\d+')
 class PI:
-    def __init__(self, dir, file_name, nz, sf = None, initialise=True):
+    def __init__(self, dir, file_name, nz = None, sf = None, initialise = True):
         """
         :param dir: location of data
         :param file_name: folded pulsar intensity file. freq channels X pulse num samples
@@ -233,7 +271,10 @@ class PI:
 
         self.file_name = file_name
         self.I = np.load(dir + file_name)
-        self.nz = np.load(dir + nz)
+        if nz is not None:
+            self.nz = np.load(dir + nz)
+        else:
+            self.nz = None
         self.num_pol = 2 # H and V polarisation
 
         # parse what the numbers in the file name means
@@ -254,7 +295,11 @@ class PI:
         else:
             self.sf = None
 
-        self.profile = get_profile(self.I, self.nz)
+        if nz is not None:
+            self.profile = get_profile(self.I, self.nz)
+        else:
+            self.profile = get_profile(self.I)
+
         self.norm_profile = self.profile / max(self.profile)
 
         self.pulse_start = 0
@@ -265,17 +310,26 @@ class PI:
         self.toa_un = 0
 
         if initialise:
-            self.I, self.nz = apply_sarao_mask(self.I, self.nz)
-            # Need to recompute profile after masking
-            self.profile = get_profile(self.I, self.nz)
+            if nz is not None:
+                self.I, self.nz = apply_sarao_mask(self.I, self.nz)
+                # Need to recompute profile after masking
+                self.profile = get_profile(self.I, self.nz)
+            else:
+                self.I = apply_sarao_mask(self.I)
+                # Need to recompute profile after masking
+                self.profile = get_profile(self.I)
+
             self.norm_profile = self.profile / max(self.profile)
-            #self.pulse_start, self.pulse_stop, self.pulse_width, self.snr, self.toa_un = self.compute()
             self.compute()
 
     def compute(self):
         # recompute profile as to not let 0's from get_on_pulse corrupt self.profile
         # recompute profile because may want to apply different masks which will effect profile differently
-        profile = get_profile(self.I, self.nz)
+        if self.nz is not None:
+            profile = get_profile(self.I, self.nz)
+        else:
+            profile = get_profile(self.I)
+
         peak = get_peak(profile)
         floor = get_floor(profile)
         fwhm = get_fwhm(peak, floor)
