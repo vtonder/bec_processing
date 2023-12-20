@@ -3,8 +3,14 @@ import numpy as np
 # constants for plotting
 thesis_font = 12 # got from ThesisMain.tex
 jai_font = 11 # got from ws-jai.cls
-a4_textwidth = 9.6 # From ws-jai.cls
-a4_textheight = 7
+# within \begin{document} part of latex document place the following:
+# \typeout{The TEXT WIDTH is \the\textwidth}
+# \typeout{The TEXT HEIGHT is \the\textheight}
+# this will cause the following lines to be printed out in the log files
+# The TEXT WIDTH is 455.0pt
+# The TEXT HEIGHT is 708.0pt
+a4_textwidth = 455.0 / 72 # divide the points (pt) by 72 to get inches
+a4_textheight = 708.0 / 72
 beamer_textwidth =  128.0 / 25.4 # From Ludwig
 beamer_textheight = 96.0 / 25.4
 
