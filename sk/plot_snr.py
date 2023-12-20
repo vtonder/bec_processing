@@ -14,18 +14,24 @@ args = parser.parse_args()
 DIR = args.dir
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-textwidth = a4_textwidth
+textwidth =  a4_textwidth
 textheight = a4_textheight
 font_size = thesis_font
-plt.rc('font', size=font_size, family='STIXGeneral')
+# groups are like plt.figure plt.legend etc
+plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
 #plt.rc('axes', titlesize=14, labelsize=14)
 plt.rc('axes', titlesize=font_size, labelsize=font_size)
 plt.rc(('xtick', 'ytick'), labelsize=font_size)
 plt.rc('legend', fontsize=font_size)
 plt.rc('lines', markersize=5)
-plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
-plt.rc('mathtext', fontset='stix')
+# The following should only be used for beamer
+# plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
+figheight = 0.65 * textwidth
+plt.rc('mathtext', fontset='cm')
+# to get this working needed to do: sudo apt install cm-super
+plt.rc("text", usetex = True)
+plt.rc("figure", figsize = (textwidth, figheight))
 
 def make_snr_toa_list(sk_dict, M):
     snr = []
