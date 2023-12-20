@@ -36,7 +36,7 @@ for i in np.arange(len(M)):
 
     for j in np.arange(len(lt)):
         # set initialise to False and call compute - this way no mask is applied
-        # TODO: but mask also affects snr for different M and threshold - so how does one then determine the best mask?
+
         print("lt: ", lt[j])
         print("")
 
@@ -61,26 +61,24 @@ lt_labels = ("$0\sigma$", "$0.5\sigma$", "$1\sigma$", "$2\sigma$", "$2.5\sigma$"
 x_range = np.arange(len(lt_labels))
 y_range = np.arange(len(M))
 fig, ax = plt.subplots()
-snr_im_lt = ax.imshow(lt_snr, origin="lower", aspect="auto", vmin=vmini, vmax=vmaxi)#, aspect="auto", extent=[1,6,128,8192])
+snr_im_lt = ax.imshow(lt_snr, origin="lower", aspect="auto", vmin=vmini, vmax=vmaxi)
 cbar = fig.colorbar(snr_im_lt, ax=ax)
 cbar.minorticks_on()
 ax.set_ylabel("M")
 ax.set_xlabel("Lower threshold")
-#ax.set_title("Lower threshold")
 ax.set_xticks(x_range, lt_labels)
 ax.set_yticks(y_range, M)
-plt.savefig('/home/vereese/thesis_pics/lower_threshold.eps', transparent=True, bbox_inches='tight')
+plt.savefig('/home/vereese/thesis_pics/lower_threshold_masked.eps', transparent=True, bbox_inches='tight')
 
 ut_labels = ("$0\sigma$", "$0.5\sigma$", "$1\sigma$", "$2\sigma$", "$2.5\sigma$", "$3\sigma$", "$4\sigma$", "$SK_{max}$")
 fig1, ax1 = plt.subplots()
-snr_im_ut = ax1.imshow(ut_snr, origin="lower", aspect="auto", vmin=vmini, vmax=vmaxi)#, aspect="auto", extent=[1,6,128,8192])
-cbar1 = fig.colorbar(snr_im_ut, ax=ax1)
+snr_im_ut = ax1.imshow(ut_snr, origin="lower", aspect="auto", vmin=vmini, vmax=vmaxi)
+cbar1 = fig1.colorbar(snr_im_ut, ax=ax1)
 cbar1.minorticks_on()
-#ax1.set_title("Upper threshold")
 ax1.set_xticks(x_range, ut_labels)
 ax1.set_yticks(y_range, M)
 ax1.set_ylabel("M")
 ax1.set_xlabel("Upper threshold")
-plt.savefig('/home/vereese/thesis_pics/upper_threshold.eps', transparent=True, bbox_inches='tight')
+plt.savefig('/home/vereese/thesis_pics/upper_threshold_masked.eps', transparent=True, bbox_inches='tight')
 
 plt.show()
