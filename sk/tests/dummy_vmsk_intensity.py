@@ -4,7 +4,7 @@ import numpy as np
 import time
 import sys
 sys.path.append("../")
-from constants import num_ch, start_indices, pulsars, xy_time_offsets, time_chunk_size, sk_max_limit, upper_limit7, lower_limit7
+from constants import num_ch, start_indices, pulsars, xy_time_offsets, time_chunk_size, sk_max_limit, upper_limit_4s, lower_limit_4s
 from pulsar_processing.pulsar_functions import incoherent_dedisperse
 import argparse
 
@@ -149,7 +149,7 @@ M = int(args.M)
 m = int(args.m)
 n = int(args.n)
 
-low = lower_limit7[int(m*n*M)]
+low = lower_limit_4s[int(m * n * M)]
 up = sk_max_limit[int(m*n*M)]#upper_limit7[int(m*n*M)]
 
 tag = args.tag

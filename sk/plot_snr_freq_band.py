@@ -1,7 +1,7 @@
 from sk.pulsar_snr import PI, keep_DME_band
 from matplotlib import pyplot as plt
 
-DIR = "/home/vereese/git/phd_data/sk_analysis/2210/"
+DIR = "/home/vereese/git/phd_data/sk_analysis/2210_floor/l4sig/"
 
 skl = PI(DIR, "sk_intensity_l4sig_M1024_m1_n1_2210_p45216.npy", "sk_num_nz_l4sig_M1024_m1_n1_2210_p45216.npy", "sk_summed_flags_l4sig_M1024_m1_n1_2210_p45216.npy")
 dme = PI(DIR, "sk_dme_intensity_l4sigu4sig_M1024_m1_n1_2210_p45216.npy", "sk_dme_num_nz_l4sigu4sig_M1024_m1_n1_2210_p45216.npy", "sk_dme_summed_flags_l4sigu4sig_M1024_m1_n1_2210_p45216.npy")

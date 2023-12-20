@@ -7,6 +7,7 @@ from common import get_low_limit, get_up_limit
 from investigate_sk import sk_pdf
 import time
 import argparse
+
 """
 This script investigates the effect of fluctuating gain in noise across the band on the SK estimator
 The fluctuating gain results in the noise distribution to become a Gaussian Mixture Model (GMM)   
@@ -15,7 +16,7 @@ The fluctuating gain results in the noise distribution to become a Gaussian Mixt
 def add_gain(p, perc, frac):
     # Need to make a copy because python is pass by reference not value
     p2 = np.copy(p)
-    # Ludwig: dit lig drywing met perc% die frac van tyd
+    # Ludwig: dit lig drywing met perc %, frac van die tyd
     p2[:, :int(M*frac)] *= (100 + perc)/100  
 
     return p2

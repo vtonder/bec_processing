@@ -60,6 +60,21 @@ def vmsk(data, sk_flags, sf, sk, sk_idx, idx_start, idx_stop, check_thres_array)
     return data, sk_flags, sf
 
 def sk_mit(data, sk_flags, sf, sk, M, data_window_len, first_non_zero_idx, chunk_start, check_thres_array, sk_type):
+    """
+    This function mitigates RFI in data and it is noted in sk_flags and sf
+
+    :param data: 3d numpy array with dimensions frequency, time samples, real or imaginary format
+    :param sk_flags: sk flags across observation
+    :param sf: summed flags with shape == pulsar profile
+    :param sk: pre-calculated SK data produced by sk.py script
+    :param M: M in SK estimator. window of time samples that was used in SK calculation
+    :param data_window_len: length of data window that will be mitigated. It's shape will be a multiple of time_chunk_size.
+    :param first_non_zero_idx: From constants file for each pol for each set
+    :param chunk_start: The index where this chunk starts
+    :param check_thres_array: an array of threshold functions. this allows for applying either lower, upper, or both thresholds to each frequency channel uniquely
+    :param sk_type: sk, msk, or vmsk. this is used to determine whether 1 (for sk & msk) or a range (for vmsk) of sk values needs to checked against teh threshold
+    :return: data, sk_flags, sf
+    """
 
     for idx in np.arange(0, data_window_len, M):
         idx_start = int(idx)
@@ -248,6 +263,7 @@ for i in np.arange(rank*np_rank, (rank+1)*np_rank):
     pulse_start_x, pulse_stop_x = get_pulse_window(chunk_start_x, si_x, i, samples_T, int_samples_T)
     pulse_start_y, pulse_stop_y = get_pulse_window(chunk_start_y, si_y, i, samples_T, int_samples_T)
 
+    # single pulse (sp)
     sp_x = get_pulse_power(data_x, pulse_start_x, pulse_stop_x)
     sp_y = get_pulse_power(data_y, pulse_start_y, pulse_stop_y)
     summed_profile += sp_x + sp_y
