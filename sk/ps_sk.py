@@ -3,7 +3,7 @@ import numpy as np
 import time
 import sys
 sys.path.append('../')
-from constants import num_ch, start_indices, lower_limit, upper_limit, pulsars, time_chunk_size
+from constants import num_ch, start_indices, lower_limit_3s, upper_limit_3s, pulsars, time_chunk_size
 sys.path.append('../pulsar_processing')
 import argparse
 
@@ -61,8 +61,8 @@ int_samples_T = int(np.floor(samples_T))
 if M:
     num_sk_chunk = time_chunk_size / M  # number of SK's in 1 chunk
     sk = np.load("sk_M" + str(M) + "_" + tag + pol + ".npy")
-    low = lower_limit[M]
-    up = upper_limit[M]
+    low = lower_limit_3s[M]
+    up = upper_limit_3s[M]
     num_data_points = M*sk.shape[1]
     sk_flags = np.zeros(sk.shape, dtype=np.float16)
     sk_sum_flags = np.zeros([num_ch, int(num_data_points)], dtype=np.float16) 
