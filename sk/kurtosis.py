@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import signal
+from constants import a4_textheight, a4_textwidth, thesis_font
 
 #TODO need to apply normalisation to spectra otherwise the estimator will fail - Nita 2007
 #row major implementation
@@ -115,6 +116,25 @@ def sk_gaus_tran(pho, delta):
     return 1 + offset
 
 if __name__ == "__main__":
+    textwidth = a4_textwidth
+    textheight = a4_textheight
+    font_size = thesis_font
+    # groups are like plt.figure plt.legend etc
+    plt.rc('font', size=font_size, family='serif')
+    plt.rc('pdf', fonttype=42)
+    # plt.rc('axes', titlesize=14, labelsize=14)
+    plt.rc('axes', titlesize=font_size, labelsize=font_size)
+    plt.rc(('xtick', 'ytick'), labelsize=font_size)
+    plt.rc('legend', fontsize=font_size)
+    plt.rc('lines', markersize=5)
+    # The following should only be used for beamer
+    # plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
+    figheight = 0.65 * textwidth
+    plt.rc('mathtext', fontset='cm')
+    # to get this working needed to do: sudo apt install cm-super
+    plt.rc("text", usetex=True)
+    plt.rc("figure", figsize=(textwidth, figheight))
+
     mean = 0
     std = 1
     FFT_LEN = 1024
@@ -168,7 +188,7 @@ if __name__ == "__main__":
     plt.grid()
     plt.xlabel("frequency [Hz]")
     plt.ylabel('$\overline{SK}$')
-    plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/skest1.eps', bbox_inches='tight')
+    plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/skest1.pdf', bbox_inches='tight')
     plt.show()
 
     '''x = x.reshape(FFT_LEN, M)
