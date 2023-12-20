@@ -4,7 +4,7 @@ import numpy as np
 import time
 import sys
 sys.path.append("../")
-from constants import num_ch, start_indices, xy_time_offsets, time_chunk_size, sk_max_limit, upper_limit7, lower_limit7
+from constants import num_ch, start_indices, xy_time_offsets, time_chunk_size, sk_max_limit, upper_limit_4s, lower_limit_4s
 import argparse
 from kurtosis import spectral_kurtosis_cm
 
@@ -53,7 +53,7 @@ tot_ndp_x = dfx['Data/timestamps'].shape[0] # total number of data points of x p
 tot_ndp_y = dfy['Data/timestamps'].shape[0]
 
 M = int(args.M)
-low = lower_limit7[M]
+low = lower_limit_4s[M]
 up = sk_max_limit[M]
 
 tag = args.tag
