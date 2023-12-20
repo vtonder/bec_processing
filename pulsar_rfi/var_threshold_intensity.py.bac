@@ -41,15 +41,7 @@ def var_threshold(data, std, M, flags):
     ind[:, :, 1] = indices
 
     flags[indices] = 1
-    data[ind] = np.random.normal(0, std, sum(sum(sum(ind))))
-
-    ''''for i in np.arange(num_ch):
-        for j in np.arange(0, num_t, M):
-            abs_data_mean = np.mean(abs_data[i, j:j+M])
-            if abs_data_mean >= threshold:
-                flags[i, j:j+M] = np.ones(M)
-                data[i, j:j+M, 0] = np.random.normal(0, var, M)
-                data[i, j:j+M, 1] = np.random.normal(0, var, M)'''
+    data[ind] = 0 #np.random.normal(0, std, np.sum(ind))
 
     return data, flags
 
