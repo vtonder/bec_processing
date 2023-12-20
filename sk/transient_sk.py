@@ -72,7 +72,7 @@ for M, ms in mean_shift_ito_1sigma.items():
     ax.plot(frequencies, ms, label="M = " + str(M), linewidth=2)
 
 
-ax.set_ylabel("% shift in $\mathbb{E}[SK]$ ito 1$\sigma$ threshold")
+ax.set_ylabel("% shift in $\overline{SK}$ ito 1$\sigma$ threshold")
 ax.set_xlabel("frequency [MHz]")
 ax.set_xlim([frequencies[0], frequencies[-1]])
 plt.legend()
