@@ -5,21 +5,52 @@ import numpy as np
 from math import isnan
 
 #fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-#sk = np.load("/home/vereese/git/phd_data/sk_analysis/1234_0x_sk_M16384.npy")
-#sk = np.load("/home/vereese/git/phd_data/sk_analysis/mpi_sk_M1557_1234_0y.npy")
-#sk2 = np.load("/home/vereese/git/phd_data/sk_analysis/mpi_sk_M519_1234_0y.npy")
-sk = np.load('sk_M512_1234_0x.npy')
-plt.figure(0)
-plt.imshow(sk,aspect='auto',origin='lower')
+ch350    = np.load("/home/vereese/git/phd_data/sk_analysis/1234/ch350_1234x.npy")
+ch600    = np.load("/home/vereese/git/phd_data/sk_analysis/1234/ch600_1234x.npy")
+sf_ch350 = np.load("/home/vereese/git/phd_data/sk_analysis/1234/lower_upper_pics/sf512_ch350_1234x.npy")
+skf_ch350 = np.load("/home/vereese/git/phd_data/sk_analysis/1234/lower_upper_pics/skf512_ch350_1234x.npy")
+sf_ch600 = np.load("/home/vereese/git/phd_data/sk_analysis/1234/lower_upper_pics/sf512_ch600_1234x.npy")
+skf_ch600 = np.load("/home/vereese/git/phd_data/sk_analysis/1234/lower_upper_pics/skf512_ch600_1234x.npy")
+sk_ch350 = np.load("/home/vereese/git/phd_data/sk_analysis/1234/sk_350.npy")
+sk_ch600 = np.load("/home/vereese/git/phd_data/sk_analysis/1234/sk_600.npy")
+si = 13631488
 
-plt.figure(1)
-plt.plot(sk[200,:],label='100')
-plt.plot(sk[600,:],label='600')
-plt.axhline(0.77511)
+ups_skf_ch350 = np.array([])
+for i in sk_ch350[2500:5000]:
+    tmp = np.asarray([i]*512)
+    ups_skf_ch350 = np.concatenate((ups_skf_ch350, tmp))
+
+ups_skf_ch600 = np.array([])
+for i in sk_ch600[2500:5000]:
+    tmp = np.asarray([i]*512)
+    ups_skf_ch600 = np.concatenate((ups_skf_ch600, tmp))
+
+#ups_skf_ch600 = np.array([])
+#for i in skf_ch600:
+#    tmp = np.asarray([i]*512)
+#    ups_skf_ch600 = np.concatenate((ups_skf_ch600, tmp))
+d_rfi = (ch350[si+(2500*512):si+(5000*512),0]/128) + (ch350[si+(2500*512):si+(5000*512), 1]/128)
+d_no_rfi = (ch600[si+(2500*512):si+(5000*512),0]/128) + (ch600[si+(2500*512):si+(5000*512), 1]/128)
+plt.figure(0)
+plt.plot(d_rfi, label='data')
+plt.plot(ups_skf_ch350,label='sk flags')
 plt.legend()
 plt.grid()
+plt.title("ch 350")
+
+plt.figure(1)
+plt.plot(d_no_rfi, label='data')
+plt.plot(ups_skf_ch600,label='sk flags')
+plt.legend()
+plt.grid()
+plt.title("ch 600")
 plt.show()
-'''plt.figure(0)
+
+'''
+#sk = np.load('sk_M512_1234_0x.npy')
+#plt.figure(0)
+#plt.imshow(sk, aspect='auto', origin='lower')
+plt.figure(0)
 plt.plot(sk[:,5])
 plt.plot(sk[:,10])
 plt.plot(sk[:,15])

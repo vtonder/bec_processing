@@ -9,18 +9,24 @@ import argparse
 from matplotlib import pyplot as plt
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-textwidth = a4_textwidth
+textwidth =  a4_textwidth
 textheight = a4_textheight
 font_size = thesis_font
-plt.rc('font', size=font_size, family='STIXGeneral')
+# groups are like plt.figure plt.legend etc
+plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
 #plt.rc('axes', titlesize=14, labelsize=14)
 plt.rc('axes', titlesize=font_size, labelsize=font_size)
 plt.rc(('xtick', 'ytick'), labelsize=font_size)
 plt.rc('legend', fontsize=font_size)
 plt.rc('lines', markersize=5)
-plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
-plt.rc('mathtext', fontset='stix')
+# The following should only be used for beamer
+# plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
+figheight = 0.65 * textwidth
+plt.rc('mathtext', fontset='cm')
+# to get this working needed to do: sudo apt install cm-super
+plt.rc("text", usetex = True)
+plt.rc("figure", figsize = (textwidth, figheight))
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", dest = "dir", help = "directory where data is located. default location: /home/vereese/data/phd_data/sk_analysis/2210", default = "/home/vereese/data/phd_data/sk_analysis/2210/")
@@ -66,9 +72,9 @@ for M, ms in mean_shift_ito_1sigma.items():
     ax.plot(frequencies, ms, label="M = " + str(M), linewidth=2)
 
 
-ax.set_ylabel("% shift in $\mathbb{E}[SK]$ ito 1$\sigma$ threshold")
+ax.set_ylabel("% shift in $\overline{SK}$ ito 1$\sigma$ threshold")
 ax.set_xlabel("frequency [MHz]")
 ax.set_xlim([frequencies[0], frequencies[-1]])
 plt.legend()
-plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/transient_sk.eps', bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/transient_sk.pdf', bbox_inches='tight')
 plt.show()
