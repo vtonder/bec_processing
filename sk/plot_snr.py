@@ -14,7 +14,7 @@ args = parser.parse_args()
 DIR = args.dir
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-textwidth =  a4_textwidth
+textwidth = a4_textwidth
 textheight = a4_textheight
 font_size = thesis_font
 # groups are like plt.figure plt.legend etc
@@ -65,16 +65,16 @@ if __name__ == "__main__":
     # made special script: diff_M_sk.py for this experiment
     # diff_sk = PI("sk_intensity_pfa2_diff_M16384_2210_p45216.npy", "sk_pfa2_summed_flags_diff_M16384_2210_p45216.npy")
 
-    # replaced all 0s with gausian noise
-    #sk_nz4sig =  PI("sk_intensity_l4sigu4sig_M2048_2210_p45216.npy", "sk_summed_flags_l4sigu4sig_M2048_2210_p45216.npy")
+    # replaced all 0s with Gaussian noise
+    # sk_nz4sig = PI("sk_intensity_l4sigu4sig_M2048_2210_p45216.npy", "sk_summed_flags_l4sigu4sig_M2048_2210_p45216.npy")
 
     # keep 0s and when flagged 0 the data
-    #sk_z4sig =  PI("zsk_intensity_l4sigu4sig_M2048_2210_p45216.npy", "zsk_summed_flags_l4sigu4sig_M2048_2210_p45216.npy")
-    #sk_z4sigl = PI("zsk_intensity_l4sig_M2048_2210_p45216.npy", "zsk_summed_flags_l4sig_M2048_2210_p45216.npy")
-    #sk_zskmax = PI("zsk_intensity_l4siguskmax_M2048_2210_p45216.npy","zsk_summed_flags_l4siguskmax_M2048_2210_p45216.npy")
+    # sk_z4sig =  PI("zsk_intensity_l4sigu4sig_M2048_2210_p45216.npy", "zsk_summed_flags_l4sigu4sig_M2048_2210_p45216.npy")
+    # sk_z4sigl = PI("zsk_intensity_l4sig_M2048_2210_p45216.npy", "zsk_summed_flags_l4sig_M2048_2210_p45216.npy")
+    # sk_zskmax = PI("zsk_intensity_l4siguskmax_M2048_2210_p45216.npy","zsk_summed_flags_l4siguskmax_M2048_2210_p45216.npy")
 
     # No RFI mitigation data set
-    I = PI(DIR, "intensity_z_2210_p45216.npy", "num_nz_z_2210_p45216.npy", initialise=False)
+    I = PI(DIR, "intensity_z_2210_p45216.npy", "num_nz_z_2210_p45216.npy", initialise = False)
     I.compute()
 
     # Only static mask applied
@@ -83,13 +83,13 @@ if __name__ == "__main__":
     M = [64, 128, 256, 512, 1024, 2048, 4096, 8192]
     for m in M:
         m = str(m)
-        #sk.update({m:PI(DIR, "sk_intensity_M"+m+"_2210_p45216.npy", "sk_summed_flags_M"+m+"_2210_p45216.npy", initialise=True)})
-        #sk_low_pfa2.update({m: PI(DIR, "sk_intensity_low_pfa2_M" + m + "_2210_p45216.npy", "sk_low_pfa2_summed_flags_M" + m + "_2210_p45216.npy", initialise=True)})
-        #sk_low.update({m: PI(DIR, "sk_intensity_low_M" + m + "_2210_p45216.npy", "sk_low_summed_flags_M" + m + "_2210_p45216.npy", initialise=True)})
-        #sk_pfa4sigskmaxlim.update({m:PI(DIR, "sk_intensity_sig4skmaxlim_M"+m+"_2210_p45216.npy","sk_sig4skmaxlim_summed_flags_M"+m+"_2210_p45216.npy", initialise=True)})
-        #sk_4sig_median.update({m:PI(DIR, "sk_pfa4sig_M"+m+"_median_I4_2210_p4812.npy", "sk_pfa4sig_M"+m+"_sf_median_2210_p4812.npy", initialise=True)})
-        #sk_low_4sig.update({m:PI(DIR, "sk_intensity_l4sig_M" + m + "_m1_n1_2210_p45216.npy", "sk_num_nz_l4sig_M" + m + "_m1_n1_2210_p45216.npy", "sk_summed_flags_l4sig_M" + m + "_m1_n1_2210_p45216.npy", initialise=True)})
-        #sk_low_4sig_median.update({m:PI(DIR, "median_z_r4_sk_l4sig_M" + m + "_2210_p4812.npy", "nz_median_z_r4_sk_l4sig_M" + m + "_2210_p4812.npy", "sf_median_z_r4_sk_l4sig_M" + m + "_2210_p4812.npy", initialise=True)})
+        # sk.update({m:PI(DIR, "sk_intensity_M"+m+"_2210_p45216.npy", "sk_summed_flags_M"+m+"_2210_p45216.npy", initialise=True)})
+        # sk_low_pfa2.update({m: PI(DIR, "sk_intensity_low_pfa2_M" + m + "_2210_p45216.npy", "sk_low_pfa2_summed_flags_M" + m + "_2210_p45216.npy", initialise=True)})
+        # sk_low.update({m: PI(DIR, "sk_intensity_low_M" + m + "_2210_p45216.npy", "sk_low_summed_flags_M" + m + "_2210_p45216.npy", initialise=True)})
+        # sk_pfa4sigskmaxlim.update({m:PI(DIR, "sk_intensity_sig4skmaxlim_M"+m+"_2210_p45216.npy","sk_sig4skmaxlim_summed_flags_M"+m+"_2210_p45216.npy", initialise=True)})
+        # sk_4sig_median.update({m:PI(DIR, "sk_pfa4sig_M"+m+"_median_I4_2210_p4812.npy", "sk_pfa4sig_M"+m+"_sf_median_2210_p4812.npy", initialise=True)})
+        # sk_low_4sig.update({m:PI(DIR, "sk_intensity_l4sig_M" + m + "_m1_n1_2210_p45216.npy", "sk_num_nz_l4sig_M" + m + "_m1_n1_2210_p45216.npy", "sk_summed_flags_l4sig_M" + m + "_m1_n1_2210_p45216.npy", initialise=True)})
+        # sk_low_4sig_median.update({m:PI(DIR, "median_z_r4_sk_l4sig_M" + m + "_2210_p4812.npy", "nz_median_z_r4_sk_l4sig_M" + m + "_2210_p4812.npy", "sf_median_z_r4_sk_l4sig_M" + m + "_2210_p4812.npy", initialise=True)})
 
         sk_4sig.update({m:PI(DIR, "sk_intensity_z_l4sigu4sig_M" + m + "_m1_n1_2210_p45216.npy", "sk_num_nz_z_l4sigu4sig_M" + m + "_m1_n1_2210_p45216.npy", "sk_summed_flags_z_l4sigu4sig_M" + m + "_m1_n1_2210_p45216.npy")})
         sk_l1siguskmax.update({m:PI(DIR, "sk_intensity_z_l1siguskmax_M" + m + "_m1_n1_2210_p45216.npy", "sk_num_nz_z_l1siguskmax_M" + m + "_m1_n1_2210_p45216.npy", "sk_summed_flags_z_l1siguskmax_M" + m + "_m1_n1_2210_p45216.npy")})
@@ -160,7 +160,7 @@ if __name__ == "__main__":
     ax.set_xlim([M[0], M[-1]])
     ax.legend(loc=3)
     ax.grid()
-    plt.savefig('/home/vereese/thesis_pics/sk_snr.eps', transparent=True, bbox_inches='tight')
+    plt.savefig('/home/vereese/thesis_pics/sk_snr.pdf', transparent=True, bbox_inches='tight')
 
     fig1, ax1 = plt.subplots()
     ax1.semilogx(M, toa_un_sk_4sig, '-o', label="SK, PFA: 4$\sigma$", linewidth=2, base=2)
@@ -175,7 +175,7 @@ if __name__ == "__main__":
     ax1.set_xlim([M[0], M[-1]])
     ax1.legend()
     ax1.grid()
-    plt.savefig('/home/vereese/thesis_pics/sk_toa_un.eps', transparent=True, bbox_inches='tight')
+    plt.savefig('/home/vereese/thesis_pics/sk_toa_un.pdf', transparent=True, bbox_inches='tight')
 
     fig2, ax2 = plt.subplots()
     ax2.plot(n_ch, m512_snr, '-o', label="MSK, M = 512, m = 1", linewidth=2)
@@ -194,7 +194,7 @@ if __name__ == "__main__":
     ax2.set_xlim([0, n_ch[-1]])
     ax2.grid()
     ax2.legend()
-    plt.savefig('/home/vereese/thesis_pics/msk_snr.eps', bbox_inches='tight')
+    plt.savefig('/home/vereese/thesis_pics/msk_snr.pdf', bbox_inches='tight')
 
     phi = np.arange(0, 1, 1/len(I.profile))
     fig3, ax3 = plt.subplots()
@@ -216,7 +216,7 @@ if __name__ == "__main__":
     ax3.set_xlim([0,1])
     ax3.grid()
     ax3.legend()
-    plt.savefig('/home/vereese/thesis_pics/profile.eps', bbox_inches='tight')
+    plt.savefig('/home/vereese/thesis_pics/profile.pdf', bbox_inches='tight')
 
     fig4, ax4 = plt.subplots()
     ax4.plot(frequencies, sk_4sig["512"].rfi_freq, label="SK, PFA: 4$\sigma$", linewidth=2)
@@ -231,7 +231,7 @@ if __name__ == "__main__":
     plt.axvspan(frequencies[0], frequencies[50], color='blue', alpha=0.5)
     plt.axvspan(frequencies[-50], frequencies[-1], color='blue', alpha=0.5)
     plt.axvspan(frequencies[95], frequencies[126], color='blue', alpha=0.5)
-    plt.savefig('/home/vereese/thesis_pics/rfi_freq.eps', bbox_inches='tight')
+    plt.savefig('/home/vereese/thesis_pics/rfi_freq.pdf', bbox_inches='tight')
 
     fig5, ax5 = plt.subplots()
     ax5.plot(phi, sk_4sig["512"].rfi_pulse, label="SK, PFA: 4$\sigma$", linewidth=2)
@@ -242,7 +242,7 @@ if __name__ == "__main__":
     ax5.set_xlabel("pulse phase")
     ax5.legend()
     ax5.set_xlim([0, 1])
-    plt.savefig('/home/vereese/thesis_pics/rfi_pulse.eps', bbox_inches='tight')
+    plt.savefig('/home/vereese/thesis_pics/rfi_pulse.pdf', bbox_inches='tight')
     plt.show()
 
 """a = I.I.sum(axis=1)
