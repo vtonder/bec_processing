@@ -47,7 +47,7 @@ plt.title("ch 600")
 plt.show()
 
 '''
-#sk = np.load('sk_M512_1234_0x.npy')
+#sk = np.load('../../phd_data/sk_analysis/1234/sk_M512_1234_0x.npy')
 #plt.figure(0)
 #plt.imshow(sk, aspect='auto', origin='lower')
 plt.figure(0)
