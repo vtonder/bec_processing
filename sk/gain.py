@@ -25,8 +25,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-M", dest = "M", help = "Number of spectra to accumulate in SK calculation", default = 2048)
 parser.add_argument("-n", dest = "n", help = "Number of SKs to calculate", default = 100000)
 parser.add_argument("-f", dest = "frac", help = "Number of SKs to calculate", default = 0.5)
-parser.add_argument("-l", dest = "low", help = "Lower threshold to use. defined in constants file. map in get_lower_limit in common.py. options: 1s, 2s, 2_5s, 3s, 4s, 2p, skmin", default = "4s")
-parser.add_argument("-u", dest = "up", help = "Upper threshold to use. defined in constants file. map in get_upper_limit in common.py. options: 1s, 2s, 2_5s, 3s, 4s, 2p, skmax", default = "4s")
+parser.add_argument("-l", dest = "low", help = "Lower threshold to use. defined in constants file. map in get_lower_limit in common.py. options: 0s, 0_5s, 1s, 2s, 2_5s, 3s, 4s, 2p, skmin", default = "4s")
+parser.add_argument("-u", dest = "up", help = "Upper threshold to use. defined in constants file. map in get_upper_limit in common.py. options: 0s, 0_5s, 1s, 2s, 2_5s, 3s, 4s, 2p, skmax", default = "4s")
 parser.add_argument("-g", dest = "gain", help = "Highest gain to add", default = 50)
 parser.add_argument("-s", dest = "step", help = "Step size for gain", default = 2.5)
 parser.add_argument("-p", dest = "plot", help = "Plot or save the data", default = False)
@@ -69,6 +69,7 @@ for g in perc_gain:
 
 print("Done processing: ", time.time()-t1)
 
+# TODO: plotting part hasn't been used in a while. test if it still works
 if args.plot:
     fig, ax = plt.subplots()
     ax.plot(perc_gain, perc_flagged, 'o')

@@ -5,8 +5,7 @@ from matplotlib import pyplot as plt
 
 import sys
 sys.path.append('../')
-from constants import frequencies, freq_resolution, time_resolution, num_ch, vela_dm, vela_T, vela_samples_T, \
-    dispersion_constant
+from constants import frequencies, freq_resolution, time_resolution, num_ch, vela_dm, vela_T, vela_freq, vela_samples_T, dispersion_constant
 
 # TODO: find out how to read a chunk and operate on entire chunks at a time
 # https://stackoverflow.com/questions/21766145/h5py-correct-way-to-slice-array-datasets
@@ -201,7 +200,7 @@ if COMPUTE_TIME_SERIES:
             vela_sub_int[i, :] += re ** 2 + im ** 2
 
     if SAVE_DATA:
-        np.save('sub_int_vela_11.185075', vela_sub_int)
+        np.save('sub_int_vela_'+str(vela_freq), vela_sub_int)
 
 if COMPUTE_POWER_SPECTA:
     tot_int = int(num_pulses / fp)
