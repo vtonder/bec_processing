@@ -29,7 +29,7 @@ plt.rc("text", usetex = True)
 plt.rc("figure", figsize = (textwidth, figheight))
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-d", dest = "dir", help = "directory where data is located. default location: /home/vereese/data/phd_data/sk_analysis/2210", default = "/home/vereese/data/phd_data/sk_analysis/2210/")
+parser.add_argument("-d", dest = "dir", help = "directory where data is located. default location: /home/vereese/git/phd_data/sk_analysis/2210/", default = "/home/vereese/git/phd_data/sk_analysis/2210/")
 # "/home/vereese/git/phd_data/sk_analysis/2210/4sig/"
 args = parser.parse_args()
 DIR = args.dir
@@ -72,7 +72,7 @@ for M, ms in mean_shift_ito_1sigma.items():
     ax.plot(frequencies, ms, label="M = " + str(M), linewidth=2)
 
 
-ax.set_ylabel("% shift in $\overline{SK}$ ito 1$\sigma$ threshold")
+ax.set_ylabel("\% shift in $\overline{SK}$ ito 1$\sigma$ threshold")
 ax.set_xlabel("frequency [MHz]")
 ax.set_xlim([frequencies[0], frequencies[-1]])
 plt.legend()
