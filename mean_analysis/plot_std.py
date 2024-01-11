@@ -4,17 +4,25 @@ from scipy.ndimage import median_filter as med
 from constants import frequencies, a4_textheight, a4_textwidth, thesis_font
 import argparse
 
-font_size = thesis_font
+# Setup fonts and sizes for publication, based on page dimensions in inches
 textwidth = a4_textwidth
 textheight = a4_textheight
-plt.rc('font', size=font_size, family='STIXGeneral')
+font_size = thesis_font
+# groups are like plt.figure plt.legend etc
+plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
+#plt.rc('axes', titlesize=14, labelsize=14)
 plt.rc('axes', titlesize=font_size, labelsize=font_size)
 plt.rc(('xtick', 'ytick'), labelsize=font_size)
 plt.rc('legend', fontsize=font_size)
 plt.rc('lines', markersize=5)
-plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
-plt.rc('mathtext', fontset='stix')
+# The following should only be used for beamer
+# plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
+figheight = 0.65 * textwidth
+plt.rc('mathtext', fontset='cm')
+# to get this working needed to do: sudo apt install cm-super
+plt.rc("text", usetex = True)
+plt.rc("figure", figsize = (textwidth, figheight))
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", dest = "dir", help = "directory where data is located. default location: /home/vereese/git/phd_data/mean_analysis/2210/", default = "/home/vereese/git/phd_data/mean_analysis/2210/")
@@ -45,7 +53,7 @@ plt.xlabel('Frequencies [MHz]')
 plt.ylabel('$\sigma$')
 plt.xlim([frequencies[0], frequencies[-1]])
 plt.legend()
-plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/std_' + tag + '.eps', bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/std_' + tag + '.pdf', bbox_inches='tight')
 plt.show()
 
 '''plt.figure(0)
