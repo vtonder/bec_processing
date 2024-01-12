@@ -43,7 +43,7 @@ gps_l2 = 1227.60
 gal_5b = 1207.14
 gal_e6 = 1278.75
 
-# center frequencies of each 1024 subbands
+# center frequencies of each 1024 subbands - see Bailes 2020
 frequencies = np.arange(856, 1712, freq_resolution)
 h1_ch = np.abs(frequencies-h1).argmin()
 gps_l1_ch = np.abs(frequencies-gps_l1).argmin()
@@ -167,7 +167,7 @@ for fn, si in start_indices.items():
 # Pulsar information is obtained from:
 # https://www.atnf.csiro.au/people/joh414/glast/database/summary.html
 # Vela
-vela_freq = 11.185053620637202 # corrected for pulse period as commmented below
+vela_freq = 11.185053620637202 # corrected for pulse period as commented below
 #tot_obs=(vela_samples_T*time_resolution*22*11) 22 vela pulses , 22 is chosen randomly, that gave 11 subintegrations
 #deltaT=(time_resolution*17500) # 17500 is a rough estimate from the plot
 #vela_true_period = vela_T*(1+delaT/tot_obs)
