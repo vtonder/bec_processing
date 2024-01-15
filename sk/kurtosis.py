@@ -137,34 +137,44 @@ if __name__ == "__main__":
 
     mean = 0
     std = 1
+    std_pulsar = 5
     FFT_LEN = 1024
     M = 512 # number of averages to take PSD over
     N = FFT_LEN * M
     PFB_TAPS = 8
-    PFB_M = PFB_TAPS*FFT_LEN
+    PFB_M = PFB_TAPS * FFT_LEN
 
     f1 = 40
     fs = 100
     t = np.arange(0, N/fs, 1.0/fs)
-    k = np.arange(FFT_LEN/2)
-    f = k/FFT_LEN*fs
-    s = np.sin(2*np.pi*f1*t)
+    k = np.arange(FFT_LEN / 2)
+    f = (k * fs) / FFT_LEN
+    s = np.sin(2 * np.pi * f1 * t)
 
     pulse_train = np.zeros(N)
     duty_perc = 80
-    duty_samples = int((duty_perc/100)*M)
+    duty_samples = int((duty_perc / 100) * M)
 
     print("len pulse_train", len(pulse_train))
     print("number of duty samples", duty_samples)
 
-    for i in np.arange(0, N, M):
-        pulse_train[i:i+duty_samples] = np.random.randn(duty_samples)*500 #np.ones(duty_samples)*50
+    pulsar = np.zeros(N)
+    pulsar_duty = 10
+    pulsar_duty_samples = int((pulsar_duty / 100) * M)
+
+    for i, j in enumerate(np.arange(0, N, M)):
+        pulse_train[j:j+duty_samples] = np.random.randn(duty_samples) * 500 #np.ones(duty_samples)*50
+        if i % 5 == 0:
+            pulsar[j:j+pulsar_duty_samples] = np.random.normal(mean, std_pulsar, size=pulsar_duty_samples) + 1j*np.random.normal(mean, std_pulsar, size=pulsar_duty_samples)
 
     wgn_re = np.random.normal(mean, std, size=N)
     wgn_im = np.random.normal(mean, std, size=N)
 
-    x =  wgn_re #+ 1j*wgn_im
-    x =  x + s #pulse_train
+    x1 =  wgn_re + 1j*wgn_im
+    #x =  x1
+    x =  x1 + s
+    # x =  x1 + pulse_train
+    #x =  x1 + pulsar
     x = x.reshape(M, FFT_LEN)
 
     # NOTE: Adding 0s to the data raises the SK. Therefore, if you have dropped packets then you'll increase your SK
@@ -176,18 +186,26 @@ if __name__ == "__main__":
 
     sk = spectral_kurtosis(x, M, FFT_LEN, reshape=False, fft=True, normalise=False)
     print(np.mean(sk))
-    plt.figure(0)
-    plt.plot(x.flatten())
+    #plt.figure(0)
+    #plt.plot(x1)
 
-    plt.figure(1)
-    plt.plot(f[1:], sk[1:int(FFT_LEN/2)], linewidth=2)
+    #plt.figure(1)
+    #plt.plot(pulsar)
+
+    #plt.figure(2)
+    #plt.plot(x.flatten())
+
+    plt.figure(3)
+    plt.plot(f[1:], sk[1:int(FFT_LEN/2)], linewidth=2, label="$\overline{SK}$")
     plt.xlim([f[1], f[-1]])
-    plt.axhline(0.77511, linestyle = '--', linewidth=2, label="thresholds")
-    plt.axhline(1.3254, linestyle = '--', linewidth=2)
+    plt.axhline(0.77511, linestyle = '--', color = "g", linewidth=2, label="3$\sigma$ thresholds")
+    plt.axhline(1.3254, linestyle = '--', color = "g", linewidth=2)
+    #plt.axhline(np.mean(sk[1:int(FFT_LEN/2)]), color = "r", linestyle = '--', linewidth=2, label="mean of $\overline{SK}$")
     #plt.ylim([0.65, 1.35])
     plt.grid()
     plt.xlabel("frequency [Hz]")
     plt.ylabel('$\overline{SK}$')
+    plt.legend()
     plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/skest1.pdf', bbox_inches='tight')
     plt.show()
 
