@@ -48,8 +48,18 @@ def spectral_kurtosis(s, M, FFT_LEN, N = 1, d = 1, reshape= True, fft = True, no
 
     return SK
 
-#column major SK implementation for use with filterbank data
 def spectral_kurtosis_cm(s, M, FFT_LEN, N = 1, d = 1):
+    """
+    - Column major SK implementation for use with filterbank data.
+    - SK estimate is computed as per Equation 8 in "The generalized spectral kurtosis estimator" by Nita and Gary in 2010
+
+    :param s: the complex signal with shape: number of frequency channels X M
+    :param M: SK window size
+    :param FFT_LEN: length of FFT
+    :param N: correcting factor for conducting previous accumulations
+    :param d: correcting factor for s not having Gamma distribution. Gamma distribution with 1, 2 degrees of freedom has d = 0.5, 1 respectively.
+    :return: SK estimate with length: number of frequency channels
+    """
     perio = np.abs(s) ** 2 / FFT_LEN  # FFT has already been taken
 
     S1 = perio.sum(axis=1)
