@@ -44,15 +44,15 @@ for i, ld_idx in enumerate(np.arange(start, stop, time_chunk_size)):
     ddp_ind = np.logical_and(z_ind[:, :, 0], z_ind[:, :, 1])
 
     # Make a copy and shift
-    # ddp_shift_ind = np.copy(ddp_ind)
-    # ddp_shift_ind = np.roll(ddp_shift_ind, 1, axis=1)
-    # ddp_shift_ind[:, 0] = False 
+    ddp_shift_ind = np.copy(ddp_ind)
+    ddp_shift_ind = np.roll(ddp_shift_ind, 1, axis=1)
+    ddp_shift_ind[:, 0] = False
 
     # Only count as a dropped packet (dp) if atleast two consecutive time_samples are 0 for both real and imaginary data points
-    # dp_ind = np.logical_and(ddp_ind, ddp_shift_ind)
+    dp_ind = np.logical_and(ddp_ind, ddp_shift_ind)
 
     # Accumulate dp's
-    dp += np.sum(ddp_ind, axis=1)
+    dp += np.sum(dp_ind, axis=1)
 
 if rank > 0:
     comm.Send([dp, MPI.DOUBLE], dest=0, tag=15)
@@ -65,5 +65,6 @@ else:
     nums_str = regex.findall(args.file)
     tag = nums_str[0][-4:] # get last 4 digits of observation file
     pol = args.file[-4]
-    np.save('dp_' + str(num_data_points) + '_' + tag + '_' + pol, dp)
+    # two consecutive complex zeros (z2_) were counted in num_data_points
+    np.save('z2_' + str(num_data_points) + '_' + tag + '_' + pol, dp)
     print("done processing: ", time.time() - t1)
