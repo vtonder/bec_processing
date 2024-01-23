@@ -39,7 +39,7 @@ def make_snr_toa_list(sk_dict, M):
     for m in M:
         m = str(m)
         snr.append(sk_dict[m].snr)
-        toa.append(sk_dict[m].toa_un)
+        toa.append(sk_dict[m].toa_un*1000) # convert from us into ns
 
     return snr, toa
 
@@ -74,15 +74,18 @@ if __name__ == "__main__":
     # sk_zskmax = PI("zsk_intensity_l4siguskmax_M2048_2210_p45216.npy","zsk_summed_flags_l4siguskmax_M2048_2210_p45216.npy")
 
     # No RFI mitigation data set
+    print("None:")
     I = PI(DIR, "intensity_z_2210_p45216.npy", "num_nz_z_2210_p45216.npy", initialise = False)
     I.compute()
 
     # Only static mask applied
+    print("\nStatic mask:")
     Im = PI(DIR, "intensity_z_2210_p45216.npy", "num_nz_z_2210_p45216.npy")
 
     M = [64, 128, 256, 512, 1024, 2048, 4096, 8192]
     for m in M:
         m = str(m)
+        print("\nM:", m)
         # sk.update({m:PI(DIR, "sk_intensity_M"+m+"_2210_p45216.npy", "sk_summed_flags_M"+m+"_2210_p45216.npy", initialise=True)})
         # sk_low_pfa2.update({m: PI(DIR, "sk_intensity_low_pfa2_M" + m + "_2210_p45216.npy", "sk_low_pfa2_summed_flags_M" + m + "_2210_p45216.npy", initialise=True)})
         # sk_low.update({m: PI(DIR, "sk_intensity_low_M" + m + "_2210_p45216.npy", "sk_low_summed_flags_M" + m + "_2210_p45216.npy", initialise=True)})
@@ -90,11 +93,15 @@ if __name__ == "__main__":
         # sk_4sig_median.update({m:PI(DIR, "sk_pfa4sig_M"+m+"_median_I4_2210_p4812.npy", "sk_pfa4sig_M"+m+"_sf_median_2210_p4812.npy", initialise=True)})
         # sk_low_4sig.update({m:PI(DIR, "sk_intensity_l4sig_M" + m + "_m1_n1_2210_p45216.npy", "sk_num_nz_l4sig_M" + m + "_m1_n1_2210_p45216.npy", "sk_summed_flags_l4sig_M" + m + "_m1_n1_2210_p45216.npy", initialise=True)})
         # sk_low_4sig_median.update({m:PI(DIR, "median_z_r4_sk_l4sig_M" + m + "_2210_p4812.npy", "nz_median_z_r4_sk_l4sig_M" + m + "_2210_p4812.npy", "sf_median_z_r4_sk_l4sig_M" + m + "_2210_p4812.npy", initialise=True)})
-
+        print("4 sigma")
         sk_4sig.update({m:PI(DIR, "sk_intensity_z_l4sigu4sig_M" + m + "_m1_n1_2210_p45216.npy", "sk_num_nz_z_l4sigu4sig_M" + m + "_m1_n1_2210_p45216.npy", "sk_summed_flags_z_l4sigu4sig_M" + m + "_m1_n1_2210_p45216.npy")})
+        print("1 sigma + sk max")
         sk_l1siguskmax.update({m:PI(DIR, "sk_intensity_z_l1siguskmax_M" + m + "_m1_n1_2210_p45216.npy", "sk_num_nz_z_l1siguskmax_M" + m + "_m1_n1_2210_p45216.npy", "sk_summed_flags_z_l1siguskmax_M" + m + "_m1_n1_2210_p45216.npy")})
+        print("\n")
 
+    print("\npower threshold:")
     pt = PI(DIR, "pt_intensity_z_2210_p45216.npy", "pt_num_nz_z_2210_p45216.npy", "pt_summed_flags_z_2210_p45216.npy")
+    print("\nmedian:")
     med = PI(DIR, "median_z_r4_2210_p4812.npy", "num_nz_median_z_2210_p4812.npy", "sf_median_z_2210_p4812.npy")
     # median gets run 4 times, therefore it's % RFI is different to the other data sets
     med.rfi_freq = 100 * med.sf.sum(axis = 1) / (np.round(J0437_samples_T) * 4)
@@ -148,8 +155,8 @@ if __name__ == "__main__":
     #m256_snr, m256_toa = make_snr_toa_list(msk_4siglow_M256m1nx, n_ch)
 
     fig, ax = plt.subplots()
-    ax.semilogx(M, snr_1sigskmax, '-o', label="SK, PFA: 1$\sigma$, $SK_{max}$", linewidth=2, base=2)
-    ax.semilogx(M, snr_sk_4sig, '-o', label="SK, PFA: 4$\sigma$", linewidth=2, base=2)
+    ax.semilogx(M, snr_1sigskmax, '-o', label="SK: 1$\sigma$, $SK_{max}$", linewidth=2, base=2)
+    ax.semilogx(M, snr_sk_4sig, '-o', label="SK: 4$\sigma$", linewidth=2, base=2)
     ax.hlines(y = med.snr, xmin = M[0], xmax = M[-1], colors="red", linestyle="--", label = "median")
     ax.hlines(y = Im.snr, xmin = M[0], xmax = M[-1], colors="blue", linestyle="--", label = "static mask")
     ax.hlines(y = pt.snr, xmin = M[0], xmax = M[-1], colors="green", linestyle="--", label ="$\geq$ 4$\sigma$")
@@ -163,15 +170,15 @@ if __name__ == "__main__":
     plt.savefig('/home/vereese/thesis_pics/sk_snr.pdf', transparent=True, bbox_inches='tight')
 
     fig1, ax1 = plt.subplots()
-    ax1.semilogx(M, toa_un_sk_4sig, '-o', label="SK, PFA: 4$\sigma$", linewidth=2, base=2)
-    ax1.semilogx(M, toa_un_1sigskmax, '-o', label="SK, PFA: 1$\sigma$, $SK_{max}$", linewidth=2, base=2)
-    ax1.hlines(y=I.toa_un, xmin=M[0], xmax=M[-1], colors="cyan", linestyle="--", label="none")
-    ax1.hlines(y=pt.toa_un, xmin=M[0], xmax=M[-1], colors="green", linestyle="--", label="$\geq$ 4$\sigma$")
-    ax1.hlines(y=Im.toa_un, xmin=M[0], xmax=M[-1], colors="blue", linestyle="--", label="static mask")
-    ax1.hlines(y=med.toa_un,xmin=M[0], xmax=M[-1], colors="red", linestyle="--", label="median")
+    ax1.semilogx(M, toa_un_sk_4sig, '-o', label="SK: 4$\sigma$", linewidth=2, base=2)
+    ax1.semilogx(M, toa_un_1sigskmax, '-o', label="SK: 1$\sigma$, $SK_{max}$", linewidth=2, base=2)
+    ax1.hlines(y=1000*I.toa_un, xmin=M[0], xmax=M[-1], colors="cyan", linestyle="--", label="none")
+    ax1.hlines(y=1000*pt.toa_un, xmin=M[0], xmax=M[-1], colors="green", linestyle="--", label="$\geq$ 4$\sigma$")
+    ax1.hlines(y=1000*Im.toa_un, xmin=M[0], xmax=M[-1], colors="blue", linestyle="--", label="static mask")
+    ax1.hlines(y=1000*med.toa_un,xmin=M[0], xmax=M[-1], colors="red", linestyle="--", label="median")
     ax1.xaxis.set_major_formatter(matplotlib.ticker.LogFormatter(base=2))
     ax1.set_xlabel("M values")
-    ax1.set_ylabel("TOA uncertainty [$\mu$s]")
+    ax1.set_ylabel("TOA uncertainty [ns]")
     ax1.set_xlim([M[0], M[-1]])
     ax1.legend()
     ax1.grid()
@@ -194,7 +201,7 @@ if __name__ == "__main__":
     ax2.set_xlim([0, n_ch[-1]])
     ax2.grid()
     ax2.legend()
-    plt.savefig('/home/vereese/thesis_pics/msk_snr.pdf', bbox_inches='tight')
+    #plt.savefig('/home/vereese/thesis_pics/msk_snr.pdf', bbox_inches='tight')
 
     phi = np.arange(0, 1, 1/len(I.profile))
     fig3, ax3 = plt.subplots()
@@ -202,13 +209,13 @@ if __name__ == "__main__":
     #ax3.plot(phi, sk_4sig["64"].norm_profile+0.5, label="SK, M = 64, PFA: 4$\sigma$")
     #ax3.plot(phi, sk_4sig["128"].norm_profile+0.6, label="SK, M = 128, PFA: 4$\sigma$")
     #ax3.plot(phi, sk_4sig["256"].norm_profile+0.7, label="SK, M = 256, PFA: 4$\sigma$")
-    ax3.plot(phi, sk_4sig["512"].norm_profile + 0.4, label="SK, PFA: 4$\sigma$", linewidth=2)
+    ax3.plot(phi, sk_4sig["512"].norm_profile + 0.4, label="SK: 4$\sigma$", linewidth=2)
     #ax3.plot(phi, sk_4sig["1024"].norm_profile+0.4, label="SK, M = 1024, PFA: 4$\sigma$")
     #ax3.plot(phi, sk_4sig["2048"].norm_profile+1, label="SK, M = 2048, PFA: 4$\sigma$")
     ax3.plot(phi, pt.norm_profile + 0.3, label="$\geq$ 4$\sigma$", linewidth=2)
     #ax3.plot(phi, sk_pfa4sigskmaxlim["1024"].norm_profile + 0.3, label="SK, PFA: 4$\sigma$ SK max")
     #ax3.plot(phi, sk_low_4sig["1024"].norm_profile + 0.2, label="SK, PFA: low 4$\sigma$")
-    ax3.plot(phi, sk_l1siguskmax["512"].norm_profile + 0.2, label="SK, PFA: 1$\sigma$, $SK_{max}$", linewidth=2)
+    ax3.plot(phi, sk_l1siguskmax["512"].norm_profile + 0.2, label="SK: 1$\sigma$, $SK_{max}$", linewidth=2)
     ax3.plot(phi, med.norm_profile + 0.1, label="median", linewidth=2)
     #ax3.plot(phi, sk_low_4sig_median["1024"].norm_profile, label="SK, PFA: low 4$\sigma$ median")
     ax3.set_ylabel("normalized pulsar intensity profile")
@@ -219,8 +226,8 @@ if __name__ == "__main__":
     plt.savefig('/home/vereese/thesis_pics/profile.pdf', bbox_inches='tight')
 
     fig4, ax4 = plt.subplots()
-    ax4.plot(frequencies, sk_l1siguskmax["256"].rfi_freq, label="SK, PFA: 1$\sigma$, $SK_{max}$", linewidth=2)
-    ax4.plot(frequencies, sk_4sig["256"].rfi_freq, label="SK, PFA: 4$\sigma$", linewidth=2)
+    ax4.plot(frequencies, sk_l1siguskmax["2048"].rfi_freq, label="SK: 1$\sigma$, $SK_{max}$", linewidth=2)
+    ax4.plot(frequencies, sk_4sig["2048"].rfi_freq, label="SK: 4$\sigma$", linewidth=2)
     ax4.plot(frequencies, pt.rfi_freq, label="$\geq$ 4$\sigma$", linewidth=2)
     ax4.plot(frequencies, med.rfi_freq, label="median", linewidth=2)
     ax4.set_ylabel("\% RFI flagged")
@@ -228,17 +235,17 @@ if __name__ == "__main__":
     # loc = 10 is center https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html
     ax4.legend(loc = 10)
     ax4.set_xlim([frequencies[0], frequencies[-1]])
-    ax4.set_ylim([0, 14])
+    ax4.set_ylim([0, 12])
     plt.axvspan(frequencies[0], frequencies[50], color='blue', alpha=0.5)
     plt.axvspan(frequencies[-50], frequencies[-1], color='blue', alpha=0.5)
     plt.axvspan(frequencies[95], frequencies[126], color='blue', alpha=0.5)
     plt.savefig('/home/vereese/thesis_pics/rfi_freq.pdf', bbox_inches='tight')
 
     fig5, ax5 = plt.subplots()
-    ax5.plot(phi, sk_l1siguskmax["256"].rfi_pulse, label="SK, PFA: 1$\sigma$, $SK_{max}$", linewidth=2)
+    ax5.plot(phi, sk_l1siguskmax["256"].rfi_pulse, label="SK: 1$\sigma$, $SK_{max}$", linewidth=2)
     ax5.plot(phi, med.rfi_pulse, label="median", linewidth=2)
     ax5.plot(phi, pt.rfi_pulse, label="$\geq$ 4$\sigma$", linewidth=2)
-    ax5.plot(phi, sk_4sig["256"].rfi_pulse, label="SK, PFA: 4$\sigma$", linewidth=2)
+    ax5.plot(phi, sk_4sig["256"].rfi_pulse, label="SK: 4$\sigma$", linewidth=2)
     ax5.set_ylabel("\% RFI flagged")
     ax5.set_xlabel("pulse phase")
     # loc = 10 is in the center
