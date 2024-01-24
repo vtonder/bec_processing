@@ -8,7 +8,7 @@ from pulsar_snr import PI
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-d", dest = "dir", help = "directory where data is located. default location: /home/vereese/data/phd_data/sk_analysis/2210", default = "/home/vereese/data/phd_data/sk_analysis/2210/")
+parser.add_argument("-d", dest = "dir", help = "directory where data is located. default location: /home/vereese/data/phd_data/sk_analysis/2210/", default = "/home/vereese/data/phd_data/sk_analysis/2210/")
 # "/home/vereese/git/phd_data/sk_analysis/2210/4sig/"
 args = parser.parse_args()
 DIR = args.dir
@@ -119,8 +119,8 @@ if __name__ == "__main__":
     #snr_sk_low, toa_un_sk_low = make_snr_toa_list(sk_low, M)
 
     n_ch = [2, 4, 8, 16]
-    msk_l1siguskamx_M512m1nx = {}
-    vmsk_l1siguskamx_M512m1nx = {}
+    msk_l1siguskamx_M256m1nx = {}
+    vmsk_l1siguskamx_M256m1nx = {}
 
     #msk_4siglow_M64m1nx = {}
     #msk_4siglow_M128m1nx = {}
@@ -132,8 +132,8 @@ if __name__ == "__main__":
 
     for n in n_ch:
         n = str(n)
-        msk_l1siguskamx_M512m1nx.update({n:PI(DIR, "msk_intensity_z_l1siguskmax_M512_m1_n" + n + "_2210_p45216.npy", "msk_num_nz_z_l1siguskmax_M512_m1_n" + n + "_2210_p45216.npy", "msk_summed_flags_z_l1siguskmax_M512_m1_n" + n + "_2210_p45216.npy")})
-        vmsk_l1siguskamx_M512m1nx.update({n:PI(DIR, "vmsk_intensity_z_l1siguskmax_M512_m1_n" + n + "_2210_p45216.npy", "vmsk_num_nz_z_l1siguskmax_M512_m1_n" + n + "_2210_p45216.npy", "vmsk_summed_flags_z_l1siguskmax_M512_m1_n" + n + "_2210_p45216.npy")}) 
+        msk_l1siguskamx_M256m1nx.update({n:PI(DIR, "msk_intensity_z_l1siguskmax_M256_m1_n" + n + "_2210_p45216.npy", "msk_num_nz_z_l1siguskmax_M256_m1_n" + n + "_2210_p45216.npy", "msk_summed_flags_z_l1siguskmax_M256_m1_n" + n + "_2210_p45216.npy")})
+        vmsk_l1siguskamx_M256m1nx.update({n:PI(DIR, "vmsk_intensity_z_l1siguskmax_M256_m1_n" + n + "_2210_p45216.npy", "vmsk_num_nz_z_l1siguskmax_M256_m1_n" + n + "_2210_p45216.npy", "vmsk_summed_flags_z_l1siguskmax_M256_m1_n" + n + "_2210_p45216.npy")}) 
         #msk_4siglow_M64m1nx.update({n:PI(DIR, "MSK_intensity_low_sig4_M64_m1_n" + n + "_2210_p45216.npy", initialise=True)})
         #msk_4siglow_M128m1nx.update({n:PI(DIR, "MSK_intensity_low_sig4_M128_m1_n" + n + "_2210_p45216.npy", initialise=True)})
         #msk_4siglow_M4096m1nx.update({n:PI(DIR, "MSK_intensity_low_sig4_M4096_m1_n" + n + "_2210_p45216.npy", initialise=True)})
@@ -144,8 +144,8 @@ if __name__ == "__main__":
         #msk128m1nx.update({n:PI(DIR, "MSK_intensity_low_sig4_M128_m1_n"+n+"_2210_p45216.npy")})
         #msk_4siglow_M256m1nx.update({n:PI(DIR, "MSK_intensity_low_sig4_M256_m1_n" + n + "_2210_p45216.npy")})
 
-    m512_snr, m512_toa = make_snr_toa_list(msk_l1siguskamx_M512m1nx, n_ch)
-    vm512_snr, vm512_toa = make_snr_toa_list(vmsk_l1siguskamx_M512m1nx, n_ch)
+    m256_snr, m256_toa = make_snr_toa_list(msk_l1siguskamx_M256m1nx, n_ch)
+    vm256_snr, vm256_toa = make_snr_toa_list(vmsk_l1siguskamx_M256m1nx, n_ch)
 
     #m64_snr, m64_toa = make_snr_toa_list(msk_4siglow_M64m1nx, n_ch)
     #vm64_snr, vm64_toa = make_snr_toa_list(vmsk_4siglow_M64m1nx, n_ch)
@@ -185,14 +185,14 @@ if __name__ == "__main__":
     plt.savefig('/home/vereese/thesis_pics/sk_toa_un.pdf', transparent=True, bbox_inches='tight')
 
     fig2, ax2 = plt.subplots()
-    ax2.plot(n_ch, vm512_snr, '-o', label="VMSK, M = 512, m = 1", linewidth=2)
-    ax2.plot(n_ch, m512_snr, '-o', label="MSK, M = 512, m = 1", linewidth=2)
+    ax2.plot(n_ch, vm256_snr, '-o', label="VMSK, M = 256, m = 1", linewidth=2)
+    ax2.plot(n_ch, m256_snr, '-o', label="MSK, M = 256, m = 1", linewidth=2)
     #ax2.plot(n_ch, m64_snr, '-o', label="msk M64, m = 1", linewidth=2)
     #ax2.plot(n_ch, m128_snr, '-o', label="msk M128, m = 1", linewidth=2)
     #ax2.plot(n_ch, m4096_snr, '-o', label="msk M4096, m = 1", linewidth=2)
     #ax2.plot(n_ch, vm64_snr, '-o', label="vmsk M64, m = 1", linewidth=2)
-    markers = ["d", "^", "*", "s"] #, "v", "d"]
-    for i, Msk in enumerate(["1024", "4096", "8192", "2048"]):
+    markers = ["*", "^", "d", "s", "v"] #, "d"]
+    for i, Msk in enumerate(["256", "512", "1024", "4096", "2048"]):
         ax2.plot(1, sk_l1siguskmax[Msk].snr, markers[i], label="SK, M = "+Msk, linewidth=2, markersize=10)
     #plt.plot(n_ch, m128_snr, '-o', label="M128, m = 1", linewidth=2)
     #plt.plot(n_ch, m256_snr, '-o', label="M256, m = 1", linewidth=2)
@@ -201,7 +201,7 @@ if __name__ == "__main__":
     ax2.set_xlim([0, n_ch[-1]])
     ax2.grid()
     ax2.legend()
-    #plt.savefig('/home/vereese/thesis_pics/msk_snr.pdf', bbox_inches='tight')
+    plt.savefig('/home/vereese/thesis_pics/msk_snr.pdf', bbox_inches='tight')
 
     phi = np.arange(0, 1, 1/len(I.profile))
     fig3, ax3 = plt.subplots()
