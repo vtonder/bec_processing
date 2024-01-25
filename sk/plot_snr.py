@@ -209,13 +209,13 @@ if __name__ == "__main__":
     #ax3.plot(phi, sk_4sig["64"].norm_profile+0.5, label="SK, M = 64, PFA: 4$\sigma$")
     #ax3.plot(phi, sk_4sig["128"].norm_profile+0.6, label="SK, M = 128, PFA: 4$\sigma$")
     #ax3.plot(phi, sk_4sig["256"].norm_profile+0.7, label="SK, M = 256, PFA: 4$\sigma$")
-    ax3.plot(phi, sk_4sig["512"].norm_profile + 0.4, label="SK: 4$\sigma$", linewidth=2)
+    ax3.plot(phi, sk_4sig["256"].norm_profile + 0.4, label="SK: 4$\sigma$", linewidth=2)
     #ax3.plot(phi, sk_4sig["1024"].norm_profile+0.4, label="SK, M = 1024, PFA: 4$\sigma$")
     #ax3.plot(phi, sk_4sig["2048"].norm_profile+1, label="SK, M = 2048, PFA: 4$\sigma$")
     ax3.plot(phi, pt.norm_profile + 0.3, label="$\geq$ 4$\sigma$", linewidth=2)
     #ax3.plot(phi, sk_pfa4sigskmaxlim["1024"].norm_profile + 0.3, label="SK, PFA: 4$\sigma$ SK max")
     #ax3.plot(phi, sk_low_4sig["1024"].norm_profile + 0.2, label="SK, PFA: low 4$\sigma$")
-    ax3.plot(phi, sk_l1siguskmax["512"].norm_profile + 0.2, label="SK: 1$\sigma$, $SK_{max}$", linewidth=2)
+    ax3.plot(phi, sk_l1siguskmax["256"].norm_profile + 0.2, label="SK: 1$\sigma$, $SK_{max}$", linewidth=2)
     ax3.plot(phi, med.norm_profile + 0.1, label="median", linewidth=2)
     #ax3.plot(phi, sk_low_4sig_median["1024"].norm_profile, label="SK, PFA: low 4$\sigma$ median")
     ax3.set_ylabel("normalized pulsar intensity profile")
@@ -225,9 +225,16 @@ if __name__ == "__main__":
     ax3.legend()
     plt.savefig('/home/vereese/thesis_pics/profile.pdf', bbox_inches='tight')
 
+    # this is just to be able to plot this graph locally and not on ray
+    rfi_offline = np.zeros([4,1024])
+    rfi_offline[0, :] = sk_l1siguskmax["256"].rfi_freq
+    rfi_offline[1, :] = sk_4sig["256"].rfi_freq
+    rfi_offline[2, :] = pt.rfi_freq
+    rfi_offline[3, :] = med.rfi_freq
+    np.save("rfi_freq_offline", rfi_offline)
     fig4, ax4 = plt.subplots()
-    ax4.plot(frequencies, sk_l1siguskmax["2048"].rfi_freq, label="SK: 1$\sigma$, $SK_{max}$", linewidth=2)
-    ax4.plot(frequencies, sk_4sig["2048"].rfi_freq, label="SK: 4$\sigma$", linewidth=2)
+    ax4.plot(frequencies, sk_l1siguskmax["256"].rfi_freq, label="SK: 1$\sigma$, $SK_{max}$", linewidth=2)
+    ax4.plot(frequencies, sk_4sig["256"].rfi_freq, label="SK: 4$\sigma$", linewidth=2)
     ax4.plot(frequencies, pt.rfi_freq, label="$\geq$ 4$\sigma$", linewidth=2)
     ax4.plot(frequencies, med.rfi_freq, label="median", linewidth=2)
     ax4.set_ylabel("\% RFI flagged")
