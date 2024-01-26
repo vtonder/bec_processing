@@ -4,7 +4,7 @@ import numpy as np
 import time
 import sys
 sys.path.append("../")
-from constants import num_ch, start_indices, pulsars, xy_time_offsets, time_chunk_size, upper_limit_skmax, lower_limit_1s
+from constants import num_ch, start_indices, pulsars, xy_time_offsets, time_chunk_size, upper_limit_skmax, lower_limit_1s, upper_limit_4s, lower_limit_4s
 from common import get_data_window, get_pulse_window, get_pulse_power
 from pulsar_processing.pulsar_functions import incoherent_dedisperse
 import argparse
@@ -67,8 +67,10 @@ tot_ndp_x = dfx['Data/timestamps'].shape[0] # total number of data points of x p
 tot_ndp_y = dfy['Data/timestamps'].shape[0]
 
 M = int(args.M)
-low = lower_limit_1s[M]
-up = upper_limit_skmax[M]
+#low = lower_limit_1s[M]
+#up = upper_limit_skmax[M]
+low = lower_limit_4s[M]
+up = upper_limit_4s[M]
 
 rfi = str(args.rfi)
 tag = args.tag
@@ -175,7 +177,8 @@ else:
 
     if args.rfi:
         if rfi == "sk":
-            np.save("sub_int_intensity_z_sk_l1siguskmax_M" + str(M) + "_" + tag, tot_sub_int_profile)
+            np.save("sub_int_intensity_z_sk_l4sigu4sig_M" + str(M) + "_" + tag, tot_sub_int_profile)
+            #np.save("sub_int_intensity_z_sk_l1siguskmax_M" + str(M) + "_" + tag, tot_sub_int_profile)
         else:
             np.save("sub_int_intensity_z_pt_" + tag, tot_sub_int_profile)
     else:
