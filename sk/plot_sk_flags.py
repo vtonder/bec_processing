@@ -47,8 +47,12 @@ obs_len = np.round(num_sk*M*time_resolution/10**6) # SK flags length in seconds
 # second last substring is the observation tag
 tag = file_args[-2]
 
+mini = np.min(data)
+maxi = np.max(data)/2
+
 fig, ax = plt.subplots()
-ax.imshow(data, orign = "lower", aspect = "auto", extent = [856, 1712, 0, obs_len])
+ax.imshow(data, origin = "lower", aspect = "auto", extent = [0, obs_len, 856, 1712], interpolation='none', vmin = mini, vmax = maxi)
 ax.set_xlabel("observation time [s]")
 ax.set_ylabel("frequency [MHz]")
 plt.savefig(DIR_OUT + 'sk_flags_' + tag + '_' + str(M) + '.pdf', bbox_inches='tight')
+plt.show()
