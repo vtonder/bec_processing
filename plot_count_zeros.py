@@ -29,14 +29,29 @@ plt.rc("figure", figsize = (textwidth, figheight))
 dpx = np.load("z1_231489536_2210_x.npy") # this is the number of dropped data points (ie both re and imag = 0)
 dpy = np.load("z1_217726976_2210_y.npy")
 
+dpx2 = np.load("z2_231489536_2210_x.npy") # this is the number of dropped data points (ie both re and imag = 0)
+dpy2 = np.load("z2_217726976_2210_y.npy")
+
+
 fig, ax = plt.subplots()
-ax.plot(frequencies, (100*dpy) / 217726976, linewidth=2, label="Y-pol")
-ax.plot(frequencies, (100*dpx) / 231489536, linewidth=2, label="X-pol")
+ax.plot(frequencies, (100*dpy) / 217726976, linewidth=2, label="V-polarisation")
+ax.plot(frequencies, (100*dpx) / 231489536, linewidth=2, label="H-polarisation")
 ax.set_xlim((frequencies[0], frequencies[-1]))
 ax.set_xlabel("frequency [MHz]")
-ax.set_ylabel("\% complex zero data points")
+ax.set_ylabel("\% complex zeros, one timesample")
 plt.legend()
 plt.grid()
 plt.savefig('/home/vereese/thesis_pics/z1_data.pdf', transparent=True, bbox_inches='tight')
+
+fig1, ax1 = plt.subplots()
+ax1.plot(frequencies, (100*dpy2) / 217726976, linewidth=2, label="V-polarisation")
+ax1.plot(frequencies, (100*dpx2) / 231489536, linewidth=2, label="H-polarisation")
+ax1.set_xlim((frequencies[0], frequencies[-1]))
+ax1.set_xlabel("frequency [MHz]")
+ax1.set_ylabel("\% complex zeros, two timesamples")
+plt.legend()
+plt.grid()
+plt.savefig('/home/vereese/thesis_pics/z2_data.pdf', transparent=True, bbox_inches='tight')
+
 plt.show()
 
