@@ -94,7 +94,7 @@ ax00.plot(gain2[0,:], gain2l1um[1,:], 'o', label="M = 2048")
 ax00.plot(gain3[0,:], gain3l1um[1,:], 'o', label="M = 4096")
 ax00.set_ylabel("\% RFI flagged")
 ax00.set_xlabel("\% Power increase")
-# 15.87 = 100*(((1-0.682689492137086)/2) + ((1-0.999999998026825)/2)) where the 2nd term comes from 6sigma
+# 15.87 = 100*(1-0.682689492137086)/2
 ax00.hlines(y = 15.87, xmin=0, xmax=47.5, color="red", label="15.87\%")
 ax00.hlines(y = 14.28, xmin=0, xmax=47.5, color="magenta", label="14.28\%")
 #ax00.set_title("PFA = 1$\sigma$, $SK_{max}$, RFI at 10% duty cycle")
