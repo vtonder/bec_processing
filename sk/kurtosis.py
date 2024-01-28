@@ -48,8 +48,19 @@ def spectral_kurtosis(s, M, FFT_LEN, N = 1, d = 1, reshape= True, fft = True, no
 
     return SK
 
-#column major SK implementation for use with filterbank data
 def spectral_kurtosis_cm(s, M, FFT_LEN, N = 1, d = 1):
+    """
+    - Column major SK implementation for use with filterbank data.
+    - SK estimate is computed as per Equation 8 in "The generalized spectral kurtosis estimator" by Nita and Gary in 2010
+
+    :param s: the complex signal with shape: number of frequency channels X M
+    :param M: SK window size
+    :param FFT_LEN: length of FFT
+    :param N: correcting factor for conducting previous accumulations
+    :param d: correcting factor for s not having Gamma distribution. Gamma distribution with 1, 2 degrees of freedom has d = 0.5, 1 respectively.
+    :return: SK estimate with length: number of frequency channels
+    """
+
     perio = np.abs(s) ** 2 / FFT_LEN  # FFT has already been taken
 
     S1 = perio.sum(axis=1)
@@ -137,25 +148,35 @@ if __name__ == "__main__":
 
     mean = 0
     std = 1
+    std_pulsar = 5
     FFT_LEN = 1024
     M = 512 # number of averages to take PSD over
     N = FFT_LEN * M
     PFB_TAPS = 8
-    PFB_M = PFB_TAPS*FFT_LEN
+    PFB_M = PFB_TAPS * FFT_LEN
 
     f1 = 40
     fs = 100
-    t = np.arange(0, N/fs, 1.0/fs)
-    k = np.arange(FFT_LEN/2)
-    f = k/FFT_LEN*fs
-    s = np.sin(2*np.pi*f1*t)
+    t = np.arange(0, N / fs, 1.0 / fs)
+    k = np.arange(FFT_LEN / 2)
+    f = (k * fs) / FFT_LEN
+    s = np.sin(2 * np.pi * f1 * t)
 
     pulse_train = np.zeros(N)
     duty_perc = 80
-    duty_samples = int((duty_perc/100)*M)
+    duty_samples = int((duty_perc / 100) * M)
 
     print("len pulse_train", len(pulse_train))
     print("number of duty samples", duty_samples)
+
+    pulsar = np.zeros(N)
+    pulsar_duty = 10
+    pulsar_duty_samples = int((pulsar_duty / 100) * M)
+
+    for i, j in enumerate(np.arange(0, N, M)):
+        pulse_train[j:j + duty_samples] = np.random.randn(duty_samples) * 500  # np.ones(duty_samples)*50
+        if i % 5 == 0:
+            pulsar[j:j + pulsar_duty_samples] = np.random.normal(mean, std_pulsar, size=pulsar_duty_samples) + 1j * np.random.normal(mean, std_pulsar, size=pulsar_duty_samples)
 
     for i in np.arange(0, N, M):
         pulse_train[i:i+duty_samples] = np.random.randn(duty_samples)*500 #np.ones(duty_samples)*50
@@ -163,8 +184,10 @@ if __name__ == "__main__":
     wgn_re = np.random.normal(mean, std, size=N)
     wgn_im = np.random.normal(mean, std, size=N)
 
-    x =  wgn_re #+ 1j*wgn_im
-    x =  x + s #pulse_train
+    x =  wgn_re + 1j*wgn_im
+    #x =  x + s
+    x =  x + pulse_train
+    #x =  x + pulsar
     x = x.reshape(M, FFT_LEN)
 
     # NOTE: Adding 0s to the data raises the SK. Therefore, if you have dropped packets then you'll increase your SK
@@ -180,15 +203,17 @@ if __name__ == "__main__":
     plt.plot(x.flatten())
 
     plt.figure(1)
-    plt.plot(f[1:], sk[1:int(FFT_LEN/2)], linewidth=2)
+    plt.plot(f[1:], sk[1:int(FFT_LEN / 2)], linewidth=2, label="$\overline{SK}$")
     plt.xlim([f[1], f[-1]])
-    plt.axhline(0.77511, linestyle = '--', linewidth=2, label="thresholds")
-    plt.axhline(1.3254, linestyle = '--', linewidth=2)
+    plt.axhline(0.77511, linestyle='--', color="g", linewidth=2, label="3$\sigma$ thresholds")
+    plt.axhline(1.3254, linestyle='--', color="g", linewidth=2)
+    plt.axhline(np.mean(sk[1:int(FFT_LEN/2)]), color = "r", linestyle = '--', linewidth=2, label="mean of $\overline{SK}$")
     #plt.ylim([0.65, 1.35])
     plt.grid()
     plt.xlabel("frequency [Hz]")
     plt.ylabel('$\overline{SK}$')
-    plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/skest1.pdf', bbox_inches='tight')
+    plt.legend()
+    #plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/skest2.pdf', bbox_inches='tight')
     plt.show()
 
     '''x = x.reshape(FFT_LEN, M)
