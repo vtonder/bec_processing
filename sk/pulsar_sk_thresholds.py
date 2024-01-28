@@ -78,7 +78,7 @@ ax.set_xlabel("SK values")
 plt.savefig('/home/vereese/thesis_pics/sk_min_max_hist.pdf', transparent=True, bbox_inches='tight')
 plt.show()
 """
-
+M = [64,256]
 for m in M:
     p4 = np.load("pdf_M"+str(m)+".npy")
     sk = np.load("sk_z_M" + str(m) + "_m1_n1_2210_0y.npy")
@@ -99,34 +99,30 @@ for m in M:
 
     print("M        : ", m)
     print("max sk   : ", max(max_sk))
+    # TODO: could've used argmax
     print("freq ch  max sk : ", clean_chs[int(max_sk.index(max(max_sk)))])
     print("min sk   : ", min(min_sk))
-
-    """#print("median sk:", np.median(max_sk))
-    print("\n") 
-    plt.figure(0)
-    #plt.semilogy(x, p4)
-    plt.hist(sk[420,:],1000,density="True",stacked="True",log="True")
-    #plt.hist(sk[105,:],1000,density="True",stacked="True",log="True")
+    #print("median sk:", np.median(max_sk))
+    
+    """plt.figure(0)
+    plt.semilogy(x, p4)
+    plt.hist(sk[105,:],1000,density="True",stacked="True",log="True")
     plt.grid()
     plt.ylabel("SK PDF")
-    #plt.ylim([10**-14,10**2])
+    plt.ylim([10**-4, 10**2])
     plt.xlabel("SK")
-    plt.title("ch 420")
-    #plt.title("clipped")
+    plt.title("M: " + str(m) + ", ch: 280")
+    plt.title("clipped")
 
     plt.figure(1)
-    #plt.semilogy(x, p4)
+    plt.semilogy(x, p4)
     plt.hist(sk[383,:],1000,density="True",stacked="True",log="True")
-    #plt.hist(sk[150,:],1000,density="True",stacked="True",log="True")
     plt.grid()
     plt.ylabel("SK PDF")
-    #plt.ylim([10**-14,10**2])
+    plt.ylim([10**-14,10**2])
     plt.xlabel("SK")
     plt.title("GNSS ch 383")
     plt.show()
-    #plt.title("clean data")
-
 
     plt.figure(2)
     plt.semilogy(x, p4)
@@ -134,7 +130,6 @@ for m in M:
     plt.grid()
     plt.ylabel("SK PDF")
     plt.ylim([10**-14,10**2])
-
     plt.xlabel("SK")
     plt.title("DME")
 
@@ -144,7 +139,6 @@ for m in M:
     plt.grid()
     plt.ylabel("SK PDF")
     plt.ylim([10**-14,10**2])
-
     plt.xlabel("SK")
     plt.title("GNSS")
 
@@ -154,7 +148,6 @@ for m in M:
     plt.grid()
     plt.ylabel("SK PDF")
     plt.ylim([10**-14,10**2])
-
     plt.xlabel("SK")
     plt.title("GNSS")
 
@@ -164,17 +157,15 @@ for m in M:
     plt.grid()
     plt.ylabel("SK PDF")
     plt.ylim([10**-14,10**2])
-
     plt.xlabel("SK")
     plt.title("clean data")
 
     plt.figure(6)
     plt.semilogy(x, p4)
-    plt.hist(sk[674,:],1000,density="True",stacked="True",log="True")
+    plt.hist(sk[675,:],1000,density="True",stacked="True",log="True")
     plt.grid()
     plt.ylabel("SK PDF")
     plt.ylim([10**-14,10**2])
-
     plt.xlabel("SK")
     plt.title("HI")
 
@@ -184,7 +175,6 @@ for m in M:
     plt.grid()
     plt.ylabel("SK PDF")
     plt.ylim([10**-14,10**2])
-
     plt.xlabel("SK")
     plt.title("clean")
 
@@ -194,7 +184,6 @@ for m in M:
     plt.grid()
     plt.ylabel("SK PDF")
     plt.ylim([10**-14,10**2])
-
     plt.xlabel("SK")
     plt.title("GNSS")
 
