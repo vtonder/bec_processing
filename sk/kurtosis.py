@@ -163,7 +163,7 @@ if __name__ == "__main__":
     s = np.sin(2 * np.pi * f1 * t)
 
     pulse_train = np.zeros(N)
-    duty_perc = 80
+    duty_perc = 10
     duty_samples = int((duty_perc / 100) * M)
 
     print("len pulse_train", len(pulse_train))
@@ -172,22 +172,23 @@ if __name__ == "__main__":
     pulsar = np.zeros(N)
     pulsar_duty = 10
     pulsar_duty_samples = int((pulsar_duty / 100) * M)
+    print("on pulse samples: ", pulsar_duty_samples)
 
     for i, j in enumerate(np.arange(0, N, M)):
-        pulse_train[j:j + duty_samples] = np.random.randn(duty_samples) * 500  # np.ones(duty_samples)*50
+        pulse_train[j:j + duty_samples] = np.ones(duty_samples)*50 #np.random.randn(duty_samples) * 500  #
         if i % 5 == 0:
             pulsar[j:j + pulsar_duty_samples] = np.random.normal(mean, std_pulsar, size=pulsar_duty_samples) + 1j * np.random.normal(mean, std_pulsar, size=pulsar_duty_samples)
 
-    for i in np.arange(0, N, M):
-        pulse_train[i:i+duty_samples] = np.random.randn(duty_samples)*500 #np.ones(duty_samples)*50
+    #for i in np.arange(0, N, M):
+    #    pulse_train[i:i+duty_samples] = np.random.randn(duty_samples)*500 #np.ones(duty_samples)*50
 
     wgn_re = np.random.normal(mean, std, size=N)
     wgn_im = np.random.normal(mean, std, size=N)
 
     x =  wgn_re + 1j*wgn_im
     #x =  x + s
-    x =  x + pulse_train
-    #x =  x + pulsar
+    #x = x + pulse_train
+    x =  x + pulsar
     x = x.reshape(M, FFT_LEN)
 
     # NOTE: Adding 0s to the data raises the SK. Therefore, if you have dropped packets then you'll increase your SK
