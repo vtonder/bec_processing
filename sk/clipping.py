@@ -45,7 +45,7 @@ l_clipped_std = []
 # pretend FFT has already been taken, hence creating re, im data
 for std in stds:
     wgn = np.random.normal(mean, std, size = M * FFT_LEN) + 1j * np.random.normal(mean, std, size = M * FFT_LEN)
-    wgn_clipped = np.clip(wgn.real, -127, 127) + 1j*np.clip(wgn.imag, -127, 127)
+    wgn_clipped = np.clip(wgn.real, -128, 127) + 1j*np.clip(wgn.imag, -128, 127)
 
     clipped_std.append(np.sqrt((np.var(wgn_clipped))))
 
@@ -56,7 +56,7 @@ for std in stds:
     mean_sk_clipped.append(np.mean(sk_clipped))
 
     # Ludwig code
-    x = np.clip(std * np.random.randn(FFT_LEN, M), -127, 127) + 1j * np.clip(std * np.random.randn(FFT_LEN, M), -127, 127)
+    x = np.clip(std * np.random.randn(FFT_LEN, M), -128, 127) + 1j * np.clip(std * np.random.randn(FFT_LEN, M), -128, 127)
     l_clipped_std.append(np.sqrt((np.var(x))))
     x2 = np.abs(x * x.conj())
     S1 = np.sum(x2, axis=-1)
@@ -71,8 +71,8 @@ plt.figure(0)
 plt.plot(stds, mean_sk, label="original", linewidth=2)
 plt.plot(clipped_std, mean_sk_clipped, label="clipped", linewidth=2)
 # plt.plot(l_clipped_std, l_sk, label="l clipping")
-plt.axhline(0.77, linestyle = '--', linewidth=2, label="thresholds")
-plt.axhline(1.33, linestyle = '--', linewidth=2)
+plt.axhline(0.77, color = 'g', linestyle = '--', linewidth=2, label="thresholds")
+plt.axhline(1.33, color = 'g', linestyle = '--', linewidth=2)
 #plt.axvline(82, linestyle = '--', linewidth=2)
 plt.vlines(x = 82, ymin=0 , ymax = 0.77, color= 'r', linestyle = '--', linewidth=2)
 plt.legend()
