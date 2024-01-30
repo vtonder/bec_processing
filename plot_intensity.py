@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 import argparse
 from common import mean_compensation
 from constants import thesis_font, a4_textwidth, a4_textheight
+from pulsar_processing.pulsar_functions import incoherent_dedisperse
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
 textwidth =  a4_textwidth
@@ -33,21 +34,28 @@ args = parser.parse_args()
 DIR_OUT = "/home/vereese/thesis_pics/"
 
 """
-# following 14 lines of code is for plotting far.pdf, an image in lit study of thesis
-data = np.load("intensity_xpol_1234.npy")
-for i in np.arange(1024):
-    data[i,:] = data[i,:] - np.mean(data[i,:])
-profile = data.sum(axis=0)
-mp = list(profile).index(max(list(profile)))
-print("max point index: ", mp)
-num_2_roll = int(len(profile)/2 - mp)
-maxi = np.max(data)/2
-mini = np.min(data)
+# following 2 plots is for far.pdf and vela_dispersed.pdf
+# These 2 images are in chapter 2 of the thesis
+vela_dispersed = np.load("/home/vereese/git/phd_data/pulsar/summed_profile_1234_0x.npy")
+vela_dispersed = mean_compensation(vela_dispersed)
+
 plt.figure(0)
-plt.imshow(np.roll(data,num_2_roll), origin="lower", aspect="auto", extent=[0, 1, 856, 1712], vmin=mini, vmax=maxi)
+plt.imshow(vela_dispersed, origin="lower", aspect="auto", extent=[0, 1, 856, 1712])
 plt.xlabel("pulse phase")
 plt.ylabel("frequency [MHz]")
-plt.savefig(DIR_OUT + "far.pdf", bbox_inches='tight')
+plt.savefig('/home/vereese/Desktop/Figures/vela_dispersed.pdf', bbox_inches='tight')
+
+vela_dispersed = incoherent_dedisperse(vela_dispersed, "1569")
+profile = vela_dispersed.sum(axis=0)
+mp = profile.argmax() 
+print("max point index: ", mp)
+num_2_roll = int(len(profile)/2 - mp)
+plt.figure(1)
+plt.imshow(np.roll(vela_dispersed, num_2_roll), origin="lower", aspect="auto", extent=[0, 1, 856, 1712])
+plt.xlabel("pulse phase")
+plt.ylabel("frequency [MHz]")
+plt.savefig('/home/vereese/Desktop/Figures/far.pdf', bbox_inches='tight')
+plt.show()
 
 # following 29 lines of code is for plotting SK flags produced during vela analysis for URSI 2023 
 DIR = "/home/vereese/data/phd_data/sk_analysis/1234/lower/"
@@ -81,35 +89,22 @@ plt.ylabel("frequency [MHz]")
 plt.savefig(DIR_OUT + 'sk_flags_10240.pdf', bbox_inches='tight')
 """
 
-#data_sk = np.load("/home/vereese/git/phd_data/sk_analysis/2210/itegrated_sk_intensity_M4096_" + args.tag + ".npy")
-#data_var = np.load("/home/vereese/git/phd_data/sk_analysis/2210/var_threshold_intensity_M4096_" + args.tag + ".npy")
-#data = np.load("/home/vereese/git/phd_data/intensity_1569.npy")
-#data = np.load("/home/vereese/git/phd_data/pulsar/sub_int_vela_11.1946499395.npy") #sub_integration_true_period_1569.npy")
-#data_sk = np.load("/home/vereese/git/phd_data/sk_analysis/2210/itegrated_sk_intensity_M2048_2210.npy")
-#data_b = np.load("/home/vereese/git/phd_data/sk_analysis/2210/itegrated_sk_bright_intensity_M2048_2210.npy")
-#data_b1 = np.load("/home/vereese/git/phd_data/sk_analysis/2210/itegrated_sk_bright_intensity_2210.npy")
-#data = np.load("/home/vereese/git/phd_data/sk_analysis/2210/intensity_M8192_2210.npy")
-#data1 = np.load("/home/vereese/git/phd_data/sk_analysis/2210/itegrated_sk_intensity_M8192_2210.npy")
-#vela_sk = np.load("/home/vereese/git/phd_data/sk_analysis/1569/itegrated_sk_low_pfa_1_intensity_M16384_1569.npy")
-#vela = np.load("/home/vereese/git/phd_data/sk_analysis/1569/itegrated_sk_low_pfa_1_intensity_M16384_1569.npy")
-#vela = np.load("/home/vereese/git/phd_data/intensity_1569.npy")
-#for i in np.arange(1024):
-#    data[i,:] = data[i,:] - np.mean(data[i,:])
-#profile = vela.sum(axis=0)
+"""
+TODO: this is old code which needs to be retested
+data = np.load(args.dir+"intensity_"+args.tag+".npy")
+data = mean_compensation(data)
+profile = data.sum(axis=0)
+profile_sk = data_sk.sum(axis=0)
+profile_b = data_b.sum(axis=0)
+profile_b1 = data_b1.sum(axis=0)
+mp = list(profile).index(max(list(profile)))
+print("max point index: ", mp)
+num_2_roll = int(len(profile)/2 - mp)
+profile1 = data1[0:200,:].sum(axis=0)
+len = profile_b1.shape[0]
+c = np.correlate(profile_b, profile_b1, "same")
 
-#data = np.load(args.dir+"intensity_"+args.tag+".npy")
-#data = mean_compensation(data)
-#profile = data.sum(axis=0)
-#profile_sk = data_sk.sum(axis=0)
-#profile_b = data_b.sum(axis=0)
-#profile_b1 = data_b1.sum(axis=0)
-#mp = list(profile).index(max(list(profile)))
-#print("max point index: ", mp)
-#num_2_roll = int(len(profile)/2 - mp)
-#profile1 = data1[0:200,:].sum(axis=0)
-#len = profile_b1.shape[0]
-#c = np.correlate(profile_b, profile_b1, "same")
-"""range = np.arange(-len/2,len/2)
+range = np.arange(-len/2,len/2)
 plt.figure(0)
 plt.plot(range,c)
 plt.title("correlation")
