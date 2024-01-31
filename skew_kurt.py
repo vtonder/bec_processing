@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.stats import skewnorm
+from scipy.stats import norm, skewnorm, bernoulli, expon
 import matplotlib.pyplot as plt
 from constants import thesis_font, a4_textwidth, a4_textheight
 
@@ -23,7 +23,7 @@ plt.rc('mathtext', fontset='cm')
 plt.rc("text", usetex = True)
 plt.rc("figure", figsize = (textwidth, figheight))
 
-fig, ax = plt.subplots(1, 1)
+# Skewness
 a1 = 4
 a2 = -4
 mean1, var1, skew1, kurt1 = skewnorm.stats(a1, moments='mvsk')
@@ -31,20 +31,52 @@ mean2, var2, skew2, kurt2 = skewnorm.stats(a2, moments='mvsk')
 
 x1 = np.linspace(skewnorm.ppf(0.01, a2), skewnorm.ppf(0.99, a1), 100)
 x2 = np.linspace(skewnorm.ppf(0.01, a2), skewnorm.ppf(0.99, a1), 100)
+
+fig, ax = plt.subplots(1, 1)
 ax.plot(x1, skewnorm.pdf(x1, a1), label='$\gamma_1$='+str(round(skew1, 2)), linewidth=2)
 ax.plot(x2, skewnorm.pdf(x2, a2), label='$\gamma_1$='+str(round(skew2, 2)), linewidth=2)
 ax.set_xlim([x2[0], x1[-1]])
 ax.legend()
-ax.set_ylabel("$f_x(x)$")
+ax.set_ylabel("$f_X(x)$")
 ax.set_xlabel("$x$")
 plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/skewnessdemo.pdf', transparent=True, bbox_inches='tight')
+
+# Kurtosis
+mean, var, skew, kurt = norm.stats(moments='mvsk')
+mean_e, var_e, skew_e, kurt_e = expon.stats(moments='mvsk')
+p = 0.5
+mean_b, var_b, skew_b, kurt_b = bernoulli.stats(p, moments='mvsk')
+
+print("Normal  :")
+print("mean    : ", mean)
+print("var     : ", var)
+print("skew    : ", skew)
+print("kurtosis: ", kurt)
+
+print("\nExponential:")
+print("mean    : ", mean_e)
+print("var     : ", var_e)
+print("skew    : ", skew_e)
+print("kurtosis: ", kurt_e)
+
+print("\nBernoulli:")
+print("mean    : ", mean_b)
+print("var     : ", var_b)
+print("skew    : ", skew_b)
+print("kurtosis: ", kurt_b)
+
+x = np.linspace(norm.ppf(0.01, skew), norm.ppf(0.99, skew), 100)
+x_b = np.linspace(bernoulli.ppf(0.01, skew_b), bernoulli.ppf(0.99, skew_b))
+x_e = np.linspace(expon.ppf(0.01), expon.ppf(0.99), 100)
+fig1, ax1 = plt.subplots(1, 1)
+ax1.plot(x_e, expon.pdf(x_e), color='magenta',label='Leptokurtic $\gamma_2$ = ' + str(kurt_e), linewidth=2)
+ax1.plot(x, norm.pdf(x, skew), label='Mesokurtic $\gamma_2$ = ' + str(kurt), linewidth=2)
+ax1.plot(x_b, bernoulli.pmf(x_b, 0.5), 'o', color='orange', label='Platykurtic $\gamma_2$ = ' + str(kurt_b))
+ax1.vlines(0, 0, 0.5, color='orange', linewidth=2)
+ax1.set_xlim([-2, 2])
+ax1.set_ylim([0, 1])
+ax1.legend()
+ax1.set_ylabel("$f_X(x)$")
+ax1.set_xlabel("$x$")
+plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/kurtosisdemo.pdf', transparent=True, bbox_inches='tight')
 plt.show()
-
-
-#ax.plot(x, skewnorm.pdf(x, a), 'r-', lw=5, alpha=0.6, label='skewnorm pdf')
-#rv = skewnorm(a)
-#ax.plot(x, rv.pdf(x), 'k-', lw=2, label='frozen pdf')
-#vals = skewnorm.ppf([0.001, 0.5, 0.999], a)
-#np.allclose([0.001, 0.5, 0.999], skewnorm.cdf(vals, a))
-#r = skewnorm.rvs(a, size=1000)
-#ax.hist(r, density=True, bins='auto', histtype='stepfilled', alpha=0.2)
