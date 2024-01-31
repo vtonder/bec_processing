@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import signal
+import sys
+sys.path.append('../')
 from constants import a4_textheight, a4_textwidth, thesis_font
 
 #TODO need to apply normalisation to spectra otherwise the estimator will fail - Nita 2007
