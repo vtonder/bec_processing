@@ -2,23 +2,30 @@ import numpy as np
 from matplotlib import pyplot as plt
 from constants import thesis_font, a4_textwidth, a4_textheight
 
-textwidth = a4_textwidth
+# Setup fonts and sizes for publication, based on page dimensions in inches
+textwidth =  a4_textwidth
 textheight = a4_textheight
 font_size = thesis_font
-plt.rc('font', size = font_size, family='STIXGeneral')
-plt.rc('pdf', fonttype = 42)
+# groups are like plt.figure plt.legend etc
+plt.rc('font', size=font_size, family='serif')
+plt.rc('pdf', fonttype=42)
 #plt.rc('axes', titlesize=14, labelsize=14)
-plt.rc('axes', titlesize = font_size, labelsize = font_size)
-plt.rc(('xtick', 'ytick'), labelsize = font_size)
-plt.rc('legend', fontsize = font_size)
-plt.rc('lines', markersize = 5)
-plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
-plt.rc('mathtext', fontset='stix')
+plt.rc('axes', titlesize=font_size, labelsize=font_size)
+plt.rc(('xtick', 'ytick'), labelsize=font_size)
+plt.rc('legend', fontsize=font_size)
+plt.rc('lines', markersize=5)
+# The following should only be used for beamer
+# plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
+figheight = 0.65 * textwidth
+plt.rc('mathtext', fontset='cm')
+# to get this working needed to do: sudo apt install cm-super
+plt.rc("text", usetex = True)
+plt.rc("figure", figsize = (textwidth, figheight))
 
 M = 512
 # duty cycle ito %
-duty_cycles = np.array([45,20,95,30,95,5,95,15,75,9,70,20,80,55,60,97,9,70,19,85,65,88,39,75,55,10])
-#duty_cycles = np.arange(0,110)
+#duty_cycles = np.array([45,20,95,30,95,5,95,15,75,9,70,20,80,55,60,97,9,70,19,85,65,88,39,75,55,10])
+duty_cycles = np.arange(0,110)
 msklen = len(duty_cycles) - 2
 print("len dc: ", len(duty_cycles))
 print("len msklen: ", msklen )
@@ -52,20 +59,20 @@ for i, snr in enumerate(snrs):
         MSK[i].append(((M + 1) / (M - 1)) * ((M * x2 / x1 ** 2) - 1))
 
 plt.figure(0)
-plt.plot(duty_cycles, SK[0], 'o',label="SNR=1")
-plt.plot(duty_cycles, SK[1], 'o',label="SNR=2")
-plt.plot(duty_cycles, SK[2], 'o',label="SNR=5")
-plt.plot(duty_cycles, SK[3], 'o',label="SNR=10")
-plt.plot(duty_cycles, SK[4], 'o',label="SNR=50")
-plt.axhline(y=0.77511, xmin=0,xmax=100, linestyle='--', label="thresholds")
-plt.axhline(y=1.3254, xmin=0, xmax=100, linestyle='--')
+plt.plot(duty_cycles, SK[4], label="SNR=50", linewidth=2)
+plt.plot(duty_cycles, SK[3], label="SNR=10", linewidth=2)
+plt.plot(duty_cycles, SK[2], label="SNR=5", linewidth=2)
+plt.plot(duty_cycles, SK[1], label="SNR=2", linewidth=2)
+plt.plot(duty_cycles, SK[0], label="SNR=1", linewidth=2)
+plt.axhline(y=0.77511, xmin=0,xmax=100, linestyle='--', label="$\pm$3$\sigma$ thresholds", linewidth=2)
+plt.axhline(y=1.3254, xmin=0, xmax=100, linestyle='--', linewidth=2)
 plt.grid()
 plt.ylabel("Spectral Kurtosis")
 plt.ylim([-1,5])
 plt.xlim([0,95])
-plt.xlabel("Duty Cycle %")
-#plt.legend()
-plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/duty2.eps', bbox_inches='tight')
+plt.xlabel("Duty Cycle \%")
+plt.legend()
+#plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/duty.pdf', bbox_inches='tight')
 print("msk len: ", MSK)
 print("dc len: ", len(duty_cycles))
 
@@ -82,7 +89,7 @@ plt.grid()
 plt.ylabel("Spectral Kurtosis")
 plt.ylim([-1,4])
 plt.xlim([0,95])
-plt.xlabel("Duty Cycle %")
+plt.xlabel("Duty Cycle \%")
 plt.legend()
 plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/duty_msk2.eps', bbox_inches='tight')
 plt.show()
