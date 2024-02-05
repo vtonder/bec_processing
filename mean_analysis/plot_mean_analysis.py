@@ -1,18 +1,26 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from constants import gps_l1_ch, gps_l2_ch, gal_e6_ch, gal_5b_ch, h1_ch, frequencies
+from constants import gps_l1_ch, gps_l2_ch, gal_e6_ch, gal_5b_ch, h1_ch, frequencies, a4_textheight, a4_textwidth, thesis_font
 
-textwidth = 9.6 # 128.0 / 25.4 #
-textheight = 7 # 96.0 / 25.4 # 7
-plt.rc('font', size=12, family='STIXGeneral')
+# Setup fonts and sizes for publication, based on page dimensions in inches
+textwidth =  a4_textwidth
+textheight = a4_textheight
+font_size = thesis_font
+# groups are like plt.figure plt.legend etc
+plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
 #plt.rc('axes', titlesize=14, labelsize=14)
-plt.rc('axes', titlesize=12, labelsize=12)
-plt.rc(('xtick', 'ytick'), labelsize=12)
-plt.rc('legend', fontsize=12)
+plt.rc('axes', titlesize=font_size, labelsize=font_size)
+plt.rc(('xtick', 'ytick'), labelsize=font_size)
+plt.rc('legend', fontsize=font_size)
 plt.rc('lines', markersize=5)
-plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
-plt.rc('mathtext', fontset='stix')
+# The following should only be used for beamer
+# plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
+figheight = 0.65 * textwidth
+plt.rc('mathtext', fontset='cm')
+# to get this working needed to do: sudo apt install cm-super
+plt.rc("text", usetex = True)
+plt.rc("figure", figsize = (textwidth, figheight))
 
 # TODO: Finish up plot on time vs mean and std err of mean as error bar (this will be for only 1 channel)
 # TODO: Create a plot of freq ch vs mean of means and std err of mean as error bar
@@ -113,9 +121,9 @@ ax1.legend()
 ax2.grid()
 ax2.legend()
 ax2.set_xlabel("Frequency MHz")
-ax1.set_ylabel("Real Mean")
-ax2.set_ylabel("Imag Mean")
-plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/means', bbox_inches='tight')
+ax1.set_ylabel("Re\{Mean\}")
+ax2.set_ylabel("Im\{Mean\}")
+plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/means.pdf', transparent=True, bbox_inches='tight')
 plt.show()
 
 
@@ -130,20 +138,21 @@ plt.xlabel("Frequency MHz")
 plt.grid()
 
 plt.figure(1)
-for i in range(1,1024):
-    plt.plot([10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000], bias_re[i])#,label='GAL 5B')
-#plt.plot([10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000], bias_re[gal_5b_ch],label='GAL 5B')
-#plt.plot([10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000], bias_re[590],label='1350 MHz')
-#plt.plot([10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000], bias_re[h1_ch],label='HI')
-#plt.plot([10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000], bias_re[gps_l1_ch],label='GPS L1')
+# following 2 lines are for plotting all channels (dcBias_allch.pdf)
+#for i in range(1,1024):
+#    plt.plot([10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000], bias_re[i])
+plt.plot([10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000], bias_re[gal_5b_ch],label='GAL 5B')
+plt.plot([10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000], bias_re[gps_l1_ch],label='GPS L1')
+plt.plot([10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000], bias_re[h1_ch],label='HI')
+plt.plot([10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000], bias_re[590],label='1350 MHz')
 plt.xlim([10, 1000000000])
 plt.xscale('log',base=10)
 plt.yscale('log',base=10)
 plt.xlabel("Number of samples")
-plt.ylabel("Mean")
-#plt.legend()
+plt.ylabel("Re\{Mean\}")
+plt.legend()
 plt.grid(which="both")
-plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/dcBias_allch2', bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/dcBias.pdf', transparent=True, bbox_inches='tight')
 
 plt.figure(2)
 plt.plot(frequencies[1:], n10000s239.p_75_means_re[1:], 'b', label='N1 S1')
@@ -160,12 +169,12 @@ plt.plot(frequencies[1:], n1000000s239.p_75_means_re[1:], 'r', label='N3 S1')
 plt.plot(frequencies[1:], n1000000s239.p_25_means_re[1:], 'r')
 
 plt.xlim([frequencies[1], frequencies[-1]])
-plt.title("N1=12ms, N2=0.12s, N3=1.2s, S1=239, S2=2391, S3=23913")
+#plt.title("N1=12ms, N2=0.12s, N3=1.2s, S1=239, S2=2391, S3=23913")
 plt.legend()
-plt.ylabel("25th and 75th % of means")
+plt.ylabel("25th and 75th \% of Re\{means\}")
 plt.xlabel("Frequency MHz")
 plt.grid()
-plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/percentiles', bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/percentiles.pdf', transparent=True, bbox_inches='tight')
 
 plt.figure(3)
 plt.plot(frequencies[1:], n10000s239.p_75_means_im[1:], 'b', label='N1 S1')
@@ -184,7 +193,7 @@ plt.plot(frequencies[1:], n1000000s239.p_25_means_im[1:], 'r')
 plt.xlim([frequencies[1], frequencies[-1]])
 plt.title("N1=12ms, N2=0.12s, N3=1.2s, S1=239, S2=2391, S3=23913")
 plt.legend()
-plt.ylabel("25th and 75th % of means")
+plt.ylabel("25th and 75th \% of means")
 plt.xlabel("Frequency MHz")
 plt.grid()
 
