@@ -1,18 +1,29 @@
 import numpy as np
 from hos import Bispectrum
 from matplotlib import pyplot as plt
+import sys
+sys.path.append("../")
+from constants import a4_textwidth, a4_textheight, thesis_font
 
-textwidth = 9.6 # 128.0 / 25.4 #
-textheight = 7 # 96.0 / 25.4 # 7
-plt.rc('font', size=12, family='STIXGeneral')
+# Setup fonts and sizes for publication, based on page dimensions in inches
+textwidth =  a4_textwidth
+textheight = a4_textheight
+font_size = thesis_font
+# groups are like plt.figure plt.legend etc
+plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
 #plt.rc('axes', titlesize=14, labelsize=14)
-plt.rc('axes', titlesize=12, labelsize=12)
-plt.rc(('xtick', 'ytick'), labelsize=12)
-plt.rc('legend', fontsize=12)
+plt.rc('axes', titlesize=font_size, labelsize=font_size)
+plt.rc(('xtick', 'ytick'), labelsize=font_size)
+plt.rc('legend', fontsize=font_size)
 plt.rc('lines', markersize=5)
-plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
-plt.rc('mathtext', fontset='stix')
+# The following should only be used for beamer
+# plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
+figheight = 0.65 * textwidth
+plt.rc('mathtext', fontset='cm')
+# to get this working needed to do: sudo apt install cm-super
+plt.rc("text", usetex = True)
+plt.rc("figure", figsize = (textwidth, figheight))
 
 fft_size = 2048
 N = 100 * fft_size
@@ -43,7 +54,8 @@ plt.ylabel("Polar NRZ")
 plt.xlabel("time samples n")
 plt.legend()
 plt.grid()
-plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/pulse_trains', bbox_inches='tight')
+#plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/pulse_trains.pdf', transparent=True, bbox_inches='tight')
+plt.savefig('/home/vereese/thesis_pics/pulse_trains.pdf', transparent=True, bbox_inches='tight')
 
 k = np.arange(-1024,1024)
 #k = np.arange(-512,512)
@@ -55,19 +67,22 @@ plt.ylabel("PSD of line code")
 plt.xlabel("frequency samples k")
 plt.legend()
 plt.grid()
-plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/psd_pt', bbox_inches='tight')
+#plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/psd_pt.pdf', transparent=True, bbox_inches='tight')
+plt.savefig('/home/vereese/thesis_pics/psd_pt.pdf', transparent=True, bbox_inches='tight')
 
 plt.figure(2)
 plt.imshow(np.abs(b.full_bispec), aspect='auto', origin='lower',extent=([-1024, 1024, -1024, 1024]))
 plt.xlabel("frequency samples k")
 plt.ylabel("frequency samples k")
-plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/bispec_pt', bbox_inches='tight')
+#plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/bispec_pt.pdf', transparent=True, bbox_inches='tight')
+plt.savefig('/home/vereese/thesis_pics/bispec_pt.pdf', transparent=True, bbox_inches='tight')
 
 plt.figure(3)
 plt.imshow(np.abs(b_up.full_bispec), aspect='auto', origin='lower',extent=([-1024, 1024, -1024, 1024]))
 plt.xlabel("frequency samples k")
 plt.ylabel("frequency samples k")
-plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/bispec_pt_up', bbox_inches='tight')
+#plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/bispec_pt_up.pdf', transparent=True, bbox_inches='tight')
+plt.savefig('/home/vereese/thesis_pics/bispec_pt_up.pdf', transparent=True, bbox_inches='tight')
 
 plt.show()
 
