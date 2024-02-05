@@ -2,10 +2,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 from constants import frequencies, a4_textheight, a4_textwidth, thesis_font
 
-textwidth = a4_textwidth
-textheight = a4_textheight
-font_size = thesis_font
-
 # Setup fonts and sizes for publication, based on page dimensions in inches
 textwidth =  a4_textwidth
 textheight = a4_textheight
