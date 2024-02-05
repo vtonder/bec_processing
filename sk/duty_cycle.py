@@ -1,6 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from constants import thesis_font, a4_textwidth, a4_textheight
+from kurtosis import s1_s2, ms_spectral_kurtosis_cm
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
 textwidth =  a4_textwidth
@@ -27,32 +28,44 @@ M = 512
 #duty_cycles = np.array([45,20,95,30,95,5,95,15,75,9,70,20,80,55,60,97,9,70,19,85,65,88,39,75,55,10])
 duty_cycles = np.arange(0,110)
 msklen = len(duty_cycles) - 2
-print("len dc: ", len(duty_cycles))
-print("len msklen: ", msklen )
 duty_samples = (duty_cycles / 100) * M
 wgn = np.random.normal(0, 1, size=M) + 1j*np.random.normal(0, 1, size=M)
 snrs = [1, 2, 5, 10, 50]
+print("len duty_cycles: ", len(duty_cycles))
+print("duty_samples[-1]: ", duty_samples[-1])
+print("len msklen     : ", msklen)
+print("wgn shape      : ", wgn.shape)
+
 SK = [[], [], [], [], []]
+MSK = [[], [], [], [], []]
 S1 = []
 S2 = []
+
+# SK iteration
 for i, snr in enumerate(snrs):
     S1.append([])
     S2.append([])
     for j, dc in enumerate(duty_samples):
         s = np.zeros([M])
         s[0:int(dc)] = snr
-        s = wgn+s
+        s = wgn + s
         perio = np.abs(s)**2
         S1[i].append(perio.sum())  # like the mean of PSD u
         S2[i].append(np.sum(perio ** 2))
         SK[i].append(((M + 1) / (M - 1)) * ((M * S2[i][j] / S1[i][j] ** 2) - 1))
         if snr == 2 and j == 0:
+            print("S1[2] at dc = 0", S1[i])
             plt.figure(3)
-            plt.plot(S1[i])
+            plt.plot(S1[i],'o')
 
-# TODO: this is still the old wrong MSK implementation and needs to be updated using effective M and voting strategy
-MSK = [[], [], [], [], []]
+# TODO: VMSK can't be implemented with the strategy you're following above because there's not enough data
+# VMSK iteration
 for i, snr in enumerate(snrs):
+    for j, dc in enumerate(duty_samples):
+        s = np.zeros([M])
+        s[0:int(dc)] = snr
+        s = wgn + s
+
     for j, s1 in enumerate(S1[i][:msklen]):
         x1 = 0.5*(float(S1[i][j]) + float(S1[i][j+1])) # + S1[i][j+2] + S1[i][j+3])
         x2 = 0.5*(float(S2[i][j]) + float(S2[i][j+1])) # + S2[i][j+2] + S2[i][j+3])
