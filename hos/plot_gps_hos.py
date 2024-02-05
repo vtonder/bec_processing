@@ -1,22 +1,33 @@
 import numpy as np
 from matplotlib import pyplot as plt
+import sys
+sys.path.append("../")
+from constants import a4_textwidth, a4_textheight, thesis_font
+
+# Setup fonts and sizes for publication, based on page dimensions in inches
+textwidth =  a4_textwidth
+textheight = a4_textheight
+font_size = thesis_font
+# groups are like plt.figure plt.legend etc
+plt.rc('font', size=font_size, family='serif')
+plt.rc('pdf', fonttype=42)
+#plt.rc('axes', titlesize=14, labelsize=14)
+plt.rc('axes', titlesize=font_size, labelsize=font_size)
+plt.rc(('xtick', 'ytick'), labelsize=font_size)
+plt.rc('legend', fontsize=font_size)
+plt.rc('lines', markersize=5)
+# The following should only be used for beamer
+# plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
+figheight = 0.65 * textwidth
+plt.rc('mathtext', fontset='cm')
+# to get this working needed to do: sudo apt install cm-super
+plt.rc("text", usetex = True)
+plt.rc("figure", figsize = (textwidth, figheight))
 
 DIRECTORY = '/home/vereese/git/phd_data/gps_hos/output_data/'
 URSI_DIR = '/home/vereese/Documents/PhD/ThesisTemplate/Figures/'
 NUM_BITS1 = str(1)
 NUM_BITS2 = str(300)
-
-textwidth = 9.6 # 128.0 / 25.4 #
-textheight = 7 # 96.0 / 25.4 # 7
-plt.rc('font', size=12, family='STIXGeneral')
-plt.rc('pdf', fonttype=42)
-#plt.rc('axes', titlesize=14, labelsize=14)
-plt.rc('axes', titlesize=12, labelsize=12)
-plt.rc(('xtick', 'ytick'), labelsize=12)
-plt.rc('legend', fontsize=12)
-plt.rc('lines', markersize=5)
-plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
-plt.rc('mathtext', fontset='stix')
 
 py = 10.23
 fft_len = 1024
@@ -58,12 +69,12 @@ for i in np.arange(6):
     plt.xlabel("$f_1$ [MHz]")
     plt.ylabel("$f_2$ [MHz]")
     #plt.title(code+NUM_BITS1)
-    plt.savefig(URSI_DIR+code+'_1bit', bbox_inches='tight')
+    plt.savefig(URSI_DIR+code+'_1bit.pdf', bbox_inches='tight')
     plt.figure(i)
     plt.imshow(np.abs(gps_data2[code]), aspect='auto', origin='lower', extent=[w0, w1, w0, w1])
     plt.xlabel("$f_1$ [MHz]")
     plt.ylabel("$f_2$ [MHz]")
     #plt.title(code+NUM_BITS2)
-    plt.savefig(URSI_DIR+code+'_300bit', bbox_inches='tight')
+    plt.savefig(URSI_DIR+code+'_300bit.pdf', bbox_inches='tight')
 
 plt.show()
