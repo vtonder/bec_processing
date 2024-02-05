@@ -26,35 +26,43 @@ plt.rc("text", usetex = True)
 plt.rc("figure", figsize = (textwidth, figheight))
 
 parser = argparse.ArgumentParser()
-parser.add_argument("tag", help="observation tag to plot intensity")
-parser.add_argument("-d", dest="dir", help="directory where intensity file is located", default="/home/vereese/git/phd_data/")
+#parser.add_argument("tag", help="observation tag to plot intensity")
+#parser.add_argument("-d", dest="dir", help="directory where intensity file is located", default="/home/vereese/git/phd_data/")
 args = parser.parse_args()
 
 #data = np.load("/home/vereese/git/phd_data/intensity_" + args.tag + ".npy")
 DIR_OUT = "/home/vereese/thesis_pics/"
-
 """
-# following 2 plots is for far.pdf and vela_dispersed.pdf
-# These 2 images are in chapter 2 of the thesis
-vela_dispersed = np.load("/home/vereese/git/phd_data/pulsar/summed_profile_1234_0x.npy")
-vela_dispersed = mean_compensation(vela_dispersed)
-
+# following 3 plots is for far.pdf, vela_dispersed.pdf, rfi.pdf
+# These 3 images are in chapter 2 of the thesis
+#vela_dispersed = np.load("/home/vereese/git/phd_data/pulsar/summed_profile_1234_0x.npy") # local
+vela_dispersed = np.load("/home/vereese/data/phd_data/pulsar/summed_profile_1234_0x.npy") # on ray
+vela_dispersed_m = mean_compensation(vela_dispersed)
 plt.figure(0)
-plt.imshow(vela_dispersed, origin="lower", aspect="auto", extent=[0, 1, 856, 1712])
+plt.imshow(vela_dispersed_m, origin="lower", aspect="auto", extent=[0, 1, 856, 1712])
 plt.xlabel("pulse phase")
 plt.ylabel("frequency [MHz]")
 plt.savefig('/home/vereese/Desktop/Figures/vela_dispersed.pdf', bbox_inches='tight')
 
-vela_dispersed = incoherent_dedisperse(vela_dispersed, "1569")
-profile = vela_dispersed.sum(axis=0)
+vela_dedispersed_m = incoherent_dedisperse(vela_dispersed_m, "1569")
+profile = vela_dedispersed_m.sum(axis=0)
 mp = profile.argmax() 
 print("max point index: ", mp)
 num_2_roll = int(len(profile)/2 - mp)
 plt.figure(1)
-plt.imshow(np.roll(vela_dispersed, num_2_roll), origin="lower", aspect="auto", extent=[0, 1, 856, 1712])
+plt.imshow(np.roll(vela_dedispersed_m, num_2_roll, axis=1), origin="lower", aspect="auto", extent=[0, 1, 856, 1712])
 plt.xlabel("pulse phase")
 plt.ylabel("frequency [MHz]")
 plt.savefig('/home/vereese/Desktop/Figures/far.pdf', bbox_inches='tight')
+
+# need to read in data again because python is pass by reference and mean_compensation overwrites the data matrix given to it
+vela_dispersed = np.load("/home/vereese/data/phd_data/pulsar/summed_profile_1234_0x.npy") # on ray
+vela_dedispersed = incoherent_dedisperse(vela_dispersed, "1569")
+plt.figure(2)
+plt.imshow(np.roll(vela_dedispersed, num_2_roll, axis=1), origin="lower", aspect="auto", extent=[0, 1, 856, 1712])
+plt.xlabel("pulse phase")
+plt.ylabel("frequency [MHz]")
+plt.savefig('/home/vereese/thesis_pics/rfi.pdf', bbox_inches='tight')
 plt.show()
 
 # following 29 lines of code is for plotting SK flags produced during vela analysis for URSI 2023 
