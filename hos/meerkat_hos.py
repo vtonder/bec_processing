@@ -68,6 +68,8 @@ if PLOT:
         data[fn] = np.load(DIR+fn)
         plt.figure(i)
         plt.imshow(np.abs(data[fn]), aspect='auto', origin='lower', extent=[-512, 512, -512, 512])
+        plt.xlabel("frequency samples k")
+        plt.ylabel("frequency samples k")
         plt.savefig("/home/vereese/Documents/PhD/ThesisTemplate/Figures/"+names[i]+".pdf", transparent=True, bbox_inches='tight')
         #plt.imshow(np.angle(data[fn]), aspect='auto', origin='lower')
         #plt.title(fn)
