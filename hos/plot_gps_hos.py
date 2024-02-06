@@ -37,7 +37,7 @@ ca_res = 2 * ca / fft_len
 py_freq = np.arange(-py, py, py_res)
 ca_freq = np.arange(-ca, ca, ca_res)
 def get_freq(code):
-    if code.find('I_') != -1:
+    if code.find('PY') != -1:
         w0 = py_freq[0]
         w1 = py_freq[-1]
     else:
