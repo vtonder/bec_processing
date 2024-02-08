@@ -12,9 +12,9 @@ from constants import a4_textwidth, a4_textheight, thesis_font
 # should not upconvert, should calculate what's the offset when the upconverted signal was downconverted using meerkat's pfb and bandpass sampling
 # there should be a pfb lib in python
 
-#DIRECTORY = '/home/vereese/git/phd_data/gps_hos/input_data/' # local data location
-DIRECTORY = '/home/vereese/data/phd_data/gps_hos/input_data/' # ray data location on NFS
-PLOT_TIME = True
+DIRECTORY = '/home/vereese/git/phd_data/gps_hos/input_data/' # local data location
+#DIRECTORY = '/home/vereese/data/phd_data/gps_hos/input_data/' # ray data location on NFS
+PLOT_TIME = False
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
 textwidth =  a4_textwidth
@@ -92,9 +92,9 @@ if len(sys.argv) > 1:
 else:
     #gps_file_names = ['I_Up1_CA_D_1bit.csv', 'I_Up1_PY_1bit.csv', 'I_Up1_PY_D_1bit.csv', 'Q_Up_CA_D_1bit.csv', 'Q_Up_CA_1bit.csv', 'Q_Up_L2CM_Dc_1bit.csv']#,'I_CA_D_1bit.csv', 'I_PY_1bit.csv', 'I_PY_D_1bit.csv', 'Q_CA_D_1bit.csv', 'Q_CA_1bit.csv', 'Q_L2CM_Dc_1bit.csv']
     #gps_file_names = ['I_Up1_CA_D_1bit.csv', 'I_Up1_PY_1bit.csv', 'I_Up1_PY_D_1bit.csv', 'Q_Up10_CA_D_1bit.csv', 'Q_Up10_CA_1bit.csv', 'Q_Up10_L2CM_Dc_1bit.csv','I_CA_D_1bit.csv', 'I_PY_1bit.csv', 'I_PY_D_1bit.csv', 'Q_CA_D_1bit.csv', 'Q_CA_1bit.csv', 'Q_L2CM_Dc_1bit.csv']
-    #gps_file_names = ['I_CA_D_1bit.csv', 'I_PY_1bit.csv', 'I_PY_D_1bit.csv', 'Q_CA_D_1bit.csv', 'Q_CA_1bit.csv', 'Q_L2CM_Dc_1bit.csv']
+    gps_file_names = ['I_CA_D_1bit.csv', 'I_PY_1bit.csv', 'I_PY_D_1bit.csv', 'Q_CA_D_1bit.csv', 'Q_CA_1bit.csv', 'Q_L2CM_Dc_1bit.csv']
     gps_code_names = ['$C/A \oplus D$', '$P(Y)$', '$P(Y)\oplus D$', '$C/A \oplus D$', '$C/A$', '$L2CM \oplus D_c$']
-    gps_file_names = ['I_CA_D_300bit.csv', 'I_PY_300bit.csv', 'I_PY_D_300bit.csv', 'Q_CA_D_300bit.csv', 'Q_CA_300bit.csv', 'Q_L2CM_Dc_300bit.csv']
+    #gps_file_names = ['I_CA_D_300bit.csv', 'I_PY_300bit.csv', 'I_PY_D_300bit.csv', 'Q_CA_D_300bit.csv', 'Q_CA_300bit.csv', 'Q_L2CM_Dc_300bit.csv']
 
 gps = SIM_GPS(gps_file_names, 1)
 gps.populate(DIRECTORY)
@@ -119,11 +119,10 @@ if PLOT_TIME:
             elif k == 5:
                 ax[j, i].set_xlabel("time samples n")
             k += 1
-
-    plt.savefig('/home/vereese/thesis_pics/gps_codes_time_300bit.pdf', bbox_inches='tight')
+    #plt.savefig('/home/vereese/thesis_pics/gps_codes_time_300bit.pdf', bbox_inches='tight')
     plt.show()
 
-"""M = 1024
+M = 1024
 fs_p = 21.518 # MHz sampling rate for P and P(Y) code
 fs_ca = 2.1518 # MHz sampling rate for C/A code
 freq_res_p = fs_p/M
@@ -184,4 +183,4 @@ print("len PFB window", len(pfb_window))
 plt.figure()
 plt.plot(pfb_window)
 plt.grid()
-plt.show()"""
+plt.show()
