@@ -59,13 +59,14 @@ if ANALYSE:
 
 if PLOT:
     DIR='/home/vereese/git/phd_data/meerkat_hos/'
-    data = {'gps_l1_bispec.npy':[], 'gps_l2_bispec.npy': [], 'gal_e6_bispec.npy': [], 'gal_5b_bispec_0y.npy': [],
+    data = {'gps_l1_bispec_full.npy':[], 'gps_l2_bispec_full.npy': [], 'gal_e6_bispec.npy': [], 'gal_5b_bispec_0y.npy': [],
             'h1_bispec_0y.npy':[], 'vela_bispec.npy':[], 'clean_bispec.npy':[], 'dirty_bispec.npy':[], 'clean2_bispec_0y.npy':[], 'dirty2_bispec_0y.npy':[]}
-    names = ['gps_l1_bispec', 'gps_l2_bispec', 'gal_e6_bispec', 'gal_5b_bispec_0',
+    names = ['gps_l1_bispec_full', 'gps_l2_bispec', 'gal_e6_bispec', 'gal_5b_bispec_0',
             'h1_bispec_0y', 'vela_bispec', 'clean_bispec', 'dirty_bispec', 'clean2_bispec_0y', 'dirty2_bispec_0y']
 
     for i,fn in enumerate(data.keys()):
         data[fn] = np.load(DIR+fn)
+        maxi = np.max(np.abs(data[fn]))
         plt.figure(i)
         plt.imshow(np.abs(data[fn]), aspect='auto', origin='lower', extent=[-512, 512, -512, 512])
         plt.xlabel("frequency samples k")

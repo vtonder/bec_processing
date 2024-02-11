@@ -2,7 +2,6 @@ import numpy as np
 import time
 from matplotlib import pyplot as plt
 
-
 def sample(bi, w1, w2):
     offset = bi.shape[0] / 2
     in1 = int(w1 + offset)
@@ -16,6 +15,30 @@ def write_b(bi, w1, w2, val):
     col = int(w2 + offset)
     bi[row, col] = val
 
+def calculate_full_bispectrum(M, bispectrum_I):
+    M_2 = int(M / 2)
+    full_bispec = np.zeros([M, M], dtype=np.csingle)
+
+    # quadrant I
+    for k1 in np.arange(M_2):
+        for k2 in np.arange(M_2):
+            if k2 > k1:
+                bispectrum_I[k2, k1] = bispectrum_I[k1, k2]
+    full_bispec[M_2:M, M_2:M] = bispectrum_I
+
+    # quadrant III
+    full_bispec[M_2:0:-1, M_2:0:-1] = bispectrum_I
+    # quadrant II
+    for w1 in np.arange(0, M_2):
+        for w2 in np.arange(0, -M_2, -1):
+            if w1 > -w2:
+                write_b(full_bispec, w1, w2, sample(full_bispec, -w1 - w2, w2))
+            else:
+                write_b(full_bispec, w1, w2, sample(full_bispec, w1, -w1 - w2))
+    # quadrant IV
+    full_bispec[M_2:0:-1, M_2:M] = full_bispec[M_2:M, M_2:0:-1]
+
+    return full_bispec
 
 class Bispectrum():
     """
