@@ -7,12 +7,16 @@ jai_font = 11 # got from ws-jai.cls
 # \typeout{The TEXT WIDTH is \the\textwidth}
 # \typeout{The TEXT HEIGHT is \the\textheight}
 # this will cause the following lines to be printed out in the log files
-# The TEXT WIDTH is 455.0pt
-# The TEXT HEIGHT is 708.0pt
+# Thesis: TEXT WIDTH is 455.0pt
+# Thesis: TEXT HEIGHT is 708.0pt
 a4_textwidth = 455.0 / 72 # divide the points (pt) by 72 to get inches
 a4_textheight = 708.0 / 72
 beamer_textwidth =  128.0 / 25.4 # From Ludwig
 beamer_textheight = 96.0 / 25.4
+#JAI: TEXT WIDTH is 505.89pt
+#JAI: TEXT HEIGHT is 655.33755pt
+jai_textwidth = 505.89 / 72
+jai_textheight = 655.33755 / 72
 
 # MeerKAT bec mode observational information
 # When look at the h5py data h5_file_obj['Data/timestamps'] data is 2048 apart. this represents samples
