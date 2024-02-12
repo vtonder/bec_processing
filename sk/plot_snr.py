@@ -265,7 +265,11 @@ if __name__ == "__main__":
     sk_none = 100 * (np.abs(sk_l1siguskmax["256"].toa_un - I.toa_un)) / I.toa_un
     sk_med = 100 * (np.abs(sk_l1siguskmax["256"].toa_un - med.toa_un)) / med.toa_un
     vmsk_sk = 100 * (np.abs(vmsk_l1siguskamx_M256m1nx["2"].toa_un - sk_l1siguskmax["256"].toa_un)) / sk_l1siguskmax["256"].toa_un
-    print("Best SK to None: ", sk_none)
+    print("\ntoa un [ns], none:", I.toa_un*1000)
+    print("toa un [ns], med :", med.toa_un*1000)
+    print("toa un [ns], sk  :", sk_l1siguskmax["256"].toa_un*1000)
+    print("toa un [ns], vmsk:", vmsk_l1siguskamx_M256m1nx["2"].toa_un*1000)
+    print("\nBest SK to None: ", sk_none)
     print("Best SK to Med : ", sk_med)
     print("Best VMSK to SK: ", vmsk_sk)
 
