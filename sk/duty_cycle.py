@@ -1,12 +1,12 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from constants import thesis_font, a4_textwidth, a4_textheight
+from constants import thesis_font, a4_textwidth, a4_textheight, jai_textwidth, jai_textheight, jai_font
 from kurtosis import s1_s2, ms_spectral_kurtosis_cm
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-textwidth =  a4_textwidth
-textheight = a4_textheight
-font_size = thesis_font
+textwidth =  jai_textwidth # a4_textwidth
+textheight = jai_textheight # a4_textheight
+font_size = jai_font # thesis_font
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
@@ -86,6 +86,7 @@ plt.xlim([0,95])
 plt.xlabel("Duty Cycle \%")
 plt.legend()
 #plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/duty.pdf', bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/jai-2e/duty.pdf', bbox_inches='tight')
 print("msk len: ", MSK)
 print("dc len: ", len(duty_cycles))
 
@@ -104,5 +105,4 @@ plt.ylim([-1,4])
 plt.xlim([0,95])
 plt.xlabel("Duty Cycle \%")
 plt.legend()
-plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/duty_msk2.eps', bbox_inches='tight')
 plt.show()

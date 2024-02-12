@@ -3,12 +3,12 @@ import sys
 from matplotlib import pyplot as plt
 from kurtosis import spectral_kurtosis_cm, s1_s2, ms_spectral_kurtosis_cm
 sys.path.append('../')
-from constants import thesis_font, a4_textwidth, a4_textheight
+from constants import thesis_font, a4_textwidth, a4_textheight, jai_textwidth, jai_textheight, jai_font
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-textwidth = a4_textwidth
-textheight = a4_textheight
-font_size = thesis_font
+textwidth = jai_textwidth # a4_textwidth
+textheight = jai_textheight # a4_textheight
+font_size = jai_font # thesis_font
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
@@ -57,5 +57,6 @@ plt.xlim([0.7,1.3])
 plt.ylim([10**-1,10**1])
 plt.xlabel("SK values")
 plt.ylabel("log(PDF)")
-plt.savefig("/home/vereese/Documents/PhD/ThesisTemplate/Figures/msk_hist.pdf")
+#plt.savefig("/home/vereese/Documents/PhD/ThesisTemplate/Figures/msk_hist.pdf")
+plt.savefig("/home/vereese/Documents/PhD/jai-2e/msk_hist.pdf", bbox_inches='tight')
 plt.show()

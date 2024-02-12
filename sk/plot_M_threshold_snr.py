@@ -2,16 +2,16 @@ import numpy as np
 from pulsar_snr import PI
 from matplotlib import pyplot as plt
 import argparse
-from constants import thesis_font, a4_textwidth, a4_textheight
+from constants import thesis_font, a4_textwidth, a4_textheight, jai_textwidth, jai_textheight, jai_font
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", dest = "dir", help="Directory where data is located. default: /net/com08/data6/vereese/phd_data/sk_analysis/2210/", default="/net/com08/data6/vereese/phd_data/sk_analysis/2210/")
 args = parser.parse_args()
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-textwidth =  a4_textwidth
-textheight = a4_textheight
-font_size = thesis_font
+textwidth = jai_textwidth # a4_textwidth
+textheight = jai_textheight # a4_textheight
+font_size = jai_font # thesis_font
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
@@ -74,7 +74,8 @@ ax.set_ylabel("M")
 ax.set_xlabel("Lower threshold")
 ax.set_xticks(x_range, lt_labels)
 ax.set_yticks(y_range, M)
-plt.savefig('/home/vereese/thesis_pics/lower_threshold_masked.pdf', transparent=True, bbox_inches='tight')
+#plt.savefig('/home/vereese/thesis_pics/lower_threshold_masked.pdf', transparent=True, bbox_inches='tight')
+plt.savefig('/home/vereese/jai_pics/lower_threshold_masked.pdf', transparent=True, bbox_inches='tight')
 
 ut_labels = ("$0\sigma$", "$0.5\sigma$", "$1\sigma$", "$2\sigma$", "$2.5\sigma$", "$3\sigma$", "$4\sigma$", "$SK_{max}$")
 fig1, ax1 = plt.subplots()
@@ -85,6 +86,7 @@ ax1.set_xticks(x_range, ut_labels)
 ax1.set_yticks(y_range, M)
 ax1.set_ylabel("M")
 ax1.set_xlabel("Upper threshold")
-plt.savefig('/home/vereese/thesis_pics/upper_threshold_masked.pdf', transparent=True, bbox_inches='tight')
+#plt.savefig('/home/vereese/thesis_pics/upper_threshold_masked.pdf', transparent=True, bbox_inches='tight')
+plt.savefig('/home/vereese/jai_pics/upper_threshold_masked.pdf', transparent=True, bbox_inches='tight')
 
 plt.show()

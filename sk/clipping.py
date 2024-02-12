@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from kurtosis import spectral_kurtosis
-from constants import a4_textheight, a4_textwidth, thesis_font
+from constants import a4_textheight, a4_textwidth, thesis_font, jai_textwidth, jai_textheight, jai_font
+
 '''
 This script investigates the effect of clipping on spectral kurtosis. 
 Calculated % clipped signals as follows:
@@ -11,9 +12,10 @@ total_clipped = np.sum(np.where(wgn_clipped == 127, True, False)) + np.sum(np.wh
 total_clipped*100/(1000 * 1024) = 12.116015625 %
 '''
 
-textwidth =  a4_textwidth
-textheight = a4_textheight
-font_size = thesis_font
+textwidth =  jai_textwidth # a4_textwidth
+textheight = jai_textheight # a4_textheight
+font_size = jai_font # thesis_font
+
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
@@ -80,7 +82,8 @@ plt.xlim([stds[0], stds[-1]])
 plt.ylim([0.18, 1.4])
 plt.xlabel('$\sigma$')
 plt.ylabel('$ \overline{SK}$')
-plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/clip.pdf', bbox_inches='tight')
+#plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/clip.pdf', bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/jai-2e/clip.pdf', bbox_inches='tight')
 plt.show()
 
 '''
