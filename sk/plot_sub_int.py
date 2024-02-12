@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 import matplotlib.ticker as ticker
 import sys
 sys.path.append('../')
-from constants import a4_textwidth, a4_textheight, thesis_font
+from constants import a4_textwidth, a4_textheight, thesis_font, jai_textwidth, jai_textheight, jai_font
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -11,9 +11,9 @@ parser.add_argument("-d", dest = "dir", help="Directory where data is located. d
 args = parser.parse_args()
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-textwidth = a4_textwidth
-textheight = a4_textheight
-font_size = thesis_font
+textwidth = jai_textwidth # a4_textwidth
+textheight = jai_textheight # a4_textheight
+font_size = jai_font # thesis_font
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
@@ -59,9 +59,8 @@ plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(func))
 plt.xlabel("pulsar phase")
 plt.ylabel("observation time [min]")
 #plt.title("sk")
-plt.savefig('/home/vereese/thesis_pics/sub_int_sk_l1siguskmax_M256_2210_ch' + str(freq_ch) + '.pdf', bbox_inches='tight')
-#plt.savefig('/home/vereese/thesis_pics/sub_int_sk_l4sigu4sig_M2048_2210_ch280.pdf', bbox_inches='tight')
-
+#plt.savefig('/home/vereese/thesis_pics/sub_int_sk_l1siguskmax_M256_2210_ch' + str(freq_ch) + '.pdf', bbox_inches='tight')
+plt.savefig('/home/vereese/jai_pics/sub_int_sk_l1siguskmax_M256_2210_ch' + str(freq_ch) + '.pdf', bbox_inches='tight')
 
 plt.figure(1)
 #plt.imshow(np.roll(s_none[:, freq_ch, :], num_2_roll), origin="lower", aspect="auto", extent=[0, 1, 0, 4.3])
@@ -71,7 +70,8 @@ plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(func))
 plt.xlabel("pulsar phase")
 plt.ylabel("observation time [min]")
 #plt.title("none")
-plt.savefig('/home/vereese/thesis_pics/sub_int_none_2210_ch' + str(freq_ch) + '.pdf', bbox_inches='tight')
+#plt.savefig('/home/vereese/thesis_pics/sub_int_none_2210_ch' + str(freq_ch) + '.pdf', bbox_inches='tight')
+plt.savefig('/home/vereese/jai_pics/sub_int_none_2210_ch' + str(freq_ch) + '.pdf', bbox_inches='tight')
 
 plt.figure(2)
 #plt.imshow(np.roll(s_pt[:, freq_ch, :], num_2_roll), origin="lower", aspect="auto", extent=[0, 1, 0, 4.3])
@@ -81,5 +81,6 @@ plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(func))
 plt.xlabel("pulsar phase")
 plt.ylabel("observation time [min]")
 #plt.title("pt")
-plt.savefig('/home/vereese/thesis_pics/sub_int_pt_2210_ch' + str(freq_ch) + '.pdf', bbox_inches='tight')
+#plt.savefig('/home/vereese/thesis_pics/sub_int_pt_2210_ch' + str(freq_ch) + '.pdf', bbox_inches='tight')
+plt.savefig('/home/vereese/jai_pics/sub_int_pt_2210_ch' + str(freq_ch) + '.pdf', bbox_inches='tight')
 plt.show()

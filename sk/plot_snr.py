@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import sys
 sys.path.append('../')
-from constants import J0437_samples_T, num_ch, frequencies, thesis_font, a4_textwidth, a4_textheight
+from constants import J0437_samples_T, num_ch, frequencies, thesis_font, a4_textwidth, a4_textheight, jai_textwidth, jai_textheight, jai_font
 from pulsar_snr import PI
 import argparse
 
@@ -14,9 +14,9 @@ args = parser.parse_args()
 DIR = args.dir
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-textwidth = a4_textwidth
-textheight = a4_textheight
-font_size = thesis_font
+textwidth = jai_textwidth # a4_textwidth
+textheight = jai_textheight # a4_textheight
+font_size = jai_font # thesis_font
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
@@ -167,7 +167,8 @@ if __name__ == "__main__":
     ax.set_xlim([M[0], M[-1]])
     ax.legend(loc=3)
     ax.grid()
-    plt.savefig('/home/vereese/thesis_pics/sk_snr.pdf', transparent=True, bbox_inches='tight')
+    #plt.savefig('/home/vereese/thesis_pics/sk_snr.pdf', transparent=True, bbox_inches='tight')
+    plt.savefig('/home/vereese/jai_pics/sk_snr.pdf', transparent=True, bbox_inches='tight')
 
     fig1, ax1 = plt.subplots()
     ax1.semilogx(M, toa_un_sk_4sig, '-o', label="SK: 4$\sigma$", linewidth=2, base=2)
@@ -182,7 +183,8 @@ if __name__ == "__main__":
     ax1.set_xlim([M[0], M[-1]])
     ax1.legend()
     ax1.grid()
-    plt.savefig('/home/vereese/thesis_pics/sk_toa_un.pdf', transparent=True, bbox_inches='tight')
+    #plt.savefig('/home/vereese/thesis_pics/sk_toa_un.pdf', transparent=True, bbox_inches='tight')
+    plt.savefig('/home/vereese/jai_pics/sk_toa_un.pdf', transparent=True, bbox_inches='tight')
 
     fig2, ax2 = plt.subplots()
     ax2.plot(n_ch, vm256_snr, '-o', label="VMSK, M = 256, m = 1", linewidth=2)
@@ -201,7 +203,8 @@ if __name__ == "__main__":
     ax2.set_xlim([0, n_ch[-1]])
     ax2.grid()
     ax2.legend()
-    plt.savefig('/home/vereese/thesis_pics/msk_snr.pdf', bbox_inches='tight')
+    #plt.savefig('/home/vereese/thesis_pics/msk_snr.pdf', bbox_inches='tight')
+    plt.savefig('/home/vereese/jai_pics/msk_snr.pdf', bbox_inches='tight')
 
     phi = np.arange(0, 1, 1/len(I.profile))
     fig3, ax3 = plt.subplots()
@@ -223,7 +226,8 @@ if __name__ == "__main__":
     ax3.set_xlim([0,1])
     ax3.grid()
     ax3.legend()
-    plt.savefig('/home/vereese/thesis_pics/profile.pdf', bbox_inches='tight')
+    #plt.savefig('/home/vereese/thesis_pics/profile.pdf', bbox_inches='tight')
+    plt.savefig('/home/vereese/jai_pics/profile.pdf', bbox_inches='tight')
 
     # this is just to be able to plot this graph locally and not on ray
     rfi_offline = np.zeros([4,1024])
@@ -246,7 +250,8 @@ if __name__ == "__main__":
     plt.axvspan(frequencies[0], frequencies[50], color='blue', alpha=0.5)
     plt.axvspan(frequencies[-50], frequencies[-1], color='blue', alpha=0.5)
     plt.axvspan(frequencies[95], frequencies[126], color='blue', alpha=0.5)
-    plt.savefig('/home/vereese/thesis_pics/rfi_freq.pdf', bbox_inches='tight')
+    #plt.savefig('/home/vereese/thesis_pics/rfi_freq.pdf', bbox_inches='tight')
+    plt.savefig('/home/vereese/jai_pics/rfi_freq.pdf', bbox_inches='tight')
 
     fig5, ax5 = plt.subplots()
     ax5.plot(phi, sk_l1siguskmax["256"].rfi_pulse, label="SK: 1$\sigma$, $SK_{max}$", linewidth=2)
@@ -258,7 +263,8 @@ if __name__ == "__main__":
     # loc = 10 is in the center
     ax5.legend(loc = 10)
     ax5.set_xlim([0, 1])
-    plt.savefig('/home/vereese/thesis_pics/rfi_pulse.pdf', bbox_inches='tight')
+    #plt.savefig('/home/vereese/thesis_pics/rfi_pulse.pdf', bbox_inches='tight')
+    plt.savefig('/home/vereese/jai_pics/rfi_pulse.pdf', bbox_inches='tight')
     plt.show()
 
     # In thesis state the following 3 improvements ito %
