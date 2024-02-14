@@ -12,9 +12,9 @@ total_clipped = np.sum(np.where(wgn_clipped == 127, True, False)) + np.sum(np.wh
 total_clipped*100/(1000 * 1024) = 12.116015625 %
 '''
 
-textwidth =  jai_textwidth # a4_textwidth
-textheight = jai_textheight # a4_textheight
-font_size = jai_font # thesis_font
+textwidth = a4_textwidth # jai_textwidth
+textheight = a4_textheight # jai_textheight #
+font_size = thesis_font # jai_font #
 
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
@@ -33,7 +33,7 @@ plt.rc("text", usetex = True)
 plt.rc("figure", figsize = (textwidth, figheight))
 
 FFT_LEN = 1024
-M = 1000
+M = 512
 mean = 0
 stds = np.arange(10, 200, 10)
 
@@ -70,20 +70,22 @@ print(clipped_std)
 print(l_clipped_std)
 
 plt.figure(0)
-plt.plot(stds, mean_sk, label="original", linewidth=2)
+plt.tight_layout()
+#plt.plot(stds, mean_sk, label="original", linewidth=2)
+plt.axhline(1, color='m', linestyle = '-', linewidth=2, label="theoretical value")
 plt.plot(clipped_std, mean_sk_clipped, label="clipped", linewidth=2)
 # plt.plot(l_clipped_std, l_sk, label="l clipping")
-plt.axhline(0.77, color = 'g', linestyle = '--', linewidth=2, label="thresholds")
+plt.axhline(0.77, color = 'g', linestyle = '--', linewidth=2, label="$\pm3\sigma$ thresholds")
 plt.axhline(1.33, color = 'g', linestyle = '--', linewidth=2)
 #plt.axvline(82, linestyle = '--', linewidth=2)
 plt.vlines(x = 82, ymin=0 , ymax = 0.77, color= 'r', linestyle = '--', linewidth=2)
 plt.legend()
-plt.xlim([stds[0], stds[-1]])
+plt.xlim([clipped_std[0], clipped_std[-1]])
 plt.ylim([0.18, 1.4])
-plt.xlabel('$\sigma$')
+plt.xlabel('$\sigma_{\mbox{c}}$')
 plt.ylabel('$ \overline{SK}$')
-#plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/clip.pdf', bbox_inches='tight')
-plt.savefig('/home/vereese/Documents/PhD/jai-2e/clip.pdf', bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/clip.pdf', bbox_inches='tight')
+#plt.savefig('/home/vereese/Documents/PhD/jai-2e/clip.pdf', bbox_inches='tight')
 plt.show()
 
 '''
