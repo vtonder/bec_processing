@@ -69,7 +69,7 @@ for M, ms in mean_shift_ito_1sigma.items():
             print("lower threshold 1 sigma away from mean 1: ", s1)
             print("mean sk shift ito 1sigma : ", (np.abs(1 - predicted_sk) / s1) * 100)
 
-    ax.plot(frequencies, ms, label="M = " + str(M), linewidth=2)
+    ax.plot(frequencies, ms, label="$M$ = " + str(M), linewidth=2)
 
 
 ax.set_ylabel("\% shift in $\overline{SK}$ ito 1$\sigma$ threshold")
