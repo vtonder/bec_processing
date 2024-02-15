@@ -49,8 +49,9 @@ for p in perc:
     mean_sk.append(np.mean(spectral_kurtosis_cm(x, M, 1024)))
 
 plt.figure()
+plt.tight_layout()
 plt.plot(perc*100, (np.asarray(mean_sk) - 1)*100, linewidth=2)
-plt.xlabel("\% dropped packets")
+plt.xlabel("\% dropped data")
 plt.ylabel("\% increase in $\overline{SK}$")
 plt.xlim([perc[0]*100, perc[-1]*100])
 plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/drop.pdf', bbox_inches='tight')
