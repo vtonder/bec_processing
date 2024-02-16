@@ -45,6 +45,9 @@ vars_y = np.load(dir + fy_name)
 # np.save("std_xpol_2210", np.sqrt(mf256_x))
 # np.save("std_ypol_2210", np.sqrt(mf256_y))
 
+print("mean sigma V:", np.mean(np.sqrt(vars_y[:, 0])))
+print("mean sigma H:", np.mean(np.sqrt(vars_y[:, 0])))
+
 plt.figure(0)
 plt.plot(frequencies, np.sqrt(vars_y[:, 0]), label="$\sigma_V$", linewidth=2)
 plt.plot(frequencies, np.sqrt(vars_x[:, 0]), label="$\sigma_H$", linewidth=2)
