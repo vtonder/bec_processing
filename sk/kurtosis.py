@@ -190,7 +190,7 @@ if __name__ == "__main__":
     x =  wgn_re #+ 1j*wgn_im
     #x =  x + s
     #x = x + pulse_train
-    x =  x + pulsar
+    #x =  x + pulsar
     x = x.reshape(M, FFT_LEN)
 
     # NOTE: Adding 0s to the data raises the SK. Therefore, if you have dropped packets then you'll increase your SK
@@ -206,22 +206,19 @@ if __name__ == "__main__":
     plt.plot(x.flatten())
 
     plt.figure(1)
-    #plt.plot(f[1:], sk[1:int(FFT_LEN / 2)], linewidth=2, label="$\overline{SK}$")
-    plt.plot(sk[1:int(FFT_LEN / 2)], linewidth=2, label="$\overline{SK}$")
-    #plt.xlim([f[1], f[-1]])
-    plt.xlim([0, int(FFT_LEN/2)])
+    plt.plot(f[1:], sk[1:int(FFT_LEN / 2)], linewidth=2, label="$\overline{SK}$")
+    plt.xlim([f[1], f[-1]])
     plt.axhline(0.77511, linestyle='--', color="g", linewidth=2, label="$\pm3\sigma$ thresholds")
     plt.axhline(1.3254, linestyle='--', color="g", linewidth=2)
     plt.axhline(np.mean(sk[1:int(FFT_LEN/2)]), color = "r", linestyle = '--', linewidth=2, label="mean of $\overline{SK}$")
     #plt.ylim([0.65, 1.35])
     plt.grid()
-    #plt.xlabel("frequency [Hz]")
-    plt.xlabel("frequency channels k")
+    plt.xlabel("frequency [Hz]")
     plt.ylabel('$\overline{SK}$')
     plt.legend()
-    #plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/skest.pdf', bbox_inches='tight')
+    plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/skest.pdf', bbox_inches='tight')
     #plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/skest1.pdf', bbox_inches='tight')
-    plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/skest2.pdf', bbox_inches='tight')
+    #plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/skest2.pdf', bbox_inches='tight')
     plt.show()
 
     '''x = x.reshape(FFT_LEN, M)

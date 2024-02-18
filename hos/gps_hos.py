@@ -92,9 +92,9 @@ if len(sys.argv) > 1:
 else:
     #gps_file_names = ['I_Up1_CA_D_1bit.csv', 'I_Up1_PY_1bit.csv', 'I_Up1_PY_D_1bit.csv', 'Q_Up_CA_D_1bit.csv', 'Q_Up_CA_1bit.csv', 'Q_Up_L2CM_Dc_1bit.csv']#,'I_CA_D_1bit.csv', 'I_PY_1bit.csv', 'I_PY_D_1bit.csv', 'Q_CA_D_1bit.csv', 'Q_CA_1bit.csv', 'Q_L2CM_Dc_1bit.csv']
     #gps_file_names = ['I_Up1_CA_D_1bit.csv', 'I_Up1_PY_1bit.csv', 'I_Up1_PY_D_1bit.csv', 'Q_Up10_CA_D_1bit.csv', 'Q_Up10_CA_1bit.csv', 'Q_Up10_L2CM_Dc_1bit.csv','I_CA_D_1bit.csv', 'I_PY_1bit.csv', 'I_PY_D_1bit.csv', 'Q_CA_D_1bit.csv', 'Q_CA_1bit.csv', 'Q_L2CM_Dc_1bit.csv']
-    gps_file_names = ['I_CA_D_1bit.csv', 'I_PY_1bit.csv', 'I_PY_D_1bit.csv', 'Q_CA_D_1bit.csv', 'Q_CA_1bit.csv', 'Q_L2CM_Dc_1bit.csv']
+    #gps_file_names = ['I_CA_D_1bit.csv', 'I_PY_1bit.csv', 'I_PY_D_1bit.csv', 'Q_CA_D_1bit.csv', 'Q_CA_1bit.csv', 'Q_L2CM_Dc_1bit.csv']
     gps_code_names = ['$C/A \oplus D$', '$P(Y)$', '$P(Y)\oplus D$', '$C/A \oplus D$', '$C/A$', '$L2CM \oplus D_c$']
-    #gps_file_names = ['I_CA_D_300bit.csv', 'I_PY_300bit.csv', 'I_PY_D_300bit.csv', 'Q_CA_D_300bit.csv', 'Q_CA_300bit.csv', 'Q_L2CM_Dc_300bit.csv']
+    gps_file_names = ['I_CA_D_300bit.csv', 'I_PY_300bit.csv', 'I_PY_D_300bit.csv', 'Q_CA_D_300bit.csv', 'Q_CA_300bit.csv', 'Q_L2CM_Dc_300bit.csv']
 
 gps = SIM_GPS(gps_file_names, 1)
 gps.populate(DIRECTORY)
@@ -113,13 +113,13 @@ if PLOT_TIME:
             if k == 0:
                 ax[j, i].set_title("In-phase data")
             elif k == 2:
-                ax[j, i].set_xlabel("time samples n")
+                ax[j, i].set_xlabel("time samples $n$")
             elif k == 3:
                 ax[j, i].set_title("Quadrature-phase data")
             elif k == 5:
-                ax[j, i].set_xlabel("time samples n")
+                ax[j, i].set_xlabel("time samples $n$")
             k += 1
-    #plt.savefig('/home/vereese/thesis_pics/gps_codes_time_300bit.pdf', bbox_inches='tight')
+    plt.savefig('/home/vereese/thesis_pics/gps_codes_time_300bit.pdf', bbox_inches='tight')
     plt.show()
 
 M = 1024
