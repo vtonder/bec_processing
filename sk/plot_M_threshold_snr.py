@@ -13,9 +13,6 @@ textwidth = a4_textwidth
 textheight = a4_textheight
 font_size = thesis_font
 
-#textwidth = jai_textwidth # a4_textwidth
-#textheight = jai_textheight # a4_textheight
-#font_size = jai_font # thesis_font
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
@@ -79,7 +76,6 @@ ax.set_xlabel("Lower threshold")
 ax.set_xticks(x_range, lt_labels)
 ax.set_yticks(y_range, M)
 plt.savefig('/home/vereese/thesis_pics/lower_threshold_masked.pdf', transparent=True, bbox_inches='tight')
-#plt.savefig('/home/vereese/jai_pics/lower_threshold_masked.pdf', transparent=True, bbox_inches='tight')
 
 ut_labels = ("$0\sigma$", "$0.5\sigma$", "$1\sigma$", "$2\sigma$", "$2.5\sigma$", "$3\sigma$", "$4\sigma$", "$SK_{max}$")
 fig1, ax1 = plt.subplots()
@@ -91,6 +87,32 @@ ax1.set_yticks(y_range, M)
 ax1.set_ylabel("$M$")
 ax1.set_xlabel("Upper threshold")
 plt.savefig('/home/vereese/thesis_pics/upper_threshold_masked.pdf', transparent=True, bbox_inches='tight')
-#plt.savefig('/home/vereese/jai_pics/upper_threshold_masked.pdf', transparent=True, bbox_inches='tight')
+
+# Plot for JAI paper therefore reset some params
+textwidth = jai_textwidth
+textheight = jai_textheight
+font_size = jai_font
+plt.rc('font', size=font_size, family='serif')
+plt.rc('axes', titlesize=font_size, labelsize=font_size)
+plt.rc(('xtick', 'ytick'), labelsize=font_size)
+plt.rc('legend', fontsize=font_size)
+figheight = 0.65 * textwidth
+plt.rc("figure", figsize = (textwidth, figheight))
+
+fig2, ax2 = plt.subplots(1, 2, sharey=True)
+fig2.tight_layout()
+ax2[0].imshow(lt_snr, origin="lower", aspect="auto", vmin=vmini, vmax=vmaxi)
+snr_im_ltut = ax2[1].imshow(ut_snr, origin="lower", aspect="auto", vmin=vmini, vmax=vmaxi)
+cbar2 = fig1.colorbar(snr_im_ltut, ax=ax2[1])
+cbar2.minorticks_on()
+ax2[0].set_xticks(x_range, lt_labels)
+ax2[0].set_yticks(y_range, M)
+ax2[0].set_ylabel("$M$")
+ax2[0].set_xlabel("Lower threshold")
+ax2[1].set_xticks(x_range, ut_labels)
+ax2[1].set_yticks(y_range, M)
+ax2[1].set_ylabel("$M$")
+ax2[1].set_xlabel("Upper threshold")
+plt.savefig('/home/vereese/jai_pics/lower_upper_threshold_masked.pdf', transparent=True, bbox_inches='tight')
 
 plt.show()
