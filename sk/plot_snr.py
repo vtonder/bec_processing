@@ -154,7 +154,7 @@ if __name__ == "__main__":
     #m4096_snr, m4096_toa = make_snr_toa_list(msk_4siglow_M4096m1nx, n_ch)
     #m256_snr, m256_toa = make_snr_toa_list(msk_4siglow_M256m1nx, n_ch)
 
-    """fig, ax = plt.subplots()
+    fig, ax = plt.subplots()
     ax.semilogx(M, snr_1sigskmax, '-o', label="SK: 1$\sigma$, $SK_{max}$", linewidth=2, base=2)
     ax.semilogx(M, snr_sk_4sig, '-o', label="SK: 4$\sigma$", linewidth=2, base=2)
     ax.hlines(y = med.snr, xmin = M[0], xmax = M[-1], colors="red", linestyle="--", label = "median")
@@ -253,10 +253,8 @@ if __name__ == "__main__":
     plt.axvspan(frequencies[-50], frequencies[-1], color='blue', alpha=0.5)
     plt.axvspan(frequencies[95], frequencies[126], color='blue', alpha=0.5)
     plt.savefig('/home/vereese/thesis_pics/rfi_freq.pdf', bbox_inches='tight')
-    #plt.savefig('/home/vereese/jai_pics/rfi_freq.pdf', bbox_inches='tight')
 
     fig5, ax5 = plt.subplots()
-    #fig5.tight_layout()
     ax5.plot(phi, sk_l1siguskmax["256"].rfi_pulse, label="SK: 1$\sigma$, $SK_{max}$", linewidth=2)
     ax5.plot(phi, med.rfi_pulse, label="median", linewidth=2)
     ax5.plot(phi, pt.rfi_pulse, label="$\geq$ 4$\sigma$", linewidth=2)
@@ -268,7 +266,7 @@ if __name__ == "__main__":
     ax5.set_xlim([0, 1])
     plt.savefig('/home/vereese/thesis_pics/rfi_pulse.pdf', bbox_inches='tight')
     #plt.savefig('/home/vereese/jai_pics/rfi_pulse.pdf', bbox_inches='tight')
-    plt.show()"""
+    plt.show()
 
     # In thesis state the following 3 improvements ito %
     sk_none = 100 * (np.abs(sk_l1siguskmax["256"].toa_un - I.toa_un)) / I.toa_un
