@@ -14,9 +14,9 @@ args = parser.parse_args()
 DIR = args.dir
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-textwidth = a4_textwidth # jai_textwidth # a4_textwidth
-textheight = a4_textheight # jai_textheight # 
-font_size = thesis_font # jai_font 
+textwidth = a4_textwidth
+textheight = a4_textheight
+font_size = thesis_font
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
@@ -155,7 +155,6 @@ if __name__ == "__main__":
     #m256_snr, m256_toa = make_snr_toa_list(msk_4siglow_M256m1nx, n_ch)
 
     fig, ax = plt.subplots()
-    #fig.tight_layout()
     ax.semilogx(M, snr_1sigskmax, '-o', label="SK: 1$\sigma$, $SK_{max}$", linewidth=2, base=2)
     ax.semilogx(M, snr_sk_4sig, '-o', label="SK: 4$\sigma$", linewidth=2, base=2)
     ax.hlines(y = med.snr, xmin = M[0], xmax = M[-1], colors="red", linestyle="--", label = "median")
@@ -170,10 +169,8 @@ if __name__ == "__main__":
     ax.legend(loc=3)
     ax.grid()
     plt.savefig('/home/vereese/thesis_pics/sk_snr.pdf', transparent=True, bbox_inches='tight')
-    #plt.savefig('/home/vereese/jai_pics/sk_snr.pdf', transparent=True, bbox_inches='tight')
 
     fig1, ax1 = plt.subplots()
-    #fig1.tight_layout()
     ax1.semilogx(M, toa_un_sk_4sig, '-o', label="SK: 4$\sigma$", linewidth=2, base=2)
     ax1.semilogx(M, toa_un_1sigskmax, '-o', label="SK: 1$\sigma$, $SK_{max}$", linewidth=2, base=2)
     ax1.hlines(y=1000*I.toa_un, xmin=M[0], xmax=M[-1], colors="cyan", linestyle="--", label="none")
@@ -188,7 +185,6 @@ if __name__ == "__main__":
     ax1.legend()
     ax1.grid()
     plt.savefig('/home/vereese/thesis_pics/sk_toa_un.pdf', transparent=True, bbox_inches='tight')
-    #plt.savefig('/home/vereese/jai_pics/sk_toa_un.pdf', transparent=True, bbox_inches='tight')
 
     fig2, ax2 = plt.subplots()
     #fig2.tight_layout()
@@ -210,7 +206,6 @@ if __name__ == "__main__":
     ax2.grid()
     ax2.legend()
     plt.savefig('/home/vereese/thesis_pics/msk_snr.pdf', bbox_inches='tight')
-    #plt.savefig('/home/vereese/jai_pics/msk_snr.pdf', bbox_inches='tight')
 
     phi = np.arange(0, 1, 1/len(I.profile))
     fig3, ax3 = plt.subplots()
@@ -234,7 +229,6 @@ if __name__ == "__main__":
     ax3.grid()
     ax3.legend()
     plt.savefig('/home/vereese/thesis_pics/profile.pdf', bbox_inches='tight')
-    #plt.savefig('/home/vereese/jai_pics/profile.pdf', bbox_inches='tight')
 
     # this is just to be able to plot this graph locally and not on ray
     rfi_offline = np.zeros([4,1024])
@@ -287,6 +281,108 @@ if __name__ == "__main__":
     print("\nBest SK to None: ", sk_none)
     print("Best SK to Med : ", sk_med)
     print("Best VMSK to SK: ", vmsk_sk)
+
+    # Plots for JAI paper therefore reset some params
+    textwidth = jai_textwidth
+    textheight = jai_textheight
+    font_size = jai_font
+    plt.rc('font', size=font_size, family='serif')
+    plt.rc('axes', titlesize=font_size, labelsize=font_size)
+    plt.rc(('xtick', 'ytick'), labelsize=font_size)
+    plt.rc('legend', fontsize=font_size)
+
+    fig, ax = plt.subplots()
+    fig.tight_layout()
+    ax.plot(n_ch, vm256_snr, '-o', label="VMSK, $M$ = 256, $m$ = 1", linewidth=2)
+    ax.plot(n_ch, m256_snr, '-o', label="MSK, $M$ = 256, $m$ = 1", linewidth=2)
+    markers = ["*", "^", "d", "s", "v"]
+    for i, Msk in enumerate(["256", "512", "1024", "4096", "2048"]):
+        ax.plot(1, sk_l1siguskmax[Msk].snr, markers[i], label="SK, $M$ = "+Msk, linewidth=2, markersize=10)
+    ax.set_xlabel("$n$")
+    ax.set_ylabel("SNR")
+    ax.set_xlim([0, n_ch[-1]])
+    ax.set_ylim([0, 25500])
+    ax.grid()
+    ax.legend()
+    plt.savefig('/home/vereese/jai_pics/msk_snr.pdf', bbox_inches='tight')
+
+    phi = np.arange(0, 1, 1/len(I.profile))
+    fig1, ax1 = plt.subplots()
+    fig1.tight_layout()
+    ax1.plot(phi, I.norm_profile + 0.5, label="none", linewidth=2)
+    ax1.plot(phi, sk_4sig["256"].norm_profile + 0.4, label="SK: 4$\sigma$", linewidth=2)
+    ax1.plot(phi, pt.norm_profile + 0.3, label="$\geq$ 4$\sigma$", linewidth=2)
+    ax1.plot(phi, sk_l1siguskmax["256"].norm_profile + 0.2, label="SK: 1$\sigma$, $SK_{max}$", linewidth=2)
+    ax1.plot(phi, med.norm_profile + 0.1, label="median", linewidth=2)
+    ax1.set_ylabel("normalised pulsar intensity profile")
+    ax1.set_xlabel("pulsar phase")
+    ax1.set_xlim([0, 1])
+    ax1.grid()
+    ax1.legend()
+    plt.savefig('/home/vereese/jai_pics/profile.pdf', bbox_inches='tight')
+
+    # reshape figures for plotting 2 figures next to each other
+    figheight = 0.4 * textwidth
+    plt.rc("figure", figsize=(textwidth, figheight))
+
+    fig2, ax2 = plt.subplots(1,2)
+    fig2.tight_layout()
+    ax2[0].semilogx(M, snr_1sigskmax, '-o', label="SK: 1$\sigma$, $SK_{max}$", linewidth=2, base=2)
+    ax2[0].semilogx(M, snr_sk_4sig, '-o', label="SK: 4$\sigma$", linewidth=2, base=2)
+    ax2[0].hlines(y = med.snr, xmin = M[0], xmax = M[-1], colors="red", linestyle="--", label = "median")
+    ax2[0].hlines(y = Im.snr, xmin = M[0], xmax = M[-1], colors="blue", linestyle="--", label = "static mask")
+    ax2[0].hlines(y = pt.snr, xmin = M[0], xmax = M[-1], colors="green", linestyle="--", label ="$\geq$ 4$\sigma$")
+    ax2[0].hlines(y = I.snr, xmin = M[0], xmax = M[-1], colors="cyan", linestyle="--", label = "none")
+    ax2[0].xaxis.set_major_formatter(matplotlib.ticker.LogFormatter(base=2))
+    ax2[0].set_ylabel("SNR")
+    ax2[0].set_xlabel("$M$ values")
+    ax2[0].set_xlim([M[0], M[-1]])
+    ax2[0].set_ylim([0, 25000])
+    ax2[0].legend(loc=3)
+    ax2[0].grid()
+    ax2[1].semilogx(M, toa_un_sk_4sig, '-o', label="SK: 4$\sigma$", linewidth=2, base=2)
+    ax2[1].semilogx(M, toa_un_1sigskmax, '-o', label="SK: 1$\sigma$, $SK_{max}$", linewidth=2, base=2)
+    ax2[1].hlines(y=1000*I.toa_un, xmin=M[0], xmax=M[-1], colors="cyan", linestyle="--", label="none")
+    ax2[1].hlines(y=1000*pt.toa_un, xmin=M[0], xmax=M[-1], colors="green", linestyle="--", label="$\geq$ 4$\sigma$")
+    ax2[1].hlines(y=1000*Im.toa_un, xmin=M[0], xmax=M[-1], colors="blue", linestyle="--", label="static mask")
+    ax2[1].hlines(y=1000*med.toa_un,xmin=M[0], xmax=M[-1], colors="red", linestyle="--", label="median")
+    ax2[1].xaxis.set_major_formatter(matplotlib.ticker.LogFormatter(base=2))
+    ax2[1].set_xlabel("$M$ values")
+    ax2[1].set_ylabel("TOA uncertainty [ns]")
+    ax2[1].set_xlim([M[0], M[-1]])
+    ax2[1].set_ylim([0, 52])
+    ax2[1].legend()
+    ax2[1].grid()
+    plt.savefig('/home/vereese/jai_pics/sk_snr_toa_un.pdf', transparent=True, bbox_inches='tight')
+
+    fig3, ax3 = plt.subplots(1, 2, sharey=True)
+    fig3.tight_layout()
+    ax3[0].plot(frequencies, sk_l1siguskmax["256"].rfi_freq, label="SK: 1$\sigma$, $SK_{max}$", linewidth=2)
+    ax3[0].plot(frequencies, sk_4sig["256"].rfi_freq, label="SK: 4$\sigma$", linewidth=2)
+    ax3[0].plot(frequencies, pt.rfi_freq, label="$\geq$ 4$\sigma$", linewidth=2)
+    ax3[0].plot(frequencies, med.rfi_freq, label="median", linewidth=2)
+    ax3[0].set_ylabel("\% RFI flagged")
+    ax3[0].set_xlabel("frequency [MHz]")
+    # loc = 10 is center https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html
+    ax3[0].legend(loc = 10)
+    ax3[0].set_xlim([frequencies[0], frequencies[-1]])
+    ax3[0].set_ylim([0, 12])
+    plt.axvspan(frequencies[0], frequencies[50], color='blue', alpha=0.5)
+    plt.axvspan(frequencies[-50], frequencies[-1], color='blue', alpha=0.5)
+    plt.axvspan(frequencies[95], frequencies[126], color='blue', alpha=0.5)
+    ax3[1].plot(phi, sk_l1siguskmax["256"].rfi_pulse, label="SK: 1$\sigma$, $SK_{max}$", linewidth=2)
+    ax3[1].plot(phi, med.rfi_pulse, label="median", linewidth=2)
+    ax3[1].plot(phi, pt.rfi_pulse, label="$\geq$ 4$\sigma$", linewidth=2)
+    ax3[1].plot(phi, sk_4sig["256"].rfi_pulse, label="SK: 4$\sigma$", linewidth=2)
+    ax3[1].set_xlabel("pulse phase")
+    # loc = 10 is in the center
+    ax3[1].legend(loc = 10)
+    ax3[1].set_xlim([0, 1])
+    plt.savefig('/home/vereese/jai_pics/rfi_freq_pulse.pdf', transparent=True, bbox_inches='tight')
+
+    plt.show()
+
+
 
 """a = I.I.sum(axis=1)
 fig5, ax5 = plt.subplots()
