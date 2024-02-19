@@ -154,7 +154,7 @@ if __name__ == "__main__":
     #m4096_snr, m4096_toa = make_snr_toa_list(msk_4siglow_M4096m1nx, n_ch)
     #m256_snr, m256_toa = make_snr_toa_list(msk_4siglow_M256m1nx, n_ch)
 
-    fig, ax = plt.subplots()
+    """fig, ax = plt.subplots()
     ax.semilogx(M, snr_1sigskmax, '-o', label="SK: 1$\sigma$, $SK_{max}$", linewidth=2, base=2)
     ax.semilogx(M, snr_sk_4sig, '-o', label="SK: 4$\sigma$", linewidth=2, base=2)
     ax.hlines(y = med.snr, xmin = M[0], xmax = M[-1], colors="red", linestyle="--", label = "median")
@@ -268,7 +268,7 @@ if __name__ == "__main__":
     ax5.set_xlim([0, 1])
     plt.savefig('/home/vereese/thesis_pics/rfi_pulse.pdf', bbox_inches='tight')
     #plt.savefig('/home/vereese/jai_pics/rfi_pulse.pdf', bbox_inches='tight')
-    plt.show()
+    plt.show()"""
 
     # In thesis state the following 3 improvements ito %
     sk_none = 100 * (np.abs(sk_l1siguskmax["256"].toa_un - I.toa_un)) / I.toa_un
@@ -292,7 +292,6 @@ if __name__ == "__main__":
     plt.rc('legend', fontsize=font_size)
 
     fig, ax = plt.subplots()
-    fig.tight_layout()
     ax.plot(n_ch, vm256_snr, '-o', label="VMSK, $M$ = 256, $m$ = 1", linewidth=2)
     ax.plot(n_ch, m256_snr, '-o', label="MSK, $M$ = 256, $m$ = 1", linewidth=2)
     markers = ["*", "^", "d", "s", "v"]
@@ -367,16 +366,16 @@ if __name__ == "__main__":
     ax3[0].legend(loc = 10)
     ax3[0].set_xlim([frequencies[0], frequencies[-1]])
     ax3[0].set_ylim([0, 12])
-    plt.axvspan(frequencies[0], frequencies[50], color='blue', alpha=0.5)
-    plt.axvspan(frequencies[-50], frequencies[-1], color='blue', alpha=0.5)
-    plt.axvspan(frequencies[95], frequencies[126], color='blue', alpha=0.5)
+    ax3[0].axvspan(frequencies[0], frequencies[50], color='blue', alpha=0.5)
+    ax3[0].axvspan(frequencies[-50], frequencies[-1], color='blue', alpha=0.5)
+    ax3[0].axvspan(frequencies[95], frequencies[126], color='blue', alpha=0.5)
     ax3[1].plot(phi, sk_l1siguskmax["256"].rfi_pulse, label="SK: 1$\sigma$, $SK_{max}$", linewidth=2)
     ax3[1].plot(phi, med.rfi_pulse, label="median", linewidth=2)
     ax3[1].plot(phi, pt.rfi_pulse, label="$\geq$ 4$\sigma$", linewidth=2)
     ax3[1].plot(phi, sk_4sig["256"].rfi_pulse, label="SK: 4$\sigma$", linewidth=2)
     ax3[1].set_xlabel("pulse phase")
-    # loc = 10 is in the center
-    ax3[1].legend(loc = 10)
+    # loc = 6 is in the center left
+    ax3[1].legend(loc = 6)
     ax3[1].set_xlim([0, 1])
     plt.savefig('/home/vereese/jai_pics/rfi_freq_pulse.pdf', transparent=True, bbox_inches='tight')
 
