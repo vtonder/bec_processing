@@ -10,10 +10,6 @@ textwidth = a4_textwidth
 textheight = a4_textheight
 font_size = thesis_font
 
-#textwidth = jai_textwidth # a4_textwidth
-#textheight = jai_textheight # a4_textheight
-#font_size = jai_font # thesis_font
-
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
@@ -63,5 +59,27 @@ plt.ylim([10**-1,10**1])
 plt.xlabel("SK values")
 plt.ylabel("log(PDF)")
 plt.savefig("/home/vereese/Documents/PhD/ThesisTemplate/Figures/msk_hist.pdf", transparent=True, bbox_inches='tight')
-#plt.savefig("/home/vereese/Documents/PhD/jai-2e/msk_hist.pdf", transparent=True, bbox_inches='tight')
+plt.show()
+
+# Plot for JAI paper therefore reset some params
+textwidth = jai_textwidth
+textheight = jai_textheight
+font_size = jai_font
+plt.rc('font', size=font_size, family='serif')
+plt.rc('axes', titlesize=font_size, labelsize=font_size)
+plt.rc(('xtick', 'ytick'), labelsize=font_size)
+plt.rc('legend', fontsize=font_size)
+plt.figure()
+plt.hist(sk.flatten(),1000, density=True, log=True, stacked=True, label="SK hist $M$=512")
+plt.plot(xv, pdf_M512, label="SK PDF $M$ = "+str(M), linewidth=2)
+plt.hist(msk.flatten(),1000, density=True, log=True, stacked=True, label="MSK hist $M$=512, $n$=2, $m$=2")
+plt.plot(xv, pdf_M2048, label="SK PDF $M$ = "+str(M*n*m), linewidth=2)
+# loc = 7 <=> center right
+plt.legend(loc=7)
+plt.xlim([0.7,1.3])
+plt.ylim([10**-1,10**1])
+plt.xlabel("SK values")
+plt.ylabel("log(PDF)")
+plt.savefig("/home/vereese/Documents/PhD/jai-2e/msk_hist.pdf", transparent=True, bbox_inches='tight')
+
 plt.show()
