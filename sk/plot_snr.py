@@ -305,7 +305,6 @@ if __name__ == "__main__":
 
     phi = np.arange(0, 1, 1/len(I.profile))
     fig1, ax1 = plt.subplots()
-    fig1.tight_layout()
     ax1.plot(phi, I.norm_profile + 0.5, label="none", linewidth=2)
     ax1.plot(phi, sk_4sig["256"].norm_profile + 0.4, label="SK: 4$\sigma$", linewidth=2)
     ax1.plot(phi, pt.norm_profile + 0.3, label="$\geq$ 4$\sigma$", linewidth=2)
