@@ -4,9 +4,9 @@ from constants import thesis_font, a4_textwidth, a4_textheight, jai_textwidth, j
 from kurtosis import s1_s2, ms_spectral_kurtosis_cm
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-textwidth =  jai_textwidth # a4_textwidth
-textheight = jai_textheight # a4_textheight
-font_size = jai_font # thesis_font
+textwidth =  a4_textwidth
+textheight = a4_textheight
+font_size = thesis_font
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
@@ -86,11 +86,36 @@ plt.xlim([0,95])
 plt.xlabel("Duty Cycle \%")
 plt.legend()
 #plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/duty.pdf', bbox_inches='tight')
-plt.savefig('/home/vereese/Documents/PhD/jai-2e/duty.pdf', bbox_inches='tight')
-print("msk len: ", MSK)
-print("dc len: ", len(duty_cycles))
+
+# Plot for JAI paper therefore reset some params
+textwidth = jai_textwidth
+textheight = jai_textheight
+font_size = jai_font
+plt.rc('font', size=font_size, family='serif')
+plt.rc('axes', titlesize=font_size, labelsize=font_size)
+plt.rc(('xtick', 'ytick'), labelsize=font_size)
+plt.rc('legend', fontsize=font_size)
 
 plt.figure(1)
+plt.plot(duty_cycles, SK[4], label="SNR=50", linewidth=2)
+plt.plot(duty_cycles, SK[3], label="SNR=10", linewidth=2)
+plt.plot(duty_cycles, SK[2], label="SNR=5", linewidth=2)
+plt.plot(duty_cycles, SK[1], label="SNR=2", linewidth=2)
+plt.plot(duty_cycles, SK[0], label="SNR=1", linewidth=2)
+plt.axhline(y=0.77511, xmin=0,xmax=100, linestyle='--', label="$\pm$3$\sigma$ thresholds", linewidth=2)
+plt.axhline(y=1.3254, xmin=0, xmax=100, linestyle='--', linewidth=2)
+plt.grid()
+plt.ylabel("Spectral Kurtosis")
+plt.ylim([-1,5])
+plt.xlim([0,95])
+plt.xlabel("Duty Cycle \%")
+plt.legend()
+plt.savefig('/home/vereese/Documents/PhD/jai-2e/duty.pdf', bbox_inches='tight')
+
+# To delete - MSK doesn't work in this experiment
+print("msk len: ", MSK)
+print("dc len: ", len(duty_cycles))
+plt.figure(2)
 #plt.plot(duty_cycles[:msklen], MSK[0], "o", label="SNR=1", linewidth=2)
 #plt.plot(duty_cycles[:msklen], MSK[1], "o", label="SNR=2", linewidth=2)
 plt.plot(duty_cycles, SK[2], "o", label="SK", linewidth=2)
