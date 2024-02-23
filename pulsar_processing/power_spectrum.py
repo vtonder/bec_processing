@@ -9,7 +9,7 @@ from constants import frequencies, freq_resolution, time_resolution, num_ch, vel
 
 # TODO: find out how to read a chunk and operate on entire chunks at a time
 # https://stackoverflow.com/questions/21766145/h5py-correct-way-to-slice-array-datasets
-# TODO: check if things are not out by a factor of 10e6 changed from freq_resolution being in Hz to MHz
+# TODO: check if things are not out by a factor of e6 changed from freq_resolution being in Hz to MHz
 # Also how flipping might affect this
 
 SAVE_DATA = False
@@ -61,7 +61,7 @@ if DEDISPERSE:
         data[i, :, 1] = np.roll(data[i, :, 1], num_2_roll)
     print("done dedispersing data: ", time.time() - t)
 
-# smearing_band = [8.3*10e6 * vela_dm * (freq_resolution/freq**3) for freq in reversed_frequencies] # ms
+# smearing_band = [8.3e6 * vela_dm * (freq_resolution/freq**3) for freq in reversed_frequencies] # ms
 b_2 = freq_resolution / 2  # half frequency resolution
 smearing_band = [dispersion_constant * vela_dm * (1 / ((freq - b_2) ** 2) - 1 / ((freq + b_2) ** 2)) for freq in
                  reversed_frequencies]  # ms

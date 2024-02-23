@@ -3,7 +3,7 @@ from constants import frequencies, freq_resolution, time_resolution, num_ch, dis
 import time
 import numpy as np
 
-#TODO: check if things are not out by a factor of 10e6 changed from freq_resolution being in Hz to MHz
+#TODO: check if things are not out by a factor of e6 changed from freq_resolution being in Hz to MHz
 # what functions to process must be configurable
 # whether to save or not and what the file should be called
 

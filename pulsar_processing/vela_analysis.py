@@ -3,7 +3,7 @@ from constants import frequencies, freq_resolution, vela_dm, dispersion_constant
 
 smearing_band = [] # ms
 for freq in frequencies:
-    smearing_band.append(8.3*10e6 * vela_dm * (freq_resolution/freq**3))
+    smearing_band.append(8.3e6 * vela_dm * (freq_resolution/freq**3))
 
 print("smearing")
 print(smearing_band)

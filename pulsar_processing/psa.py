@@ -31,14 +31,14 @@ DM = 20
 pulsar_T = 3 #ms
 
 freq_res = BW/ch
-delta_t = 8.3*10e6 * DM * (freq_res/fc**3)
+delta_t = 8.3e6 * DM * (freq_res/fc**3)
 
 # To calculate at what DM the smearing delay will be 10% of the pulse period
-DM=(pulsar_T*0.1)/(8.3*10e6)*(fc**3/freq_res)
+DM=(pulsar_T*0.1)/(8.3e6)*(fc**3/freq_res)
 print(DM)
 
 # To calculate DM that equals smearing to be same as the sampling rate
-DM=(sampling*1000)/(8.3*10e6)*(fc**3/freq_res)
+DM=(sampling*1000)/(8.3e6)*(fc**3/freq_res)
 ''' Questions
 - what does happen when we don't take DM into account?
 
