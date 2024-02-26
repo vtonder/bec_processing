@@ -5,11 +5,7 @@ from constants import a4_textheight, a4_textwidth, thesis_font, jai_textwidth, j
 
 '''
 This script investigates the effect of clipping on spectral kurtosis. 
-Calculated % clipped signals as follows:
-wgn = np.random.normal(0, 82, size = 1000 * 1024)
-wgn_clipped = np.clip(wgn, -127, 127)
-total_clipped = np.sum(np.where(wgn_clipped == 127, True, False)) + np.sum(np.where(wgn_clipped == -127, True, False))
-total_clipped*100/(1000 * 1024) = 12.116015625 %
+Read % clipped from last figure 2
 '''
 
 textwidth = a4_textwidth
@@ -35,7 +31,9 @@ plt.rc("figure", figsize = (textwidth, figheight))
 FFT_LEN = 1024
 M = 512
 mean = 0
-stds = np.arange(10, 200, 10)
+stds = np.arange(10, 210, 10) / np.sqrt(2) # / np.sqrt(2) because want complex std 10 -> 200
+print(stds[0])
+print(stds[-1])
 
 mean_sk = []
 mean_sk_clipped = []
@@ -43,11 +41,15 @@ l_sk = []
 
 clipped_std = []
 l_clipped_std = []
+total_clipped = []
 
 # pretend FFT has already been taken, hence creating re, im data
 for std in stds:
     wgn = np.random.normal(mean, std, size = M * FFT_LEN) + 1j * np.random.normal(mean, std, size = M * FFT_LEN)
-    wgn_clipped = np.clip(wgn.real, -128, 127) + 1j*np.clip(wgn.imag, -128, 127)
+    # clip at -127.5 and 126.5 because those are the decision levels and anything above that actually clips
+    wgn_clipped = np.clip(wgn.real, -127.5, 126.5) + 1j*np.clip(wgn.imag, -127.5, 126.5)
+
+    total_clipped.append(np.sum((wgn_clipped.real == 126.5) | (wgn_clipped.real == -127.5) | (wgn_clipped.imag == 126.5) | (wgn_clipped.imag == -127.5)))
 
     clipped_std.append(np.sqrt((np.var(wgn_clipped))))
 
@@ -76,7 +78,6 @@ plt.plot(clipped_std, mean_sk_clipped, label="clipped", linewidth=2)
 # plt.plot(l_clipped_std, l_sk, label="l clipping")
 plt.axhline(0.77, color = 'g', linestyle = '--', linewidth=2, label="$\pm3\sigma$ thresholds")
 plt.axhline(1.33, color = 'g', linestyle = '--', linewidth=2)
-#plt.axvline(82, linestyle = '--', linewidth=2)
 plt.vlines(x = 82, ymin=0 , ymax = 0.77, color= 'r', linestyle = '--', linewidth=2)
 plt.legend()
 plt.xlim([clipped_std[0], clipped_std[-1]])
@@ -106,6 +107,10 @@ plt.ylim([0.18, 1.4])
 plt.xlabel('$\sigma_{\mbox{c}}$')
 plt.ylabel('$ \overline{SK}$')
 plt.savefig('/home/vereese/Documents/PhD/jai-2e/clip.pdf', bbox_inches='tight')
+
+# graph for percentages
+plt.figure(2)
+plt.plot(clipped_std, np.asarray(total_clipped)*100/(M*FFT_LEN))
 
 plt.show()
 
