@@ -24,7 +24,7 @@ def rfi_mit(I, diff, sf, int_samples_T, num_nz):
         filtered_data = [d for d in data if d != 0]
         std = np.std(filtered_data)
 
-        sf[:, phi] = [1 if diff[ch, phi] >= 4 * std else 0 for ch in np.arange(num_ch)]
+        sf[:, phi] = [True if diff[ch, phi] >= 4 * std else False for ch in np.arange(num_ch)]
         I[:, phi] = np.where(diff[:, phi] >= 4 * std, 0, I[:, phi])
         # zero number of non-zero data points that went into I accumulation
         num_nz[:, phi] = np.where(diff[:, phi] >= 4 * std, 0, num_nz[:, phi])
@@ -55,14 +55,14 @@ def int_med():
     I = np.load("/home/vereese/git/phd_data/sk_analysis/2210/intensity_z_2210_p45216.npy")
     num_nz = np.load("/home/vereese/git/phd_data/sk_analysis/2210/num_nz_z_2210_p45216.npy")
     int_samples_T = I.shape[1]
-    sf = np.zeros(I.shape)
+    sf = np.zeros(I.shape, dtype = bool)
     I_median = scipy.ndimage.median_filter(I, [21, 1], mode="wrap")
     diff = np.abs(I - I_median)
 
     for i in np.arange(4):
-        sf_tmp = np.zeros(I.shape)
+        sf_tmp = np.zeros(I.shape, dtype = bool)
         I, sf_tmp, num_nz = rfi_mit(I, diff, sf_tmp, int_samples_T, num_nz)
-        sf = sf + sf_tmp
+        sf |= sf_tmp
 
     # g: dropped packets were replaced with Gaussian noise when calculating intensity
     # z: dropped packets were left as 0s calculating intensity

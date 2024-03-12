@@ -104,8 +104,8 @@ if __name__ == "__main__":
     print("\nmedian:")
     med = PI(DIR, "median_z_r4_2210_p4812.npy", "num_nz_median_z_2210_p4812.npy", "sf_median_z_2210_p4812.npy")
     # median gets run 4 times, therefore it's % RFI is different to the other data sets
-    med.rfi_freq = 100 * med.sf.sum(axis = 1) / (np.round(J0437_samples_T) * 4)
-    med.rfi_pulse = 100 * med.sf.sum(axis = 0) / (num_ch * 4)
+    med.rfi_freq = 100 * med.sf.sum(axis = 1) / np.round(J0437_samples_T)
+    med.rfi_pulse = 100 * med.sf.sum(axis = 0) / num_ch
 
     snr_sk_4sig, toa_un_sk_4sig = make_snr_toa_list(sk_4sig, M)
     snr_1sigskmax, toa_un_1sigskmax = make_snr_toa_list(sk_l1siguskmax, M)
