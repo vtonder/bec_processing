@@ -8,6 +8,7 @@ from constants import num_ch, start_indices, pulsars, xy_time_offsets, dme_ch
 from pulsar_processing.pulsar_functions import incoherent_dedisperse
 from common import get_data_window, get_pulse_window, get_pulse_power, get_pulse_flags, get_low_limit, get_up_limit
 import argparse
+import scipy
 
 # note val must either be one float or a numpy array of values
 def check_low(val):
@@ -99,14 +100,17 @@ def pt_mit(data, std, sf):
     """
     Power threshold (pt) RFI mitigation technique. Use 4 sigma as threshold
     Can not have a flags matrix because it'll be the same size as the observation file which is ~500 GB
-    :param data: data must be in 3d format: freq ch x time samples x re,im 
+    :param data: data must be in 3d format: freq ch x time samples x re,im
     :param std: std of an observation can be obtained from mean_analysis, run mean_analysis/plot_all_var.py 
     :param sf: summed flags must be same shape as summed_profile: freq ch x pulse phase bins 
     :return:
     """
-    threshold = 4 * std
-    abs_data = np.sqrt(np.sum(data**2, axis=2))
-    indices = np.where(abs_data >= threshold, True, False)
+
+    pfa_4sigma = scipy.stats.norm.cdf(4) - scipy.stats.norm.cdf(-4)
+    # this already takes the mean into account
+    threshold = scipy.stats.chi2.ppf(pfa_4sigma, df = 2) * std * std
+    power_data = np.sum(data**2, axis=2)
+    indices = np.where(power_data >= threshold, True, False)
     ind = np.zeros(np.shape(data), dtype='bool')
     ind[:, :, 0] = indices
     ind[:, :, 1] = indices
