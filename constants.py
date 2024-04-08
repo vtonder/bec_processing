@@ -11,8 +11,11 @@ jai_font = 11 # got from ws-jai.cls
 # Thesis: TEXT HEIGHT is 708.0pt
 a4_textwidth = 455.0 / 72 # divide the points (pt) by 72 to get inches
 a4_textheight = 708.0 / 72
-beamer_textwidth =  128.0 / 25.4 # From Ludwig
-beamer_textheight = 96.0 / 25.4
+# beamer_textwidth =  128.0 / 25.4 # From Ludwig
+# beamer_textheight = 96.0 / 25.4
+beamer_textwidth =  342.2953 / 72 # From \typeout{The TEXT WIDTH is \the\textwidth} in beamer doc
+beamer_textheight = 260.48 / 72
+
 #JAI: TEXT WIDTH is 505.89pt
 #JAI: TEXT HEIGHT is 655.33755pt
 jai_textwidth = 505.89 / 72
