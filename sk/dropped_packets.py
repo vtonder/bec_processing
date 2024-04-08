@@ -2,7 +2,7 @@ import random
 import numpy as np
 from kurtosis import spectral_kurtosis_cm
 from matplotlib import pyplot as plt
-from constants import a4_textheight, a4_textwidth, thesis_font
+from constants import a4_textheight, a4_textwidth, thesis_font, beamer_font, beamer_textwidth, beamer_textheight
 
 """
 This script investigates the effect of zeros in the data on the SK.
@@ -11,9 +11,12 @@ Therefore, if you have dropped packets in your data then you'll SK will be more 
 """
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-textwidth =  a4_textwidth
-textheight = a4_textheight
-font_size = thesis_font
+# textwidth =  a4_textwidth
+# textheight = a4_textheight
+# font_size = thesis_font
+textwidth = beamer_textwidth
+textheight = beamer_textheight
+font_size = beamer_font
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
@@ -54,5 +57,6 @@ plt.plot(perc*100, (np.asarray(mean_sk) - 1)*100, linewidth=2)
 plt.xlabel("\% dropped data")
 plt.ylabel("\% increase in $\overline{SK}$")
 plt.xlim([perc[0]*100, perc[-1]*100])
-plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/drop.pdf', bbox_inches='tight')
+#plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/drop.pdf', bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/presentation/drop.pdf', bbox_inches='tight')
 plt.show()

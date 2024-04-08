@@ -3,6 +3,7 @@ import numpy as np
 # constants for plotting
 thesis_font = 12 # got from ThesisMain.tex
 jai_font = 11 # got from ws-jai.cls
+beamer_font = 11
 # within \begin{document} part of latex document place the following:
 # \typeout{The TEXT WIDTH is \the\textwidth}
 # \typeout{The TEXT HEIGHT is \the\textheight}

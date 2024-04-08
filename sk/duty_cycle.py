@@ -1,12 +1,16 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from constants import thesis_font, a4_textwidth, a4_textheight, jai_textwidth, jai_textheight, jai_font
+from constants import beamer_font, beamer_textwidth, beamer_textheight
 from kurtosis import s1_s2, ms_spectral_kurtosis_cm
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-textwidth =  a4_textwidth
-textheight = a4_textheight
-font_size = thesis_font
+#textwidth =  a4_textwidth
+#textheight = a4_textheight
+#font_size = thesis_font
+textwidth =  beamer_textwidth
+textheight = beamer_textheight
+font_size = beamer_font
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
@@ -86,6 +90,7 @@ plt.xlim([0,95])
 plt.xlabel("Duty Cycle \%")
 plt.legend()
 #plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/duty.pdf', bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/presentation/duty.pdf', bbox_inches='tight')
 
 # Plot for JAI paper therefore reset some params
 textwidth = jai_textwidth
@@ -110,7 +115,7 @@ plt.ylim([-1,5])
 plt.xlim([0,95])
 plt.xlabel("Duty Cycle \%")
 plt.legend()
-plt.savefig('/home/vereese/Documents/PhD/jai-2e/duty.pdf', bbox_inches='tight')
+#plt.savefig('/home/vereese/Documents/PhD/jai-2e/duty.pdf', bbox_inches='tight')
 
 # To delete - MSK doesn't work in this experiment
 print("msk len: ", MSK)

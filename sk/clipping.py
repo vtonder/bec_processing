@@ -1,16 +1,20 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from kurtosis import spectral_kurtosis
-from constants import a4_textheight, a4_textwidth, thesis_font, jai_textwidth, jai_textheight, jai_font
+from constants import a4_textheight, a4_textwidth, thesis_font, jai_textwidth, jai_textheight, jai_font, beamer_font, beamer_textheight, beamer_textwidth
 
 '''
 This script investigates the effect of clipping on spectral kurtosis. 
 Read % clipped from last figure 2
 '''
 
-textwidth = a4_textwidth
-textheight = a4_textheight
-font_size = thesis_font
+#textwidth = a4_textwidth
+#textheight = a4_textheight
+#font_size = thesis_font
+
+textwidth = beamer_textwidth
+textheight = beamer_textheight
+font_size = beamer_font
 
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
@@ -84,7 +88,8 @@ plt.xlim([clipped_std[0], clipped_std[-1]])
 plt.ylim([0.18, 1.4])
 plt.xlabel('$\sigma_{\mbox{c}}$')
 plt.ylabel('$ \overline{SK}$')
-plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/clip.pdf', bbox_inches='tight')
+#plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/clip.pdf', bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/presentation/clip.pdf', bbox_inches='tight')
 
 # Plot for JAI paper therefore reset some params
 textwidth = jai_textwidth
@@ -106,7 +111,7 @@ plt.xlim([clipped_std[0], clipped_std[-1]])
 plt.ylim([0.18, 1.4])
 plt.xlabel('$\sigma_{\mbox{c}}$')
 plt.ylabel('$ \overline{SK}$')
-plt.savefig('/home/vereese/Documents/PhD/jai-2e/clip.pdf', bbox_inches='tight')
+#plt.savefig('/home/vereese/Documents/PhD/jai-2e/clip.pdf', bbox_inches='tight')
 
 # graph for percentages
 plt.figure(2)

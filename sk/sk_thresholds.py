@@ -10,12 +10,15 @@ from investigate_sk import sk_cdf, sk_pdf
 import sys
 
 sys.path.append('../')
-from constants import a4_textwidth, a4_textheight, thesis_font
+from constants import a4_textwidth, a4_textheight, thesis_font, beamer_textwidth, beamer_textheight, beamer_font
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-textwidth = a4_textwidth
-textheight = a4_textheight
-font_size = thesis_font
+# textwidth = a4_textwidth
+# textheight = a4_textheight
+# font_size = thesis_font
+textwidth = beamer_textwidth
+textheight = beamer_textheight
+font_size = beamer_font
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
@@ -153,7 +156,7 @@ plt.xlim([0.8, 1.2])
 plt.ylim([10 ** -1, 10 ** 1])
 plt.ylabel("SK PDF")
 plt.xlabel("SK")
-plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/pdf.pdf', bbox_inches='tight')
+#plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/pdf.pdf', bbox_inches='tight')
 
 plt.figure(1)
 # plt.semilogy(x, lud_cdf, linewidth=2, label = "L")
@@ -172,7 +175,8 @@ plt.ylabel("SK CDF and CCDF")
 plt.xlabel("SK")
 plt.grid()
 plt.legend()
-plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/cdf.pdf', transparent=True, bbox_inches='tight')
+#plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/cdf.pdf', transparent=True, bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/presentation/cdf.pdf', transparent=True, bbox_inches='tight')
 plt.show()
 
 # Ludwig Code
