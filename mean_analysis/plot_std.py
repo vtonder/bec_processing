@@ -1,13 +1,13 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.ndimage import median_filter as med
-from constants import frequencies, a4_textheight, a4_textwidth, thesis_font
+from constants import frequencies, jai_textheight, jai_textwidth, jai_font, beamer_font, beamer_textheight, beamer_textwidth
 import argparse
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-textwidth = a4_textwidth
-textheight = a4_textheight
-font_size = thesis_font
+textwidth = beamer_textwidth
+textheight = beamer_textheight
+font_size = beamer_font
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
@@ -56,7 +56,7 @@ plt.xlabel('Frequencies [MHz]')
 plt.ylabel('$\sigma$')
 plt.xlim([frequencies[0], frequencies[-1]])
 plt.legend()
-plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/std_' + tag + '.pdf', bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/presentation/std_' + tag + '.pdf', bbox_inches='tight')
 plt.show()
 
 '''plt.figure(0)
