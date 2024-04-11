@@ -1,6 +1,7 @@
 from mpi4py import MPI
 import h5py
 import numpy as np
+import scipy
 import time
 import sys
 sys.path.append("../")
@@ -30,16 +31,27 @@ def sk_mit(data, M, data_window_len):
     return data
 
 def pt_mit(data, std):
-    threshold = 4 * std 
-    abs_data = np.sqrt(np.sum(data**2, axis=2))
-    indices = np.where(abs_data >= threshold, True, False)
+    """
+    Power threshold (pt) RFI mitigation technique. Use 4 sigma as threshold
+    Can not have a flags matrix because it'll be the same size as the observation file which is ~500 GB
+    :param data: data must be in 3d format: freq ch x time samples x re,im
+    :param std: std of an observation can be obtained from mean_analysis, run mean_analysis/plot_all_var.py 
+    :return:
+    """
+
+    pfa_4sigma = scipy.stats.norm.cdf(4) - scipy.stats.norm.cdf(-4)
+    # this already takes the mean into account
+    threshold = scipy.stats.chi2.ppf(pfa_4sigma, df = 2) * std * std
+    power_data = np.sum(data**2, axis=2)
+    indices = np.where(power_data >= threshold, True, False)
     ind = np.zeros(np.shape(data), dtype='bool')
     ind[:, :, 0] = indices
     ind[:, :, 1] = indices
 
-    data[ind] = 0 #np.random.normal(0, std, np.sum(ind))
+    data[ind] = 0
 
     return data
+
 
 # get number of processors and processor rank
 comm = MPI.COMM_WORLD
