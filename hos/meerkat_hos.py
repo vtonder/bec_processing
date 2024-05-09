@@ -3,13 +3,13 @@ from hos import Bispectrum
 import time
 import sys
 sys.path.append('..')
-from constants import h1_ch, gps_l1_ch, gps_l2_ch, gal_e6_ch, a4_textheight, a4_textwidth, thesis_font
+from constants import h1_ch, gps_l1_ch, gps_l2_ch, gal_e6_ch, beamer_textheight, beamer_textwidth, beamer_font
 from matplotlib import pyplot as plt
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-textwidth =  a4_textwidth
-textheight = a4_textheight
-font_size = thesis_font
+textwidth =  beamer_textwidth
+textheight = beamer_textheight
+font_size = beamer_font
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
@@ -69,9 +69,10 @@ if PLOT:
         maxi = np.max(np.abs(data[fn]))
         plt.figure(i)
         plt.imshow(np.abs(data[fn]), aspect='auto', origin='lower', extent=[-512, 512, -512, 512])
+        plt.colorbar()
         plt.xlabel("frequency samples $k$")
         plt.ylabel("frequency samples $k$")
-        plt.savefig("/home/vereese/Documents/PhD/ThesisTemplate/Figures/"+names[i]+".pdf", transparent=True, bbox_inches='tight')
+        plt.savefig("/home/vereese/Documents/PhD/presentation/"+names[i]+".pdf", transparent=True, bbox_inches='tight')
         #plt.imshow(np.angle(data[fn]), aspect='auto', origin='lower')
         #plt.title(fn)
 
