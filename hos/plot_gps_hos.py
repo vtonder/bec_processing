@@ -31,7 +31,7 @@ NUM_BITS1 = str(1)
 NUM_BITS2 = str(300)
 
 py = 10.23
-fft_len = 2048
+fft_len = 1024
 py_res = 2 * py / fft_len
 ca = 1.023
 ca_res = 2 * ca / fft_len
@@ -67,7 +67,9 @@ for i in np.arange(6):
     w0,w1 = get_freq(code)
     plt.figure(i+6)
     mag = np.abs(gps_data1[code])
-    plt.imshow(mag, aspect='auto', origin='lower', extent=[w0, w1, w0, w1])
+    maxi = np.max(mag)/3
+    mini = np.min(mag)
+    plt.imshow(mag, aspect='auto', origin='lower', vmin = mini, vmax = maxi, extent=[w0, w1, w0, w1])
     plt.colorbar()
     plt.xlabel("$f_1$ [MHz]")
     plt.ylabel("$f_2$ [MHz]")
@@ -75,7 +77,9 @@ for i in np.arange(6):
     plt.savefig(URSI_DIR+code+'_1bit_'+str(fft_len)+'.pdf', bbox_inches='tight')
     plt.figure(i)
     mag = np.abs(gps_data2[code])
-    plt.imshow(mag, aspect='auto', origin='lower', extent=[w0, w1, w0, w1])
+    maxi = np.max(mag)/3
+    mini = np.min(mag)
+    plt.imshow(mag, aspect='auto', origin='lower', vmin = mini, vmax = maxi, extent=[w0, w1, w0, w1])
     plt.colorbar()
     plt.xlabel("$f_1$ [MHz]")
     plt.ylabel("$f_2$ [MHz]")
