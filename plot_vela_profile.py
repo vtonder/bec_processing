@@ -1,12 +1,12 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from constants import a4_textwidth, a4_textheight, thesis_font
+from constants import beamer_textwidth, beamer_textheight, beamer_font
 from pulsar_processing.pulsar_functions import incoherent_dedisperse
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-textwidth = a4_textwidth
-textheight = a4_textheight
-font_size = thesis_font
+textwidth = beamer_textwidth
+textheight = beamer_textheight
+font_size = beamer_font
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
@@ -26,10 +26,16 @@ plt.rc("figure", figsize = (textwidth, figheight))
 vela = np.load("/home/vereese/git/phd_data/pulsar/summed_profile_1234_0x.npy")
 #vela = incoherent_dedisperse(vela,"1569")
 
-for i in np.arange(1024):
-    vela[i,:] = vela[i,:] - np.mean(vela[i,:])
+#for i in np.arange(1024):
+#    vela[i,:] = vela[i,:] - np.mean(vela[i,:])
+maxi = np.max(vela)
+mini = np.min(vela)
 
-plt.imshow(vela, origin="lower", aspect="auto")
+plt.imshow(vela, origin="lower", aspect="auto", vmax=maxi/2, vmin=mini, extent=[0, 1, 856, 1712])
+plt.xlabel("pulse phase")
+plt.ylabel("frequency [MHz]")
+plt.colorbar()
+plt.savefig('/home/vereese/Documents/PhD/presentation/vela_rfi.pdf', bbox_inches='tight')
 plt.show()
 #vela_top = vela[512:,:].sum(axis=0)
 #vela_bottom = vela[0:512].sum(axis=0)
@@ -41,4 +47,4 @@ plt.show()
 #vm = np.max(vela_profile)
 #vela_centered = np.roll(vela_profile, int((vl/2)-vmi))
 #vela_floor = np.mean(vela_centered[0:1000])
-plt.show()
+#plt.show()
