@@ -8,13 +8,13 @@ This script investigates the effect of clipping on spectral kurtosis.
 Read % clipped from last figure 2
 '''
 
-#textwidth = a4_textwidth
-#textheight = a4_textheight
-#font_size = thesis_font
+textwidth = a4_textwidth
+textheight = a4_textheight
+font_size = thesis_font
 
-textwidth = beamer_textwidth
-textheight = beamer_textheight
-font_size = beamer_font
+#textwidth = beamer_textwidth
+#textheight = beamer_textheight
+#font_size = beamer_font
 
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
@@ -77,7 +77,7 @@ print(l_clipped_std)
 
 plt.figure(0)
 #plt.plot(stds, mean_sk, label="original", linewidth=2)
-plt.axhline(1, color='m', linestyle = '-', linewidth=2, label="unclipped")
+plt.axhline(1, color = 'black', linestyle = '--', linewidth=2, label="$\overline{SK}$ = 1")
 plt.plot(clipped_std, mean_sk_clipped, label="clipped", linewidth=2)
 # plt.plot(l_clipped_std, l_sk, label="l clipping")
 plt.axhline(0.77, color = 'g', linestyle = '--', linewidth=2, label="$\pm3\sigma$ thresholds")
@@ -87,9 +87,9 @@ plt.legend()
 plt.xlim([clipped_std[0], clipped_std[-1]])
 plt.ylim([0.18, 1.4])
 plt.xlabel('$\sigma_{\mbox{c}}$')
-plt.ylabel('$ \overline{SK}$')
-#plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/clip.pdf', bbox_inches='tight')
-plt.savefig('/home/vereese/Documents/PhD/presentation/clip.pdf', bbox_inches='tight')
+plt.ylabel('$\overline{SK}$')
+plt.savefig('/home/vereese/Documents/PhD/Thesis/Figures/clip1.pdf', bbox_inches='tight')
+#plt.savefig('/home/vereese/Documents/PhD/presentation/clip.pdf', bbox_inches='tight')
 
 # Plot for JAI paper therefore reset some params
 textwidth = jai_textwidth
