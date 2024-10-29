@@ -5,9 +5,9 @@ from constants import frequencies, jai_textheight, jai_textwidth, jai_font, beam
 import argparse
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-textwidth = beamer_textwidth
-textheight = beamer_textheight
-font_size = beamer_font
+textwidth = jai_textwidth
+textheight = jai_textheight
+font_size = jai_font
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
@@ -53,10 +53,11 @@ plt.plot(frequencies, np.sqrt(vars_y[:, 0]), label="$\sigma_V$", linewidth=2)
 plt.plot(frequencies, np.sqrt(vars_x[:, 0]), label="$\sigma_H$", linewidth=2)
 #plt.plot(frequencies, np.sqrt(mf256_x[:, 0]), label="$\sigma_{mf}$", linewidth=2)
 plt.xlabel('Frequencies [MHz]')
-plt.ylabel('$\sigma$')
+plt.ylabel('$\sigma$ [LSB]')
 plt.xlim([frequencies[0], frequencies[-1]])
 plt.legend()
-plt.savefig('/home/vereese/Documents/PhD/presentation/std_' + tag + '.pdf', bbox_inches='tight')
+#plt.savefig('/home/vereese/Documents/PhD/presentation/std_' + tag + '.pdf', bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/jai-2e/std_' + tag + '.pdf', bbox_inches='tight')
 plt.show()
 
 '''plt.figure(0)
