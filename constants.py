@@ -127,6 +127,7 @@ upper_limit10 = {64:5, 128:4.2, 256:3.5, 512:3.2, 1024:2.5, 2048:2, 4096:1.9, 81
 # first non-zero indices for each file. Obtained using the first_nonzero_indices.{py,sh} scripts. 
 # The output was written to first_nonzero_indices
 first_nonzero_indices = {
+  '1604640000_fake_pulsar_0x.h5':10306048,
   '1604641064_wide_tied_array_channelised_voltage_0x.h5': 10306048,
   '1604641064_wide_tied_array_channelised_voltage_0y.h5': 7668736,
   '1604641234_wide_tied_array_channelised_voltage_0x.h5': 13523200,
@@ -151,6 +152,7 @@ for file_name, idx in first_nonzero_indices.items():
 
 # obtained from get_xy_offsets script which takes start indices into account
 xy_time_offsets = {
+  '1604640000_fake_pulsar_0x.h5':0,
   '1604641064_wide_tied_array_channelised_voltage_0x.h5': 0,
   '1604641064_wide_tied_array_channelised_voltage_0y.h5': 10875392,
   '1604641234_wide_tied_array_channelised_voltage_0x.h5': 0,
@@ -189,6 +191,13 @@ J0835 = {'name':'Vela',
          'samples_T':vela_samples_T,
          'dm':vela_dm
         } 
+
+fake_pulsar = {'name':'fake_pulsar',
+               'freq':10**6/(time_resolution*time_chunk_size*2),
+               'T':(time_resolution*time_chunk_size*2)/10**6,
+               'samples_T':time_chunk_size*2,
+               'dm':0
+        }
 
 # J0437-4715
 J0437_freq = 173.69148 # this is as measured by Alex and ATNF = 173.6879458121843
@@ -262,7 +271,9 @@ gsm = {'name':'GSM',
          }
 
 # Dictionary to link code to pulsar
-pulsars = {'1234':J0835,
+pulsars = {'0000':fake_pulsar,
+           '1064':J0835,
+           '1234':J0835,
            '1569':J0835,
            '2210':J0437,
            '2762':J0536,
