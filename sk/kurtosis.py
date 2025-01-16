@@ -2,9 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import signal
 import sys
-import matplotlib.ticker as ticker
 sys.path.append('../')
-from constants import a4_textheight, a4_textwidth, thesis_font, jai_textwidth, jai_textheight, jai_font
+from constants import a4_textheight, a4_textwidth, thesis_font
 
 #TODO need to apply normalisation to spectra otherwise the estimator will fail - Nita 2007
 #row major implementation
@@ -180,7 +179,7 @@ if __name__ == "__main__":
     for i, j in enumerate(np.arange(0, N, M)):
         pulse_train[j:j + duty_samples] = np.ones(duty_samples)*50 #np.random.randn(duty_samples) * 500  #
         if i % 5 == 0:
-            pulsar[j:j + pulsar_duty_samples] = np.random.normal(mean, std_pulsar, size=pulsar_duty_samples) #+ 1j * np.random.normal(mean, std_pulsar, size=pulsar_duty_samples)
+            pulsar[j:j + pulsar_duty_samples] = np.random.normal(mean, std_pulsar, size=pulsar_duty_samples) + 1j * np.random.normal(mean, std_pulsar, size=pulsar_duty_samples)
 
     #for i in np.arange(0, N, M):
     #    pulse_train[i:i+duty_samples] = np.random.randn(duty_samples)*500 #np.ones(duty_samples)*50
@@ -189,87 +188,37 @@ if __name__ == "__main__":
     wgn_im = np.random.normal(mean, std, size=N)
 
     x =  wgn_re #+ 1j*wgn_im
-    x1 =  x + s
-    x2 =  x + pulsar
-    #x3 = x + pulse_train
-
+    #x =  x + s
+    #x = x + pulse_train
+    #x =  x + pulsar
     x = x.reshape(M, FFT_LEN)
-    x1 = x1.reshape(M, FFT_LEN)
-    x2 = x2.reshape(M, FFT_LEN)
 
     # NOTE: Adding 0s to the data raises the SK. Therefore, if you have dropped packets then you'll increase your SK
     #x[0:100,:] = 0
     print("N: ", N," x.shape: ", x.shape)
     print("% 0s:", 100*np.sum(np.where(x == 0, True, False))/N)
 
-    #XF = np.fft.fft(x, axis=1)
+    XF = np.fft.fft(x, axis=1)
 
     sk = spectral_kurtosis(x, M, FFT_LEN, reshape=False, fft=True, normalise=False)
-    sk1 = spectral_kurtosis(x1, M, FFT_LEN, reshape=False, fft=True, normalise=False)
-    sk2 = spectral_kurtosis(x2, M, FFT_LEN, reshape=False, fft=True, normalise=False)
-    #print(np.mean(sk))
-    #plt.figure(0)
-    #plt.plot(x.flatten())
+    print(np.mean(sk))
+    plt.figure(0)
+    plt.plot(x.flatten())
 
-    # For thesis
-    #plt.figure(1)
-    #plt.plot(f[1:], sk[1:int(FFT_LEN / 2)], linewidth=2, label="$\overline{SK}$")
-    #plt.xlim([f[1], f[-1]])
-    #plt.axhline(0.77511, linestyle='--', color="g", linewidth=2, label="$\pm3\sigma$ thresholds")
-    #plt.axhline(1.3254, linestyle='--', color="g", linewidth=2)
-    #plt.axhline(np.mean(sk[1:int(FFT_LEN/2)]), color = "r", linestyle = '--', linewidth=2, label="mean of $\overline{SK}$")
-    ##plt.ylim([0.65, 1.35])
-    #plt.grid()
-    #plt.xlabel("frequency [Hz]")
-    #plt.ylabel('$\overline{SK}$')
-    #plt.legend()
-    ##plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/skest.pdf', bbox_inches='tight')
-    ##plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/skest1.pdf', bbox_inches='tight')
-    ##plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/skest2.pdf', bbox_inches='tight')
-    #plt.show()
-
-    textwidth = jai_textwidth
-    textheight = jai_textheight
-    font_size = jai_font
-    # groups are like plt.figure plt.legend etc
-    plt.rc('font', size=font_size, family='serif')
-    plt.rc('pdf', fonttype=42)
-    # plt.rc('axes', titlesize=14, labelsize=14)
-    plt.rc('axes', titlesize=font_size, labelsize=font_size)
-    plt.rc(('xtick', 'ytick'), labelsize=font_size)
-    plt.rc('legend', fontsize=font_size)
-    plt.rc('lines', markersize=5)
-    # The following should only be used for beamer
-    # plt.rc('figure', figsize=(0.9 * textwidth, 0.8 * textheight), facecolor='w')
-    figheight = 0.3 * textwidth  # used for JAI paper, the last plot only
-    plt.rc('mathtext', fontset='cm')
-    # to get this working needed to do: sudo apt install cm-super
-    plt.rc("text", usetex=True)
-    plt.rc("figure", figsize=(textwidth, figheight))
-
-    sks = [sk, sk1, sk2]
-    fig, ax = plt.subplots(1, 3, sharey=True)
-    fig.tight_layout()
-
-
-    #ax[1].plot(f[1:], sk1[1:int(FFT_LEN / 2)], linewidth=2)
-    #ax[1].axhline(np.mean(sk1[1:int(FFT_LEN / 2)]), color="r", linestyle='--', linewidth=2)
-    #ax[2].plot(f[1:], sk2[1:int(FFT_LEN / 2)], linewidth=2)
-    #ax[2].axhline(np.mean(sk2[1:int(FFT_LEN / 2)]), color="r", linestyle='--', linewidth=2)
-    func = lambda xval, pos: "" if np.isclose(xval, 0) else xval
-    plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(func))
-    for i, s in enumerate(sks):
-        ax[i].set_xlim([f[1], f[-1]])
-        ax[i].plot(f[1:], s[1:int(FFT_LEN / 2)], linewidth=2)
-        ax[i].axhline(np.mean(s[1:int(FFT_LEN / 2)]), color="r", linestyle='--', linewidth=2)
-        ax[i].set_xlabel("frequency [Hz]")
-        ax[i].grid()
-        #ax[i].set_ylim([0.65, 1.35])
-        ax[i].axhline(0.77511, linestyle='--', color="g", linewidth=2)
-        ax[i].axhline(1.3254, linestyle='--', color="g", linewidth=2)
-
-    ax[0].set_ylabel("$\overline{SK}$")
-    plt.savefig('/home/vereese/Documents/PhD/jai-2e/skest.pdf', bbox_inches='tight')
+    plt.figure(1)
+    plt.plot(f[1:], sk[1:int(FFT_LEN / 2)], linewidth=2, label="$\overline{SK}$")
+    plt.xlim([f[1], f[-1]])
+    plt.axhline(0.77511, linestyle='--', color="g", linewidth=2, label="$\pm3\sigma$ thresholds")
+    plt.axhline(1.3254, linestyle='--', color="g", linewidth=2)
+    plt.axhline(np.mean(sk[1:int(FFT_LEN/2)]), color = "r", linestyle = '--', linewidth=2, label="mean of $\overline{SK}$")
+    #plt.ylim([0.65, 1.35])
+    plt.grid()
+    plt.xlabel("frequency [Hz]")
+    plt.ylabel('$\overline{SK}$')
+    plt.legend()
+    plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/skest.pdf', bbox_inches='tight')
+    #plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/skest1.pdf', bbox_inches='tight')
+    #plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/skest2.pdf', bbox_inches='tight')
     plt.show()
 
     '''x = x.reshape(FFT_LEN, M)

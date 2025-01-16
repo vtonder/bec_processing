@@ -3,13 +3,13 @@ from hos import Bispectrum
 import time
 import sys
 sys.path.append('..')
-from constants import h1_ch, gps_l1_ch, gps_l2_ch, gal_e6_ch, beamer_textheight, beamer_textwidth, beamer_font
+from constants import h1_ch, gps_l1_ch, gps_l2_ch, gal_e6_ch, a4_textheight, a4_textwidth, thesis_font
 from matplotlib import pyplot as plt
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-textwidth =  beamer_textwidth
-textheight = beamer_textheight
-font_size = beamer_font
+textwidth =  a4_textwidth
+textheight = a4_textheight
+font_size = thesis_font
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
@@ -59,47 +59,21 @@ if ANALYSE:
 
 if PLOT:
     DIR='/home/vereese/git/phd_data/meerkat_hos/'
-    clean_data = np.load(DIR + 'clean2_bispec_0y.npy')
-    gps_l2_data = np.load(DIR + 'gps_l2_bispec_full.npy')
-
-    plt.figure(0)
-    mag1 = np.abs(clean_data)
-    maxi1 = np.max(mag1) / 3
-    mini1 = np.min(mag1)
-    plt.imshow(mag1, aspect='auto', origin='lower', vmin=mini1, vmax=maxi1, extent=[-512, 512, -512, 512])
-    plt.colorbar()
-    plt.xlabel("frequency samples $k$")
-    plt.ylabel("frequency samples $k$")
-    plt.savefig("/home/vereese/Documents/PhD/presentation/clean2_bispec_0y.pdf", transparent=True, bbox_inches='tight')
-
-    plt.figure(1)
-    mag2 = np.abs(gps_l2_data)
-    maxi2 = np.max(mag2) / 7
-    mini2 = np.min(mag2)
-    plt.imshow(mag2, aspect='auto', origin='lower', vmin=mini2, vmax=maxi2, extent=[-512, 512, -512, 512])
-    plt.colorbar()
-    plt.xlabel("frequency samples $k$")
-    plt.ylabel("frequency samples $k$")
-    plt.savefig("/home/vereese/Documents/PhD/presentation/gps_l2_bispec.pdf", transparent=True, bbox_inches='tight')
-
-    """data = {'gps_l1_bispec_full.npy':[], 'gps_l2_bispec_full.npy': [], 'gal_e6_bispec.npy': [], 'gal_5b_bispec_0y.npy': [],
+    data = {'gps_l1_bispec_full.npy':[], 'gps_l2_bispec_full.npy': [], 'gal_e6_bispec.npy': [], 'gal_5b_bispec_0y.npy': [],
             'h1_bispec_0y.npy':[], 'vela_bispec.npy':[], 'clean_bispec.npy':[], 'dirty_bispec.npy':[], 'clean2_bispec_0y.npy':[], 'dirty2_bispec_0y.npy':[]}
     names = ['gps_l1_bispec_full', 'gps_l2_bispec', 'gal_e6_bispec', 'gal_5b_bispec_0',
             'h1_bispec_0y', 'vela_bispec', 'clean_bispec', 'dirty_bispec', 'clean2_bispec_0y', 'dirty2_bispec_0y']
 
     for i,fn in enumerate(data.keys()):
         data[fn] = np.load(DIR+fn)
-        mag = np.abs(data[fn])
-        maxi = np.max(mag)/3
-        mini = np.min(mag)
+        maxi = np.max(np.abs(data[fn]))
         plt.figure(i)
-        plt.imshow(mag, aspect='auto', origin='lower', vmin = mini, vmax = maxi, extent=[-512, 512, -512, 512])
-        plt.colorbar()
+        plt.imshow(np.abs(data[fn]), aspect='auto', origin='lower', extent=[-512, 512, -512, 512])
         plt.xlabel("frequency samples $k$")
         plt.ylabel("frequency samples $k$")
-        plt.savefig("/home/vereese/Documents/PhD/presentation/"+names[i]+".pdf", transparent=True, bbox_inches='tight')
+        plt.savefig("/home/vereese/Documents/PhD/ThesisTemplate/Figures/"+names[i]+".pdf", transparent=True, bbox_inches='tight')
         #plt.imshow(np.angle(data[fn]), aspect='auto', origin='lower')
-        #plt.title(fn)"""
+        #plt.title(fn)
 
     plt.show()
 

@@ -2,12 +2,12 @@ import numpy as np
 from matplotlib import pyplot as plt
 import sys
 sys.path.append("../")
-from constants import beamer_textwidth, beamer_textheight, beamer_font
+from constants import a4_textwidth, a4_textheight, thesis_font
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-textwidth =  beamer_textwidth
-textheight = beamer_textheight
-font_size = beamer_font
+textwidth =  a4_textwidth
+textheight = a4_textheight
+font_size = thesis_font
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
@@ -25,8 +25,7 @@ plt.rc("text", usetex = True)
 plt.rc("figure", figsize = (textwidth, figheight))
 
 DIRECTORY = '/home/vereese/git/phd_data/gps_hos/output_data/'
-#URSI_DIR = '/home/vereese/Documents/PhD/ThesisTemplate/Figures/'
-URSI_DIR = '/home/vereese/Documents/PhD/presentation/'
+URSI_DIR = '/home/vereese/Documents/PhD/ThesisTemplate/Figures/'
 NUM_BITS1 = str(1)
 NUM_BITS2 = str(300)
 
@@ -66,24 +65,16 @@ for i in np.arange(6):
     code = names[int(i)]
     w0,w1 = get_freq(code)
     plt.figure(i+6)
-    mag = np.abs(gps_data1[code])
-    maxi = np.max(mag)/3
-    mini = np.min(mag)
-    plt.imshow(mag, aspect='auto', origin='lower', vmin = mini, vmax = maxi, extent=[w0, w1, w0, w1])
-    plt.colorbar()
+    plt.imshow(np.abs(gps_data1[code]), aspect='auto', origin='lower', extent=[w0, w1, w0, w1])
     plt.xlabel("$f_1$ [MHz]")
     plt.ylabel("$f_2$ [MHz]")
     #plt.title(code+NUM_BITS1)
-    plt.savefig(URSI_DIR+code+'_1bit_'+str(fft_len)+'.pdf', bbox_inches='tight')
+    plt.savefig(URSI_DIR+code+'_1bit.pdf', bbox_inches='tight')
     plt.figure(i)
-    mag = np.abs(gps_data2[code])
-    maxi = np.max(mag)/3
-    mini = np.min(mag)
-    plt.imshow(mag, aspect='auto', origin='lower', vmin = mini, vmax = maxi, extent=[w0, w1, w0, w1])
-    plt.colorbar()
+    plt.imshow(np.abs(gps_data2[code]), aspect='auto', origin='lower', extent=[w0, w1, w0, w1])
     plt.xlabel("$f_1$ [MHz]")
     plt.ylabel("$f_2$ [MHz]")
     #plt.title(code+NUM_BITS2)
-    plt.savefig(URSI_DIR+code+'_300bit_'+str(fft_len)+'.pdf', bbox_inches='tight')
+    plt.savefig(URSI_DIR+code+'_300bit.pdf', bbox_inches='tight')
 
 plt.show()
