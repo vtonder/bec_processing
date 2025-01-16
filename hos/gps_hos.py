@@ -6,20 +6,20 @@ import time
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
 sys.path.append("../")
-from constants import a4_textwidth, a4_textheight, thesis_font
+from constants import beamer_textwidth, beamer_textheight, beamer_font
 
 # TODO: sampling time is not sufficient
 # should not upconvert, should calculate what's the offset when the upconverted signal was downconverted using meerkat's pfb and bandpass sampling
 # there should be a pfb lib in python
 
-DIRECTORY = '/home/vereese/git/phd_data/gps_hos/input_data/' # local data location
-#DIRECTORY = '/home/vereese/data/phd_data/gps_hos/input_data/' # ray data location on NFS
-PLOT_TIME = False
+#DIRECTORY = '/home/vereese/git/phd_data/gps_hos/input_data/' # local data location
+DIRECTORY = '/home/vereese/data/phd_data/gps_hos/input_data/' # ray data location on NFS
+PLOT_TIME = True 
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-textwidth =  a4_textwidth
-textheight = a4_textheight
-font_size = thesis_font
+textwidth =  beamer_textwidth
+textheight = beamer_textheight
+font_size = beamer_font
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
@@ -119,68 +119,68 @@ if PLOT_TIME:
             elif k == 5:
                 ax[j, i].set_xlabel("time samples $n$")
             k += 1
-    plt.savefig('/home/vereese/thesis_pics/gps_codes_time_300bit.pdf', bbox_inches='tight')
+    plt.savefig('/home/vereese/presentation_pics/gps_codes_time_300bit.pdf', bbox_inches='tight')
     plt.show()
 
-M = 1024
-fs_p = 21.518 # MHz sampling rate for P and P(Y) code
-fs_ca = 2.1518 # MHz sampling rate for C/A code
-freq_res_p = fs_p/M
-freq_res_ca = fs_ca/M
-freq_p = np.arange(0,fs_p,freq_res_p)
-freq_ca = np.arange(0,fs_ca,freq_res_ca)
-
-bispectra = {}
-for i, fn in enumerate(gps_file_names):
-    data = gps.gps_data[fn]
-    #data_up = gps.gps_data_up[fn]
-    data_len = len(data)
-    print(fn, "has length", data_len)
-    # Bispectra analysis
-
-    fft_len = int(M)
-    records = int(np.floor(data_len / fft_len))
-    M_2 = int(fft_len / 2)
-    cum = np.zeros([records, M_2, M_2], dtype='complex_')
-    data = np.asarray(data[0:int(fft_len * records)]).reshape(records, fft_len)
-    #data_up = np.asarray(data_up[0:int(fft_len * records)]).reshape(records, fft_len)
-
-    b = Bispectrum(data, method='direct')
-    #b_up = Bispectrum(data_up, method='direct')
-    b.direct_bispectrum()
-    #b.calc_full_bispectrum()
-    #b_up.direct_bispectrum()
-    #print(b.bispectrum_I-b_up.bispectrum_I)
-    # -4 to get rid of .csv
-    #np.save(DIRECTORY+fn[:-4]+'_I_bispec_base',b.bispectrum_I)
-    #np.save(DIRECTORY+fn[:-4]+'_I_bispec_up',b_up.bispectrum_I)
-    #b.calc_power_spectrum()
-    #b.plot_full_bispectrum(i, name=fn)
-    b.plot_bispectrum_I(i, name=fn)
-    #bispectra.update({fn:b})
-    #b.plot_power_spectrum(i,fn)
-    #print(np.shape(b.full_bispec))
-
-plt.show()
-
-# tested if 2 codes are the same
-# tested if gps simulator consistently gives out same pattern for same config and it does
-#a = np.abs(bispectra['Q_L2CM_Dc_8bit_1412.csv'].bispectrum_I)
-#b = np.abs(bispectra['Q_CA_8bit_1412.csv'].bispectrum_I)
-#c = list(np.sum(a - b, axis=0))
-#if not any(c): print("They're identical")
-
-# TODO PFB coefficients
-# import numpy as np
-NCHANS = 1024
-NTAPS = 8
-NFFT = 2 * NCHANS
-# # Effective window length incorporating PFB taps
-M = NTAPS * NFFT
-# # The PFB coefficients are from a windowed sinc function
-pfb_window = np.hamming(M) * np.sinc((np.arange(M) - M / 2.) / NFFT)
-print("len PFB window", len(pfb_window))
-plt.figure()
-plt.plot(pfb_window)
-plt.grid()
-plt.show()
+#M = 1024
+#fs_p = 21.518 # MHz sampling rate for P and P(Y) code
+#fs_ca = 2.1518 # MHz sampling rate for C/A code
+#freq_res_p = fs_p/M
+#freq_res_ca = fs_ca/M
+#freq_p = np.arange(0,fs_p,freq_res_p)
+#freq_ca = np.arange(0,fs_ca,freq_res_ca)
+#
+#bispectra = {}
+#for i, fn in enumerate(gps_file_names):
+#    data = gps.gps_data[fn]
+#    #data_up = gps.gps_data_up[fn]
+#    data_len = len(data)
+#    print(fn, "has length", data_len)
+#    # Bispectra analysis
+#
+#    fft_len = int(M)
+#    records = int(np.floor(data_len / fft_len))
+#    M_2 = int(fft_len / 2)
+#    cum = np.zeros([records, M_2, M_2], dtype='complex_')
+#    data = np.asarray(data[0:int(fft_len * records)]).reshape(records, fft_len)
+#    #data_up = np.asarray(data_up[0:int(fft_len * records)]).reshape(records, fft_len)
+#
+#    b = Bispectrum(data, method='direct')
+#    #b_up = Bispectrum(data_up, method='direct')
+#    b.direct_bispectrum()
+#    #b.calc_full_bispectrum()
+#    #b_up.direct_bispectrum()
+#    #print(b.bispectrum_I-b_up.bispectrum_I)
+#    # -4 to get rid of .csv
+#    #np.save(DIRECTORY+fn[:-4]+'_I_bispec_base',b.bispectrum_I)
+#    #np.save(DIRECTORY+fn[:-4]+'_I_bispec_up',b_up.bispectrum_I)
+#    #b.calc_power_spectrum()
+#    #b.plot_full_bispectrum(i, name=fn)
+#    b.plot_bispectrum_I(i, name=fn)
+#    #bispectra.update({fn:b})
+#    #b.plot_power_spectrum(i,fn)
+#    #print(np.shape(b.full_bispec))
+#
+#plt.show()
+#
+## tested if 2 codes are the same
+## tested if gps simulator consistently gives out same pattern for same config and it does
+##a = np.abs(bispectra['Q_L2CM_Dc_8bit_1412.csv'].bispectrum_I)
+##b = np.abs(bispectra['Q_CA_8bit_1412.csv'].bispectrum_I)
+##c = list(np.sum(a - b, axis=0))
+##if not any(c): print("They're identical")
+#
+## TODO PFB coefficients
+## import numpy as np
+#NCHANS = 1024
+#NTAPS = 8
+#NFFT = 2 * NCHANS
+## # Effective window length incorporating PFB taps
+#M = NTAPS * NFFT
+## # The PFB coefficients are from a windowed sinc function
+#pfb_window = np.hamming(M) * np.sinc((np.arange(M) - M / 2.) / NFFT)
+#print("len PFB window", len(pfb_window))
+#plt.figure()
+#plt.plot(pfb_window)
+#plt.grid()
+#plt.show()

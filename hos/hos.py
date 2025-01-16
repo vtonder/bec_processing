@@ -184,9 +184,9 @@ class Bispectrum():
         # follow steps as per [1] and implement symmetry as per [3]
 
         M_2 = int(self.M/2)
-        print("before mean compensation", np.mean(self.signal))
-        self.mean_compensation()
-        print("after mean compensation", np.mean(self.signal))
+        #print("before mean compensation", np.mean(self.signal))
+        #self.mean_compensation()
+        #print("after mean compensation", np.mean(self.signal))
         if self.method == 'direct':
             self.bispectrum_I = self.direct_bispectrum()
         else:
