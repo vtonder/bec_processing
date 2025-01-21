@@ -15,9 +15,10 @@ size = comm.Get_size()
 rank = comm.Get_rank()
 
 parser = argparse.ArgumentParser()
-parser.add_argument("file", help = "observation file to process. search path: /net/com08/data6/vereese/")
-parser.add_argument("-M", dest = "M", help="Number of spectra to accumulate in SK calculation", default = 512)
-parser.add_argument("-s", dest = "std", help="Replace dropped packets with Gaussian noise with std set using this parameter", default = None)
+parser.add_argument("file", help = "Observation file to process")
+parser.add_argument("-d", dest = "direc", help = "Directory of observation file to process. default search path: /net/com08/data6/vereese/", default = "/net/com08/data6/vereese/")
+parser.add_argument("-M", dest = "M", help = "Number of spectra to accumulate in SK calculation", default = 512)
+parser.add_argument("-s", dest = "std", help = "Replace dropped packets with Gaussian noise with std set using this parameter", default = None)
 
 args = parser.parse_args()
 M = int(args.M)
@@ -25,10 +26,11 @@ M = int(args.M)
 if rank == 0:
     t1 = time.time()
     if time_chunk_size % M:
-        print("not respecting the chunk! time_chunk_size must be divisible by M. time_chunk_size: ", time_chunk_size)
+        print("ERROR: not respecting the chunk! time_chunk_size must be divisible by M. time_chunk_size: ", time_chunk_size)
         exit()
 
-df = h5py.File('/net/com08/data6/vereese/' + args.file, 'r')
+file_path = args.direc + args.file
+df = h5py.File(file_path, 'r')
 data = df['Data/bf_raw']
 start_index = start_indices[args.file]
 
@@ -57,9 +59,13 @@ if rank == 0:
     print("stop               :", stop)
     print("M                  :", M)
 
+    if num_data_points == 0:
+        print("ERROR: you're not processing anything")
+        exit()
+
     if num_data_points_rank % time_chunk_size:
         # time_chunk_size must be a factor of num_data_points_rank
-        print("not respecting the chunk! number of data points to be processed per processor must be must be divisible "
+        print("ERROR: not respecting the chunk! number of data points to be processed per processor must be must be divisible "
               "by time_chunk_size: ", time_chunk_size, " remainder:", num_data_points_rank % time_chunk_size)
         exit()
 
