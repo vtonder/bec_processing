@@ -8,15 +8,19 @@ from pulsar_snr import PI
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-d", dest = "dir", help = "directory where data is located. default location: /home/vereese/data/phd_data/sk_analysis/2210/", default = "/home/vereese/data/phd_data/sk_analysis/2210/")
+parser.add_argument("-d", dest = "dir", help = "directory where data is located. default location: /home/vereese/git/phd_data/sk_analysis/2210/", default = "/home/vereese/git/phd_data/sk_analysis/2210/")
 # "/home/vereese/git/phd_data/sk_analysis/2210/4sig/"
 args = parser.parse_args()
 DIR = args.dir
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-textwidth = a4_textwidth
-textheight = a4_textheight
-font_size = thesis_font
+#textwidth = a4_textwidth
+#textheight = a4_textheight
+#font_size = thesis_font
+textwidth = jai_textwidth
+textheight = jai_textheight
+font_size = jai_font
+
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
 plt.rc('pdf', fonttype=42)
@@ -154,7 +158,7 @@ if __name__ == "__main__":
     #m4096_snr, m4096_toa = make_snr_toa_list(msk_4siglow_M4096m1nx, n_ch)
     #m256_snr, m256_toa = make_snr_toa_list(msk_4siglow_M256m1nx, n_ch)
 
-    fig, ax = plt.subplots()
+    """fig, ax = plt.subplots()
     ax.semilogx(M, snr_1sigskmax, '-o', label="SK: 1$\sigma$, $SK_{max}$", linewidth=2, base=2)
     ax.semilogx(M, snr_sk_4sig, '-o', label="SK: 4$\sigma$", linewidth=2, base=2)
     ax.hlines(y = med.snr, xmin = M[0], xmax = M[-1], colors="red", linestyle="--", label = "median")
@@ -168,7 +172,7 @@ if __name__ == "__main__":
     ax.set_ylim([0, 25000])
     ax.legend(loc=3)
     ax.grid()
-    plt.savefig('/home/vereese/thesis_pics/sk_snr.pdf', transparent=True, bbox_inches='tight')
+    #plt.savefig('/home/vereese/thesis_pics/sk_snr.pdf', transparent=True, bbox_inches='tight')
 
     fig1, ax1 = plt.subplots()
     ax1.semilogx(M, toa_un_sk_4sig, '-o', label="SK: 4$\sigma$", linewidth=2, base=2)
@@ -184,7 +188,7 @@ if __name__ == "__main__":
     ax1.set_ylim([0, 52])
     ax1.legend()
     ax1.grid()
-    plt.savefig('/home/vereese/thesis_pics/sk_toa_un.pdf', transparent=True, bbox_inches='tight')
+    #plt.savefig('/home/vereese/thesis_pics/sk_toa_un.pdf', transparent=True, bbox_inches='tight')
 
     fig2, ax2 = plt.subplots()
     #fig2.tight_layout()
@@ -205,30 +209,40 @@ if __name__ == "__main__":
     ax2.set_ylim([0, 25500])
     ax2.grid()
     ax2.legend()
-    plt.savefig('/home/vereese/thesis_pics/msk_snr.pdf', bbox_inches='tight')
+    #plt.savefig('/home/vereese/thesis_pics/msk_snr.pdf', bbox_inches='tight')
 
     phi = np.arange(0, 1, 1/len(I.profile))
     fig3, ax3 = plt.subplots()
     #fig3.tight_layout()
-    ax3.plot(phi, I.norm_profile + 0.5, label="none", linewidth=2)
+    #ax3.plot(phi, I.norm_profile + 0.5, label="none", linewidth=2)
+    ax3.plot(phi, I.norm_profile, label="none", linewidth=2)
+    ax3.plot(phi, pt.norm_profile, label="$\geq$ 4$\sigma$", linewidth=2)
+    ax3.plot(phi, sk_4sig["256"].norm_profile, label="SK: 4$\sigma$", linewidth=2)
+    ax3.plot(phi, med.norm_profile, label="median", linewidth=2)
+    ax3.plot(phi, sk_l1siguskmax["256"].norm_profile, label="SK: 1$\sigma$, $SK_{max}$", linewidth=2)
+
     #ax3.plot(phi, sk_4sig["64"].norm_profile+0.5, label="SK, M = 64, PFA: 4$\sigma$")
     #ax3.plot(phi, sk_4sig["128"].norm_profile+0.6, label="SK, M = 128, PFA: 4$\sigma$")
     #ax3.plot(phi, sk_4sig["256"].norm_profile+0.7, label="SK, M = 256, PFA: 4$\sigma$")
-    ax3.plot(phi, sk_4sig["256"].norm_profile + 0.4, label="SK: 4$\sigma$", linewidth=2)
+    #ax3.plot(phi, sk_4sig["256"].norm_profile + 0.4, label="SK: 4$\sigma$", linewidth=2)
     #ax3.plot(phi, sk_4sig["1024"].norm_profile+0.4, label="SK, M = 1024, PFA: 4$\sigma$")
     #ax3.plot(phi, sk_4sig["2048"].norm_profile+1, label="SK, M = 2048, PFA: 4$\sigma$")
-    ax3.plot(phi, pt.norm_profile + 0.3, label="$\geq$ 4$\sigma$", linewidth=2)
+
+    #ax3.plot(phi, pt.norm_profile + 0.3, label="$\geq$ 4$\sigma$", linewidth=2)
+
     #ax3.plot(phi, sk_pfa4sigskmaxlim["1024"].norm_profile + 0.3, label="SK, PFA: 4$\sigma$ SK max")
     #ax3.plot(phi, sk_low_4sig["1024"].norm_profile + 0.2, label="SK, PFA: low 4$\sigma$")
-    ax3.plot(phi, sk_l1siguskmax["256"].norm_profile + 0.2, label="SK: 1$\sigma$, $SK_{max}$", linewidth=2)
-    ax3.plot(phi, med.norm_profile + 0.1, label="median", linewidth=2)
+    #ax3.plot(phi, sk_l1siguskmax["256"].norm_profile + 0.2, label="SK: 1$\sigma$, $SK_{max}$", linewidth=2)
+
+    #ax3.plot(phi, med.norm_profile + 0.1, label="median", linewidth=2)
+
     #ax3.plot(phi, sk_low_4sig_median["1024"].norm_profile, label="SK, PFA: low 4$\sigma$ median")
     ax3.set_ylabel("normalised pulsar intensity profile")
     ax3.set_xlabel("pulsar phase")
     ax3.set_xlim([0,1])
     ax3.grid()
     ax3.legend()
-    plt.savefig('/home/vereese/thesis_pics/profile.pdf', bbox_inches='tight')
+    plt.savefig('/home/vereese/jai_pics/profile_noshift.pdf', bbox_inches='tight')
 
     # this is just to be able to plot this graph locally and not on ray
     rfi_offline = np.zeros([4,1024])
@@ -236,35 +250,35 @@ if __name__ == "__main__":
     rfi_offline[1, :] = sk_4sig["256"].rfi_freq
     rfi_offline[2, :] = pt.rfi_freq
     rfi_offline[3, :] = med.rfi_freq
-    np.save("rfi_freq_offline", rfi_offline)
+    #np.save("rfi_freq_offline", rfi_offline)
     fig4, ax4 = plt.subplots()
     #fig4.tight_layout()
-    ax4.plot(frequencies, sk_l1siguskmax["256"].rfi_freq, label="SK: 1$\sigma$, $SK_{max}$", linewidth=2)
-    ax4.plot(frequencies, sk_4sig["256"].rfi_freq, label="SK: 4$\sigma$", linewidth=2)
-    ax4.plot(frequencies, pt.rfi_freq, label="$\geq$ 4$\sigma$", linewidth=2)
-    ax4.plot(frequencies, med.rfi_freq, label="median", linewidth=2)
+    ax4.semilogy(frequencies, sk_l1siguskmax["256"].rfi_freq, label="SK: 1$\sigma$, $SK_{max}$", linewidth=2, zorder=5)
+    ax4.semilogy(frequencies, sk_4sig["256"].rfi_freq, label="SK: 4$\sigma$", linewidth=2, zorder=4)
+    ax4.semilogy(frequencies, pt.rfi_freq, label="$\geq$ 4$\sigma$", linewidth=2, zorder=3)
+    ax4.semilogy(frequencies, med.rfi_freq, label="median", linewidth=2, zorder=2)
     ax4.set_ylabel("\% RFI flagged")
     ax4.set_xlabel("frequency [MHz]")
-    # loc = 10 is center https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html
-    ax4.legend(loc = 10)
+    # loc = 8 is lower center https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html
+    ax4.legend(loc = 8)
     ax4.set_xlim([frequencies[0], frequencies[-1]])
-    ax4.set_ylim([0, 12])
-    plt.axvspan(frequencies[0], frequencies[50], color='blue', alpha=0.5)
-    plt.axvspan(frequencies[-50], frequencies[-1], color='blue', alpha=0.5)
-    plt.axvspan(frequencies[95], frequencies[126], color='blue', alpha=0.5)
-    plt.savefig('/home/vereese/thesis_pics/rfi_freq.pdf', bbox_inches='tight')
+    ax4.set_ylim([10**-5, 170])
+    plt.axvspan(frequencies[0], frequencies[50], color='blue', alpha=0.5, zorder=1)
+    plt.axvspan(frequencies[-50], frequencies[-1], color='blue', alpha=0.5, zorder=1)
+    plt.axvspan(frequencies[95], frequencies[126], color='blue', alpha=0.5, zorder=1)
+    #plt.savefig('/home/vereese/thesis_pics/rfi_freq.pdf', bbox_inches='tight')
 
     fig5, ax5 = plt.subplots()
-    ax5.plot(phi, sk_l1siguskmax["256"].rfi_pulse, label="SK: 1$\sigma$, $SK_{max}$", linewidth=2)
-    ax5.plot(phi, med.rfi_pulse, label="median", linewidth=2)
-    ax5.plot(phi, pt.rfi_pulse, label="$\geq$ 4$\sigma$", linewidth=2)
-    ax5.plot(phi, sk_4sig["256"].rfi_pulse, label="SK: 4$\sigma$", linewidth=2)
+    ax5.semilogy(phi, sk_l1siguskmax["256"].rfi_pulse, label="SK: 1$\sigma$, $SK_{max}$", linewidth=2)
+    ax5.semilogy(phi, med.rfi_pulse, label="median", linewidth=2)
+    ax5.semilogy(phi, pt.rfi_pulse, label="$\geq$ 4$\sigma$", linewidth=2)
+    ax5.semilogy(phi, sk_4sig["256"].rfi_pulse, label="SK: 4$\sigma$", linewidth=2)
     ax5.set_ylabel("\% RFI flagged")
     ax5.set_xlabel("pulse phase")
-    # loc = 10 is in the center
-    ax5.legend(loc = 10)
+    # loc = 6 is in the center left
+    ax5.legend(loc = 6)
     ax5.set_xlim([0, 1])
-    plt.savefig('/home/vereese/thesis_pics/rfi_pulse.pdf', bbox_inches='tight')
+    #plt.savefig('/home/vereese/thesis_pics/rfi_pulse.pdf', bbox_inches='tight')
     #plt.savefig('/home/vereese/jai_pics/rfi_pulse.pdf', bbox_inches='tight')
     plt.show()
 
@@ -276,6 +290,23 @@ if __name__ == "__main__":
     print("toa un [ns], med :", med.toa_un*1000)
     print("toa un [ns], sk  :", sk_l1siguskmax["256"].toa_un*1000)
     print("toa un [ns], vmsk:", vmsk_l1siguskamx_M256m1nx["2"].toa_un*1000)
+    print("\nBest SK to None: ", sk_none)
+    print("Best SK to Med : ", sk_med)
+    print("Best VMSK to SK: ", vmsk_sk)
+
+    """
+    
+    # Following numbers are given in JAI paper
+    sk_none = 100 * (np.abs(sk_l1siguskmax["256"].snr - I.snr)) / I.snr
+    sk_med = 100 * (np.abs(sk_l1siguskmax["256"].snr - med.snr)) / med.snr
+    vmsk_sk = 100 * (np.abs(vmsk_l1siguskamx_M256m1nx["2"].snr - sk_l1siguskmax["256"].snr)) / sk_l1siguskmax["256"].snr
+    print("\nSNR, none:", I.snr)
+    print("SNR, 4sigma pt:", pt.snr)
+    print("SNR, mask:", Im.snr)
+    print("SNR, med :", med.snr)
+    print("SNR, sk 1sig :", sk_l1siguskmax["256"].snr)
+    print("SNR, sk 4sig :", sk_4sig["2048"].snr)
+    print("SNR, vmsk:", vmsk_l1siguskamx_M256m1nx["2"].snr)
     print("\nBest SK to None: ", sk_none)
     print("Best SK to Med : ", sk_med)
     print("Best VMSK to SK: ", vmsk_sk)
@@ -301,7 +332,7 @@ if __name__ == "__main__":
     ax.set_ylim([0, 25500])
     ax.grid()
     ax.legend()
-    plt.savefig('/home/vereese/jai_pics/msk_snr.pdf', bbox_inches='tight')
+    #plt.savefig('/home/vereese/jai_pics/msk_snr2.pdf', bbox_inches='tight')
 
     phi = np.arange(0, 1, 1/len(I.profile))
     fig1, ax1 = plt.subplots()
@@ -315,12 +346,32 @@ if __name__ == "__main__":
     ax1.set_xlim([0, 1])
     ax1.grid()
     ax1.legend()
-    plt.savefig('/home/vereese/jai_pics/profile.pdf', bbox_inches='tight')
+    #plt.savefig('/home/vereese/jai_pics/profile.pdf', bbox_inches='tight')
+
+
+    fig2, ax2 = plt.subplots()
+    ax2.semilogx(M, snr_1sigskmax, '-o', label="SK: 1$\sigma$, $SK_{max}$", linewidth=2, base=2)
+    ax2.semilogx(M, snr_sk_4sig, '-o', label="SK: 4$\sigma$", linewidth=2, base=2)
+    ax2.hlines(y = med.snr, xmin = M[0], xmax = M[-1], colors="red", linestyle="--", label = "median")
+    ax2.hlines(y = Im.snr, xmin = M[0], xmax = M[-1], colors="blue", linestyle="--", label = "static mask")
+    ax2.hlines(y = pt.snr, xmin = M[0], xmax = M[-1], colors="green", linestyle="--", label ="$\geq$ 4$\sigma$")
+    ax2.hlines(y = I.snr, xmin = M[0], xmax = M[-1], colors="cyan", linestyle="--", label = "none")
+    ax2.xaxis.set_major_formatter(matplotlib.ticker.LogFormatter(base=2))
+    ax2.set_ylabel("SNR")
+    ax2.set_xlabel("$M$ values")
+    ax2.set_xlim([M[0], M[-1]])
+    ax2.set_ylim([0, 25000])
+    ax2.legend(loc=3)
+    ax2.grid()
+    #plt.savefig('/home/vereese/jai_pics/sk_snr.pdf', transparent=True, bbox_inches='tight')
 
     # reshape figures for plotting 2 figures next to each other
     figheight = 0.4 * textwidth
     plt.rc("figure", figsize=(textwidth, figheight))
 
+
+    """
+    # This was for when paper was still title "Improving Pulsar Timing ... " 
     fig2, ax2 = plt.subplots(1,2)
     fig2.tight_layout()
     ax2[0].semilogx(M, snr_1sigskmax, '-o', label="SK: 1$\sigma$, $SK_{max}$", linewidth=2, base=2)
@@ -349,7 +400,7 @@ if __name__ == "__main__":
     ax2[1].set_ylim([0, 52])
     ax2[1].legend()
     ax2[1].grid()
-    plt.savefig('/home/vereese/jai_pics/sk_snr_toa_un.pdf', transparent=True, bbox_inches='tight')
+    plt.savefig('/home/vereese/jai_pics/sk_snr_toa_un.pdf', transparent=True, bbox_inches='tight')"""
 
     fig3, ax3 = plt.subplots(1, 2, sharey=True)
     fig3.tight_layout()
@@ -374,7 +425,7 @@ if __name__ == "__main__":
     # loc = 6 is in the center left
     ax3[1].legend(loc = 6)
     ax3[1].set_xlim([0, 1])
-    plt.savefig('/home/vereese/jai_pics/rfi_freq_pulse.pdf', transparent=True, bbox_inches='tight')
+    #plt.savefig('/home/vereese/jai_pics/rfi_freq_pulse.pdf', transparent=True, bbox_inches='tight')
 
     plt.show()
 
