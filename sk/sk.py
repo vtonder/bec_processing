@@ -8,7 +8,7 @@ import argparse
 t1 = time.time()
 
 parser = argparse.ArgumentParser()
-parser.add_argument("file", help="observation file to process. search path: /net/com08/data6/vereese/")
+parser.add_argument("file", help="file name to get observation tag and polarisation")
 parser.add_argument("-M", dest = "M", help="Number of spectra to accumulate in (M)SK calculation", default=512)
 parser.add_argument("-m", dest = "m", help="Number of time samples to add up in MSK", default=1)
 parser.add_argument("-n", dest = "n", help="Number of ch to add up in MSK", default=1)
