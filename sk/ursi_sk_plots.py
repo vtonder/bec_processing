@@ -6,19 +6,19 @@ from constants import thesis_font, a4_textwidth, a4_textheight, beamer_textwidth
 
 #DIR_OUT = "/home/vereese/Documents/PhD/ThesisTemplate/Figures/"
 #DIR_OUT = "/home/vereese/Documents/PhD/URSI2023/"
-#DIR_OUT = "/home/vereese/thesis_pics/"
-DIR_OUT = "/home/vereese/presentation_pics/"
+DIR_OUT = "/home/vereese/thesis_pics/"
+#DIR_OUT = "/home/vereese/presentation_pics/"
 
 #DIR_IN = "/home/vereese/git/phd_data/sk_analysis/ursi_data/"
-DIR_IN = "/home/vereese/data/phd_data/sk_analysis/ursi_data/"
+DIR_IN = "/home/vereese/git/phd_data/sk_analysis/ursi_data/"
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
-#textwidth = a4_textwidth
-#textheight = a4_textheight
-#font_size = thesis_font
-textwidth = beamer_textwidth
-textheight = beamer_textheight
-font_size = beamer_font
+textwidth = a4_textwidth
+textheight = a4_textheight
+font_size = thesis_font
+#textwidth = beamer_textwidth
+#textheight = beamer_textheight
+#font_size = beamer_font
 
 # groups are like plt.figure plt.legend etc
 plt.rc('font', size=font_size, family='serif')
@@ -48,8 +48,9 @@ plt.figure(0)
 plt.imshow(p1, aspect='auto', extent=[0, 1, 856, 1712] , origin='lower', vmin=mini, vmax=maxi)
 plt.xlabel('pulse phase')
 plt.ylabel('frequency [MHz]')
+plt.colorbar()
 #plt.title('Vela Pulse Profile without RFI mitigation')
-plt.savefig(DIR_OUT+'p1.pdf', bbox_inches='tight')
+#plt.savefig(DIR_OUT+'p1.pdf', bbox_inches='tight')
 
 plt.figure(1)
 plt.imshow(p2, aspect='auto', extent=[0, 1, 856, 1712], origin='lower', cmap='gray_r', vmin=mini, vmax=maxi)
@@ -57,7 +58,7 @@ plt.xlabel('pulse phase')
 plt.ylabel('frequency [MHz]')
 plt.colorbar(cmap='gray_r')
 #plt.title('(b) Upper and lower thresholds are applied, M=512')
-plt.savefig(DIR_OUT+'p2.pdf', bbox_inches='tight')
+#plt.savefig(DIR_OUT+'p2.pdf', bbox_inches='tight')
 
 plt.figure(2)
 plt.imshow(p3, aspect='auto', extent=[0, 1, 856, 1712] , origin='lower', cmap='gray_r', vmin=mini, vmax=maxi)
@@ -66,7 +67,7 @@ plt.xlabel('pulse phase')
 plt.ylabel('frequency [MHz]')
 plt.colorbar(cmap='gray_r')
 #plt.title('(c) Only lower thresholds are applied, M=512')
-plt.savefig(DIR_OUT+'p3.pdf', bbox_inches='tight')
+#plt.savefig(DIR_OUT+'p3.pdf', bbox_inches='tight')
 
 plt.figure(3)
 plt.imshow(p4, aspect='auto', extent=[0, 1, 856, 1712] , origin='lower', cmap='gray_r', vmin=mini, vmax=maxi)
@@ -75,6 +76,6 @@ plt.xlabel('pulse phase')
 plt.ylabel('frequency [MHz]')
 plt.colorbar(cmap='gray_r')
 #plt.title('(d) Only lower thresholds are applied, M=2048')
-plt.savefig(DIR_OUT+'p4.pdf', bbox_inches='tight')
+#plt.savefig(DIR_OUT+'p4.pdf', bbox_inches='tight')
 
 plt.show()
