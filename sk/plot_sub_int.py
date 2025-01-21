@@ -7,7 +7,7 @@ from constants import a4_textwidth, a4_textheight, thesis_font, jai_textwidth, j
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-d", dest = "dir", help="Directory where data is located. default: /net/com08/data6/vereese/phd_data/sk_analysis/2210/", default="/net/com08/data6/vereese/phd_data/sk_analysis/2210/")
+parser.add_argument("-d", dest = "dir", help="Directory where data is located. default: /home/vereese/git/phd_data/sk_analysis/2210/", default="/home/vereese/git/phd_data/sk_analysis/2210/")
 args = parser.parse_args()
 
 # Setup fonts and sizes for publication, based on page dimensions in inches
@@ -56,6 +56,7 @@ plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(func))
 #plt.plot(s_sk[:, freq_ch, :].sum(axis=0), label="SK")
 #plt.plot(s_none[:, freq_ch, :].sum(axis=0), label="none")
 #plt.plot(s_pt[:, freq_ch, :].sum(axis=0), label="pt")
+plt.colorbar()
 plt.xlabel("pulsar phase")
 plt.ylabel("observation time [min]")
 #plt.title("sk")
@@ -68,6 +69,7 @@ func = lambda x, pos: "" if np.isclose(x,0) else x
 plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(func))
 plt.xlabel("pulsar phase")
 plt.ylabel("observation time [min]")
+plt.colorbar()
 #plt.title("none")
 plt.savefig('/home/vereese/thesis_pics/sub_int_none_2210_ch' + str(freq_ch) + '.pdf', bbox_inches='tight')
 
@@ -76,6 +78,7 @@ plt.figure(2)
 plt.imshow(s_pt[:, freq_ch, :], origin="lower", aspect="auto", extent=[0, 1, 0, 4.3], vmin=vmini, vmax=vmaxi)
 func = lambda x, pos: "" if np.isclose(x,0) else x
 plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(func))
+plt.colorbar()
 plt.xlabel("pulsar phase")
 plt.ylabel("observation time [min]")
 #plt.title("pt")
@@ -109,5 +112,5 @@ plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(func))
 for i in np.arange(3):
     ax[i].set_xlabel("pulsar phase")
 ax[0].set_ylabel("observation time [min]")
-plt.savefig('/home/vereese/jai_pics/sub_int_2210_ch' + str(freq_ch) + '.pdf', bbox_inches='tight')
+#plt.savefig('/home/vereese/jai_pics/sub_int_2210_ch' + str(freq_ch) + '.pdf', bbox_inches='tight')
 plt.show()
