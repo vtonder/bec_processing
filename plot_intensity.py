@@ -64,9 +64,9 @@ plt.xlabel("pulse phase")
 plt.ylabel("frequency [MHz]")
 plt.savefig('/home/vereese/thesis_pics/rfi.pdf', bbox_inches='tight')
 plt.show()
-
+"""
 # following 29 lines of code is for plotting SK flags produced during vela analysis for URSI 2023 
-DIR = "/home/vereese/data/phd_data/sk_analysis/1234/lower/"
+DIR = "/home/vereese/git/phd_data/sk_analysis/1234/lower/"
 d1 = np.load(DIR + "SK_flags512_1234_0x.npy")
 d2 = np.load(DIR + "SK_flags1024_1234_0x.npy")
 d3 = np.load(DIR + "SK_flags2048_1234_0x.npy")
@@ -74,28 +74,32 @@ d4 = np.load(DIR + "SK_flags10240_1234_0x.npy")
 
 plt.figure(0)
 plt.imshow(d1, origin="lower", aspect="auto", extent=[0, 10, 856, 1712])
+plt.colorbar()
 plt.xlabel("observation time [s]")
 plt.ylabel("frequency [MHz]")
 plt.savefig(DIR_OUT + 'sk_flags_512.pdf', bbox_inches='tight')
 
 plt.figure(1)
 plt.imshow(d2, origin="lower", aspect="auto", extent=[0, 10, 856, 1712])
+plt.colorbar()
 plt.xlabel("observation time [s]")
 plt.ylabel("frequency [MHz]")
 plt.savefig(DIR_OUT + 'sk_flags_1024.pdf', bbox_inches='tight')
 
-plt.figure(3)
-plt.imshow(d2, origin="lower", aspect="auto", extent=[0, 10, 856, 1712])
+plt.figure(2)
+plt.imshow(d3, origin="lower", aspect="auto", extent=[0, 10, 856, 1712])
+plt.colorbar()
 plt.xlabel("observation time [s]")
 plt.ylabel("frequency [MHz]")
 plt.savefig(DIR_OUT + 'sk_flags_2048.pdf', bbox_inches='tight')
 
-plt.figure(2)
-plt.imshow(d3, origin="lower", aspect="auto", extent=[0, 10, 856, 1712])
+plt.figure(3)
+plt.imshow(d4, origin="lower", aspect="auto", extent=[0, 10, 856, 1712])
+plt.colorbar()
 plt.xlabel("observation time [s]")
 plt.ylabel("frequency [MHz]")
 plt.savefig(DIR_OUT + 'sk_flags_10240.pdf', bbox_inches='tight')
-"""
+plt.show()
 
 """
 TODO: this is old code which needs to be retested
