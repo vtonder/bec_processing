@@ -120,7 +120,7 @@ class Bispectrum():
     def calc_power_spectrum(self):
         shifted_ps = np.zeros(self.M)
 
-        S = self.discrete_FT()
+        #S = self.discrete_FT()
         S = np.fft.fft(self.signal, self.M)
         P = np.abs(S) ** 2
         self.power_spectrum = 1.0 / self.K * P.sum(axis=0)
@@ -187,6 +187,7 @@ class Bispectrum():
         #print("before mean compensation", np.mean(self.signal))
         #self.mean_compensation()
         #print("after mean compensation", np.mean(self.signal))
+
         if self.method == 'direct':
             self.bispectrum_I = self.direct_bispectrum()
         else:

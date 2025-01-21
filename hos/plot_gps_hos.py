@@ -25,7 +25,9 @@ plt.rc("text", usetex = True)
 plt.rc("figure", figsize = (textwidth, figheight))
 
 DIRECTORY = '/home/vereese/git/phd_data/gps_hos/output_data/'
-URSI_DIR = '/home/vereese/Documents/PhD/ThesisTemplate/Figures/'
+URSI_DIR = '/home/vereese/Documents/PhD/Thesis/Figures/'
+#URSI_DIR = '/home/vereese/Documents/PhD/presentation/'
+
 NUM_BITS1 = str(1)
 NUM_BITS2 = str(300)
 

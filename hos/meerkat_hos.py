@@ -59,21 +59,40 @@ if ANALYSE:
 
 if PLOT:
     DIR='/home/vereese/git/phd_data/meerkat_hos/'
-    data = {'gps_l1_bispec_full.npy':[], 'gps_l2_bispec_full.npy': [], 'gal_e6_bispec.npy': [], 'gal_5b_bispec_0y.npy': [],
-            'h1_bispec_0y.npy':[], 'vela_bispec.npy':[], 'clean_bispec.npy':[], 'dirty_bispec.npy':[], 'clean2_bispec_0y.npy':[], 'dirty2_bispec_0y.npy':[]}
-    names = ['gps_l1_bispec_full', 'gps_l2_bispec', 'gal_e6_bispec', 'gal_5b_bispec_0',
-            'h1_bispec_0y', 'vela_bispec', 'clean_bispec', 'dirty_bispec', 'clean2_bispec_0y', 'dirty2_bispec_0y']
+    clean_data = np.load(DIR + 'clean2_bispec_0y.npy')
+    gps_l2_data = np.load(DIR + 'gps_l2_bispec_full.npy')
+    gps_l1_data = np.load(DIR + 'gps_l1_bispec_full.npy')
 
-    for i,fn in enumerate(data.keys()):
-        data[fn] = np.load(DIR+fn)
-        maxi = np.max(np.abs(data[fn]))
-        plt.figure(i)
-        plt.imshow(np.abs(data[fn]), aspect='auto', origin='lower', extent=[-512, 512, -512, 512])
-        plt.xlabel("frequency samples $k$")
-        plt.ylabel("frequency samples $k$")
-        plt.savefig("/home/vereese/Documents/PhD/ThesisTemplate/Figures/"+names[i]+".pdf", transparent=True, bbox_inches='tight')
-        #plt.imshow(np.angle(data[fn]), aspect='auto', origin='lower')
-        #plt.title(fn)
+    mag1 = np.abs(clean_data)
+    maxi1 = np.max(mag1) / 3
+    mini1 = np.min(mag1)
+    mag2 = np.abs(gps_l2_data)
+    maxi2 = np.max(mag2) / 7
+    mini2 = np.min(mag2)
+    mag3 = np.abs(gps_l1_data)
+    maxi3 = np.max(mag3) / 20
+    mini3 = np.min(mag3)
+
+    plt.figure(0)
+    plt.imshow(mag1, aspect='auto', origin='lower', vmin=mini1, vmax=maxi1, extent=[-512, 512, -512, 512])
+    plt.colorbar()
+    plt.xlabel("frequency samples $k$")
+    plt.ylabel("frequency samples $k$")
+    plt.savefig("/home/vereese/Documents/PhD/Thesis/Figures/clean2_bispec_0y.pdf", transparent=True, bbox_inches='tight')
+
+    plt.figure(1)
+    plt.imshow(mag2, aspect='auto', origin='lower', vmin=mini2, vmax=maxi2, extent=[-512, 512, -512, 512])
+    plt.colorbar()
+    plt.xlabel("frequency samples $k$")
+    plt.ylabel("frequency samples $k$")
+    plt.savefig("/home/vereese/Documents/PhD/Thesis/Figures/gps_l2_bispec.pdf", transparent=True, bbox_inches='tight')
+
+    plt.figure(2)
+    plt.imshow(mag3, aspect='auto', origin='lower', vmin=mini3, vmax=maxi3, extent=[-512, 512, -512, 512])
+    plt.colorbar()
+    plt.xlabel("frequency samples $k$")
+    plt.ylabel("frequency samples $k$")
+    plt.savefig("/home/vereese/Documents/PhD/Thesis/Figures/gps_l1_bispec.pdf", transparent=True, bbox_inches='tight')
 
     plt.show()
 
