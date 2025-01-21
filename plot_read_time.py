@@ -38,10 +38,12 @@ processing_time ={
 num_proc = [int(i) for i in processing_time.keys()]
 
 plt.figure(0)
-plt.plot(num_proc, list(processing_time.values()), linewidth=2)
+#plt.plot(num_proc, list(processing_time.values()), linewidth=2)
+#plt.semilogy(num_proc, list(processing_time.values()), base = 2, linewidth=2)
+plt.loglog(num_proc, list(processing_time.values()), base = 2, linewidth=2)
 plt.xlim(num_proc[0], num_proc[-1])
 plt.grid()
 plt.xlabel("Number of processors")
-plt.ylabel("Average reading time (s)")
-plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/proctime.pdf', bbox_inches='tight')
+plt.ylabel("$\overline{t_r}$ \,\, [s]")
+plt.savefig('/home/vereese/Documents/PhD/Thesis/Figures/proctime.pdf', bbox_inches='tight')
 plt.show()
