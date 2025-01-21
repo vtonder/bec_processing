@@ -87,9 +87,9 @@ plt.legend()
 plt.xlim([clipped_std[0], clipped_std[-1]])
 plt.ylim([0.18, 1.4])
 plt.xlabel('$\sigma_{\mbox{c}}$')
-plt.ylabel('$ \overline{SK}$')
-#plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/clip.pdf', bbox_inches='tight')
-plt.savefig('/home/vereese/Documents/PhD/presentation/clip.pdf', bbox_inches='tight')
+plt.ylabel('$\overline{SK}$')
+#plt.savefig('/home/vereese/Documents/PhD/Thesis/Figures/clip1.pdf', bbox_inches='tight')
+#plt.savefig('/home/vereese/Documents/PhD/presentation/clip.pdf', bbox_inches='tight')
 
 # Plot for JAI paper therefore reset some params
 textwidth = jai_textwidth
@@ -101,7 +101,7 @@ plt.rc(('xtick', 'ytick'), labelsize=font_size)
 plt.rc('legend', fontsize=font_size)
 
 plt.figure(1)
-plt.axhline(1, color='m', linestyle = '-', linewidth=2, label="unclipped")
+plt.axhline(1, color='black', linestyle = '--', linewidth=2)#, label="unclipped")
 plt.plot(clipped_std, mean_sk_clipped, label="clipped", linewidth=2)
 plt.axhline(0.77, color = 'g', linestyle = '--', linewidth=2, label="$\pm3\sigma$ thresholds")
 plt.axhline(1.33, color = 'g', linestyle = '--', linewidth=2)
@@ -111,12 +111,14 @@ plt.xlim([clipped_std[0], clipped_std[-1]])
 plt.ylim([0.18, 1.4])
 plt.xlabel('$\sigma_{\mbox{c}}$')
 plt.ylabel('$ \overline{SK}$')
-#plt.savefig('/home/vereese/Documents/PhD/jai-2e/clip.pdf', bbox_inches='tight')
+plt.savefig('/home/vereese/Documents/PhD/jai-2e/clip.pdf', bbox_inches='tight')
 
-# graph for percentages
+# graph for percentages of data clipped
 plt.figure(2)
 plt.plot(clipped_std, np.asarray(total_clipped)*100/(M*FFT_LEN))
-
+plt.xlabel('$\sigma_{\mbox{c}}$')
+plt.ylabel('% total data clipped')
+plt.grid()
 plt.show()
 
 '''
