@@ -1,6 +1,65 @@
- #!/bin/bash
+#!/bin/bash
 
-echo getting sk
+for i in {64,128,256,512,1024,2048,4096,8192}
+do
+  echo $i
+  #timeout 7200 mpiexec -n 4 python s1_s2_mpi.py 1604640000_fake_pulsar_0x.h5 -d '../' -M $i 
+  #timeout 7200 mpiexec -n 2 python s1_s2_mpi.py 1604641064_wide_tied_array_channelised_voltage_0x.h5 -d '/home/vereese/' -M $i 
+  #if [ $? -eq 124 ]
+  #  then
+  #    echo timed out
+  #    exit
+  #fi
+
+  timeout 7200 mpiexec -n 2 python s1_s2_mpi.py 1604641064_wide_tied_array_channelised_voltage_0y.h5 -d '/home/vereese/' -M $i 
+  if [ $? -eq 124 ]
+    then
+      echo timed out
+      exit
+  fi
+
+  # timeout 7200 python sk.py 1604641064_fake_pulsar_0x.h5 -M $i -m 1 -n 1
+  #timeout 7200 python sk.py 1604641064_wide_tied_array_channelised_voltage_0x.h5 -M $i -m 1 -n 1
+  #if [ $? -eq 124 ]
+  #  then
+  #    echo timed out
+  #    exit
+  #fi
+
+  timeout 7200 python sk.py 1604641064_wide_tied_array_channelised_voltage_0y.h5 -M $i -m 1 -n 1
+  if [ $? -eq 124 ]
+    then
+      echo timed out
+      exit
+  fi
+done
+
+
+#echo get sub integration without any RFI mitigation 
+#timeout 18000 mpiexec -n 32 python sk_sub_int.py 2210 157
+#if [ $? -eq 124 ]
+#  then
+#    echo timed out on No RFI mit
+#    exit
+#fi
+#
+#echo get sub integration with SK RFI mitigation using lower 1 sigma and upper SK max thresholds
+#timeout 18000 mpiexec -n 32 python sk_sub_int.py 2210 157 -r sk -M 256
+#if [ $? -eq 124 ]
+#  then
+#    echo timed out on SK mit
+#    exit
+#fi
+#
+#echo get sub integration with power threshold RFI mitigation 
+#timeout 18000 mpiexec -n 32 python sk_sub_int.py 2210 157 -r pt 
+#if [ $? -eq 124 ]
+#  then
+#    echo timed out on pt mit
+#    exit
+#fi
+
+
 #timeout 7200 mpiexec -n 32 python sk_intensity.py 2210 -M 4096 -m 1 -n 16 
 #timeout 7200 mpiexec -n 32 python s1_s2_mpi.py 1604642210_wide_tied_array_channelised_voltage_0x.h5 -M 512
 #if [ $? -eq 124 ]
@@ -37,26 +96,24 @@ echo getting sk
 #    exit
 #fi
 
-
-#for i in {64,128,256,512,1024,2048,4096,8192}
-for i in {2,4,8,16}
-  do
-  timeout 7200 python sk.py 1604642210_wide_tied_array_channelised_voltage_0x.h5 -M 512 -m 1 -n $i -f msk 
-  if [ $? -eq 124 ]
-    then
-      echo timed out
-      exit
-  fi
-
-  timeout 7200 python sk.py 1604642210_wide_tied_array_channelised_voltage_0y.h5 -M 512 -m 1 -n $i -f msk 
-  if [ $? -eq 124 ]
-    then
-      echo timed out
-      exit
-  fi
-
-  #python get_msk_rfi.py MSK 256 1 $i 
-done
+#for i in {2,4,8,16}
+#  do
+#  timeout 7200 python sk.py 1604642210_wide_tied_array_channelised_voltage_0x.h5 -M 512 -m 1 -n $i -f msk 
+#  if [ $? -eq 124 ]
+#    then
+#      echo timed out
+#      exit
+#  fi
+#
+#  timeout 7200 python sk.py 1604642210_wide_tied_array_channelised_voltage_0y.h5 -M 512 -m 1 -n $i -f msk 
+#  if [ $? -eq 124 ]
+#    then
+#      echo timed out
+#      exit
+#  fi
+#
+#  #python get_msk_rfi.py MSK 256 1 $i 
+#done
 
 #for i in {8,4,16}
 #  do
