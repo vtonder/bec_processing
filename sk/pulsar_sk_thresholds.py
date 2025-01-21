@@ -56,7 +56,7 @@ plt.axvspan(frequencies[int(ch4[0])], frequencies[int(ch4[-1])], color='blue', a
 plt.axvspan(frequencies[int(ch5[0])], frequencies[int(ch5[-1])], color='blue', alpha=0.5)
 plt.savefig('/home/vereese/Documents/PhD/ThesisTemplate/Figures/clean_ch.pdf', transparent=True, bbox_inches='tight')
 plt.show()
-
+"""
 # A plot for SK max and SK min section in SK chapter of thesis
 m = 256
 # pearson type IV PDF produced by sk/sk_thresholds.py script
@@ -66,16 +66,16 @@ fig, ax = plt.subplots()
 ax.semilogy(x, p4, label="Pearson type IV PDF", linewidth=2)
 x_max = 678
 y_max = 137 
-ax.hist(sk[y_max,:], 1000, density = "True", stacked = "True", log = "True", label="SK histogram")
+ax.hist(sk[y_max,:], 1000, density = "True", stacked = "True", log = "True", label="SK histogram (1 ch)")
 ax.set_xlim([0, 12])
 ax.set_ylim([10**-4, 10])
-ax.vlines(x=0.25, ymin = 10**-4, ymax = 10, color='m', label="minimum", linewidth=2)
-ax.vlines(x=3.8, ymin = 10**-4, ymax = 10, color='g', label="median", linewidth=2)
-ax.vlines(x=10.77, ymin = 10**-4, ymax = 10, color='r', label="maximum", linewidth=2)
+ax.vlines(x=0.25, ymin = 10**-4, ymax = 10, color='m', label="minimum (all ch)", linewidth=2)
+ax.vlines(x=3.8, ymin = 10**-4, ymax = 10, color='g', label="median (all ch)", linewidth=2)
+ax.vlines(x=10.77, ymin = 10**-4, ymax = 10, color='r', label="maximum (all ch)", linewidth=2)
 plt.legend()
 ax.set_ylabel("SK PDF")
 ax.set_xlabel("SK values")
-plt.savefig('/home/vereese/thesis_pics/sk_min_max_hist.pdf', transparent=True, bbox_inches='tight')
+plt.savefig('/home/vereese/thesis_pics/sk_min_max_hist2.pdf', transparent=True, bbox_inches='tight')
 plt.show()
 """
 M = [64,256]
@@ -104,7 +104,7 @@ for m in M:
     print("min sk   : ", min(min_sk))
     #print("median sk:", np.median(max_sk))
     
-    """plt.figure(0)
+    plt.figure(0)
     plt.semilogy(x, p4)
     plt.hist(sk[105,:],1000,density="True",stacked="True",log="True")
     plt.grid()
