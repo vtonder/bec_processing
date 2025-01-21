@@ -126,7 +126,8 @@ size = comm.Get_size()
 rank = comm.Get_rank()
 
 parser = argparse.ArgumentParser()
-parser.add_argument("tag", help = "observation tag to process. search path: /net/com08/data6/vereese/")
+parser.add_argument("tag", help = "Observation tag to process.")
+parser.add_argument("-p", dest = "path", help = "Search path: default = /net/com08/data6/vereese/", default = '/net/com08/data6/vereese/')
 parser.add_argument("-r", dest = "rfi", help = "RFI mitigation to conduct. options = sk msk vmsk pt, default = None", default = None)
 parser.add_argument("-M", dest = "M", help = "Number of spectra to accumulate in SK calculation. Use with -r sk or msk or vmsk.", default = 512)
 parser.add_argument("-m", dest = "m", help = "Number of time samples to add up in MSK. Use with -r sk or msk or vmsk.", default = 1)
@@ -148,8 +149,8 @@ int_samples_T = round(samples_T)
 
 fx = '160464' + args.tag + '_wide_tied_array_channelised_voltage_0x.h5'
 fy = '160464' + args.tag + '_wide_tied_array_channelised_voltage_0y.h5'
-dfx = h5py.File('/net/com08/data6/vereese/' + fx, 'r')
-dfy = h5py.File('/net/com08/data6/vereese/' + fy, 'r')
+dfx = h5py.File(args.path + fx, 'r')
+dfy = h5py.File(args.path + fy, 'r')
 
 # start indices with x, y pol time offset compensated for
 si_x = start_indices[fx] + xy_time_offsets[fx]

@@ -45,6 +45,30 @@ echo getting intensity
 for j in {8192,4096,2048,1024,512,256,128,64}
   do
   echo $j
+  for i in {0_5s,0s,1s,2s,2_5s,3s,4s,skmin}
+    do
+    echo $i
+    timeout 10800 mpiexec -n 4 python intensity_1pol.py 1064 -p '/home/vereese/' -x y -r sk -M $j -l $i  
+    #timeout 10800 mpiexec -n 4 python intensity.py 1064 -p '/home/vereese/' -r sk -M $j -l $i  
+    if [ $? -eq 124 ]
+      then
+        echo timed out on M $j and lower threshold $i
+        exit
+    fi
+  done
+  
+  for i in {0_5s,0s,1s,2s,2_5s,3s,4s,skmax}
+    do
+    echo $i
+    #timeout 10800 mpiexec -n 4 python intensity.py 1064 -p '/home/vereese/' -r sk -M $j -u $i  
+    timeout 10800 mpiexec -n 4 python intensity_1pol.py 1064 -p '/home/vereese/' -x y -r sk -M $j -u $i  
+    if [ $? -eq 124 ]
+      then
+        echo timed out on M $j and upper threshold $i
+        exit
+    fi
+  done
+
   #for i in {0_5s,0s,1s,2s,2_5s,3s,4s,skmin}
   #  do
   #  echo $i
